@@ -1,0 +1,177 @@
+<template>
+  <div class="top-right-btn" :style="style">
+    <el-row>
+      <el-tooltip class="item" effect="dark" placement="top" :show-after="150" v-if="hint">
+        <template #content>
+          <div style="white-space: pre-line">{{ hint }}</div>
+        </template>
+        <el-button circle>
+          <!-- Element Plus 图标集只有实心问号（QuestionFilled），线框问号用 Feather 的 help-circle 补上 -->
+          <el-icon>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <path d="M12 17h.01" />
+            </svg>
+          </el-icon>
+        </el-button>
+      </el-tooltip>
+      <el-tooltip
+        class="item"
+        effect="dark"
+        :content="showSearch ? t('common.hideSearch') : t('common.showSearch')"
+        placement="top"
+        v-if="search"
+      >
+        <el-button circle icon="Search" @click="toggleSearch()" />
+      </el-tooltip>
+      <el-tooltip class="item" effect="dark" :content="t('common.refresh')" placement="top">
+        <el-button circle icon="Refresh" @click="refresh()" />
+      </el-tooltip>
+      <el-tooltip
+        class="item"
+        effect="dark"
+        :content="t('common.showHideColumns')"
+        placement="top"
+        v-if="columns"
+      >
+        <!-- <el-button
+          circle
+          icon="Menu"
+          @click="showColumn()"
+          v-if="showColumnsType == 'transfer'"
+        /> -->
+        <el-dropdown
+          trigger="click"
+          :hide-on-click="false"
+          style="padding-left: 12px"
+          v-if="showColumnsType == 'checkbox'"
+        >
+          <el-button circle icon="Menu" />
+          <template #dropdown>
+            <el-dropdown-menu>
+              <template v-for="item in columnArray" :key="item.key">
+                <el-dropdown-item>
+                  <el-checkbox
+                    :checked="item.visible"
+                    @change="checkboxChange($event, item.key)"
+                    :label="item.label"
+                  />
+                </el-dropdown-item>
+              </template>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </el-tooltip>
+    </el-row>
+    <!-- <el-dialog :title="title" v-model="open" append-to-body>
+      <el-transfer
+        :titles="['显示', '隐藏']"
+        v-model="value"
+        :data="columns"
+        @change="dataChange"
+      ></el-transfer>
+    </el-dialog> -->
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+
+const props = defineProps({
+  showSearch: {
+    type: Boolean,
+    default: true,
+  },
+  columns: {
+    type: Object,
+  },
+  search: {
+    type: Boolean,
+    default: true,
+  },
+  hint: {
+    type: String,
+    default: "",
+  },
+  showColumnsType: {
+    type: String,
+    default: "checkbox",
+  },
+  gutter: {
+    type: Number,
+    default: 10,
+  },
+});
+
+const emit = defineEmits(["update:showSearch", "queryTable"]);
+
+const value = ref([]);
+// const title = ref("显示/隐藏");
+const open = ref(false);
+
+const style = computed(() => {
+  if (!props.gutter) return {};
+  return { marginRight: `${props.gutter / 2}px` };
+});
+
+const columnArray = computed(() => {
+  return Object.keys(props.columns).map((p) => ({ key: p, ...props.columns[p] }));
+});
+
+function toggleSearch() {
+  emit("update:showSearch", !props.showSearch);
+}
+
+function refresh() {
+  emit("queryTable");
+}
+
+function dataChange(data) {
+  Object.values(props.columns).forEach((item) => {
+    item.visible = !data.includes(item.key);
+  });
+}
+
+function showColumn() {
+  open.value = true;
+}
+
+function checkboxChange(event, key) {
+  const column = props.columns[key];
+  if (column) {
+    column.visible = event;
+  }
+}
+
+if (props.showColumnsType === "transfer" && props.columns) {
+  Object.values(props.columns).forEach((item, index) => {
+    if (item.visible === false) {
+      value.value.push(index);
+    }
+  });
+}
+</script>
+
+<style lang="scss" scoped>
+:deep(.el-transfer__button) {
+  border-radius: 50%;
+  display: block;
+  margin-left: 0px;
+}
+:deep(.el-transfer__button:first-child) {
+  margin-bottom: 10px;
+}
+:deep(.el-dropdown-menu__item) {
+  line-height: 30px;
+  padding: 0 17px;
+}
+
+.top-right-btn {
+  margin-left: auto;
+}
+</style>

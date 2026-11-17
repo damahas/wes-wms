@@ -1,0 +1,54 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using Wes.Entity;
+using Wes.Utils.Model;
+using Wes.ViewModel.SystemManage;
+
+namespace Wes.Business
+{
+    public interface ISysConfigBiz
+    {
+        #region 配置操作
+
+        public RowData<SysConfigEntity> GetList(ParamData<ConfigParam> param);
+
+        public RowData<SysConfigEntity> GetAll();
+
+        public ResultData<SysConfigEntity> GetById(long id);
+
+        public ReturnData Save(SysConfigEntity config);
+
+        public ReturnData Delete(string ids);
+
+        public byte[] Export(ParamData<ConfigParam> param);
+        #endregion
+
+        public ReturnData Refresh();
+
+        public ReturnData SaveSort(List<long> configIds);
+
+        public string GetByConfigKey(string configKey);
+
+        /// <summary>
+        /// 获取两步验证配置（解析失败或未配置时返回关闭状态）
+        /// </summary>
+        public TwoFactorConfig GetTwoFactorConfig();
+
+        /// <summary>
+        /// 获取邮箱集成配置（sys.integration.mail）
+        /// </summary>
+        public MailModel GetMailModel();
+
+        #region 调用三方接口
+
+        /// <summary>
+        /// 同步指定三方平台的组织架构（部门 + 用户）
+        /// </summary>
+        /// <param name="provider">平台标识：dingtalk / feishu / wecom</param>
+        Task<ReturnData> SyncThirdPartyAsync(string provider);
+
+        #endregion
+    }
+}
