@@ -15,6 +15,9 @@ namespace Wes.Service
 
         public bool Delete(List<long> ids);
 
+        /// <summary>按翻译键软删除全部语言条目（如删除菜单时清理 sys.menu.{id} 词条）</summary>
+        public bool DeleteByKey(string i18nKey);
+
         public string GetTranslation(string key, string lang);
 
         public Dictionary<string, string> GetTranslationsByPrefix(string prefix, string lang);

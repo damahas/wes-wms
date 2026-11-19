@@ -90,11 +90,24 @@ namespace Wes.Business
             return new ReturnData(200, "Seed 功能待实现");
         }
 
+
         public string GetTranslation(string key, string lang)
         {
             if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(lang))
                 return null;
             return _sysI18nService.GetTranslation(key, lang);
+        }
+
+        /// <summary>按翻译键删除全部语言条目并清除对应缓存</summary>
+        public void DeleteByKey(string i18nKey)
+        {
+            if (string.IsNullOrWhiteSpace(i18nKey))
+                return;
+            _sysI18nService.DeleteByKey(i18nKey);
+            foreach (var lang in new[] { "zh-CN", "en-US" })
+            {
+                CacheFactory.Cache.RemoveCache($"{CacheKey.I18n}{lang}");
+            }
         }
 
         public ResultData<Dictionary<string, string>> GetFrontendTranslations(string lang)

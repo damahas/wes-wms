@@ -17,7 +17,7 @@
         <el-button :icon="Search" :disabled="disabled" @click="openDialog" />
       </template>
     </el-autocomplete>
-    <el-dialog :title="'选择收货单'" v-model="dialogVisible" width="998px" append-to-body @open="onDialogOpen">
+    <el-dialog :title="t('wms.receiving.selectTitle')" v-model="dialogVisible" width="998px" append-to-body @open="onDialogOpen">
       <query-form
         :config="queryConfig"
         v-model="queryParams"
@@ -34,19 +34,19 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="收货单号" align="center" prop="receivingNo" :show-overflow-tooltip="true" min-width="160" />
-        <el-table-column label="供应商" align="center" :show-overflow-tooltip="true" min-width="160">
+        <el-table-column :label="t('wms.receiving.receivingNo')" align="center" prop="receivingNo" :show-overflow-tooltip="true" min-width="160" />
+        <el-table-column :label="t('wms.material.supplier')" align="center" :show-overflow-tooltip="true" min-width="160">
           <template #default="scope">
             {{ scope.row.supplier?.partnerName || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="预计到货日期" align="center" min-width="120">
+        <el-table-column :label="t('wms.receiving.expectDate')" align="center" min-width="120">
           <template #default="scope">
             {{ scope.row.expectDate ? scope.row.expectDate.slice(0, 10) : "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="承运人" align="center" prop="carrierName" :show-overflow-tooltip="true" min-width="100" />
-        <el-table-column label="状态" align="center" width="80">
+        <el-table-column :label="t('wms.receiving.carrier')" align="center" prop="carrierName" :show-overflow-tooltip="true" min-width="100" />
+        <el-table-column :label="t('common.status')" align="center" width="80">
           <template #default="scope">
             <el-tag :type="statusTagType(scope.row.receivingStatus)" size="small">
               {{ statusLabel(scope.row.receivingStatus) }}
@@ -65,8 +65,8 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+          <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -76,9 +76,12 @@
 <script setup>
 import { ref, reactive, computed, watch } from "vue";
 import { ElMessage } from "element-plus";
+import { useI18n } from "vue-i18n";
 import { Search } from "@element-plus/icons-vue";
 import { listReceiving, getReceiving } from "@/api/wms/receiving";
 import QueryForm from "@/components/QueryForm/index.vue";
+
+const { t } = useI18n();
 
 const props = defineProps({
   modelValue: { type: [String, Number], default: undefined },
@@ -105,15 +108,22 @@ const queryParams = reactive({
   supplierName: undefined,
 });
 
-const placeholderText = computed(() => props.placeholder || "请选择收货单");
+const placeholderText = computed(() => props.placeholder || t('wms.receiving.ph.selectReceiving'));
 
 const queryConfig = computed(() => [
-  { label: "收货单号", prop: "receivingNo", type: "input", placeholder: "请输入收货单号" },
-  { label: "供应商", prop: "supplierName", type: "input", placeholder: "请输入供应商名称" },
+  { label: t('wms.receiving.receivingNo'), prop: "receivingNo", type: "input", placeholder: t('wms.receiving.ph.inputReceivingNo') },
+  { label: t('wms.material.supplier'), prop: "supplierName", type: "input", placeholder: t('wms.partner.ph.inputNameOf', { type: t('wms.partner.supplier') }) },
 ]);
 
-const statusMap = { pending: "待收货", arriving: "收货中", completed: "已完成", cancelled: "已取消" };
-function statusLabel(s) { return statusMap[s] || s; }
+function statusLabel(s) {
+  const map = {
+    pending: t('wms.receiving.statusPending'),
+    arriving: t('wms.receiving.statusArriving'),
+    completed: t('wms.receiving.statusCompleted'),
+    cancelled: t('wms.receiving.statusCancelled'),
+  };
+  return map[s] || s;
+}
 function statusTagType(s) {
   const map = { pending: "warning", arriving: "primary", completed: "success", cancelled: "info" };
   return map[s] || "";
@@ -235,7 +245,7 @@ function handleRowClick(row) {
 
 function submitForm() {
   if (!dialogItem.value) {
-    ElMessage.warning("请至少选择一个收货单");
+    ElMessage.warning(t('wms.receiving.selectAtLeastOne'));
     return;
   }
   dialogVisible.value = false;

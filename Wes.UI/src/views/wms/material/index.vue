@@ -4,11 +4,11 @@
       <!-- 左侧物料分类树 -->
       <div class="split-left-panel">
         <div class="split-left__header">
-          <div class="split-left__title">物料分类</div>
+          <div class="split-left__title">{{ t('wms.material.category') }}</div>
           <div class="split-left__search">
             <el-input
               v-model="categoryName"
-              placeholder="搜索分类"
+              :placeholder="t('wms.material.ph.searchCategory')"
               clearable
               prefix-icon="Search"
             />
@@ -54,7 +54,7 @@
               icon="Plus"
               @click="handleAdd"
               v-hasPermi="['wms:material:add']"
-              >新增</el-button
+              >{{ t('common.add') }}</el-button
             >
           </el-col>
           <el-col :span="1.5">
@@ -65,7 +65,7 @@
               :disabled="single"
               @click="handleUpdate"
               v-hasPermi="['wms:material:edit']"
-              >修改</el-button
+              >{{ t('common.edit') }}</el-button
             >
           </el-col>
           <el-col :span="1.5">
@@ -76,7 +76,7 @@
               :disabled="multiple"
               @click="handleDelete"
               v-hasPermi="['wms:material:remove']"
-              >删除</el-button
+              >{{ t('common.delete') }}</el-button
             >
           </el-col>
           <right-toolbar
@@ -95,21 +95,21 @@
         >
           <el-table-column type="selection" width="55" align="center" />
           <el-table-column
-            label="物料编码"
+            :label="t('wms.material.materialCode')"
             align="center"
             prop="materialCode"
             :show-overflow-tooltip="true"
             min-width="120"
           />
           <el-table-column
-            label="物料名称"
+            :label="t('wms.material.materialName')"
             align="center"
             prop="materialName"
             :show-overflow-tooltip="true"
             min-width="180"
           />
           <el-table-column
-            label="物料类型"
+            :label="t('wms.material.materialType')"
             align="center"
             prop="materialType"
             width="100"
@@ -119,7 +119,7 @@
             </template>
           </el-table-column>
           <el-table-column
-            label="物料分类"
+            :label="t('wms.material.category')"
             align="center"
             prop="categoryId"
             :show-overflow-tooltip="true"
@@ -130,24 +130,24 @@
             </template>
           </el-table-column>
           <el-table-column
-            label="规格"
+            :label="t('wms.material.spec')"
             align="center"
             prop="spec"
             :show-overflow-tooltip="true"
             min-width="120"
           />
-          <el-table-column label="基本单位" align="center" prop="unit" width="90">
+          <el-table-column :label="t('wms.material.basicUnit')" align="center" prop="unit" width="90">
             <template #default="scope">
               <span>{{ unitLabel(scope.row.unit) }}</span>
             </template>
           </el-table-column>
           <el-table-column
-            label="安全库存"
+            :label="t('wms.material.safetyStock')"
             align="center"
             prop="safetyStock"
             width="100"
           />
-          <el-table-column label="状态" align="center" prop="status" width="80">
+          <el-table-column :label="t('common.status')" align="center" prop="status" width="80">
             <template #default="scope">
               <el-switch
                 v-model="scope.row.status"
@@ -158,14 +158,14 @@
             </template>
           </el-table-column>
           <el-table-column
-            label="创建时间"
+            :label="t('common.createTime')"
             align="center"
             prop="createTime"
             min-width="170"
             :show-overflow-tooltip="true"
           />
           <el-table-column
-            label="操作"
+            :label="t('common.actions')"
             align="center"
             width="150"
             class-name="small-padding fixed-width"
@@ -178,7 +178,7 @@
                 icon="Edit"
                 @click="handleUpdate(scope.row)"
                 v-hasPermi="['wms:material:edit']"
-                >修改</el-button
+                >{{ t('common.edit') }}</el-button
               >
               <el-button
                 link
@@ -186,21 +186,21 @@
                 icon="Delete"
                 @click="handleDelete(scope.row)"
                 v-hasPermi="['wms:material:remove']"
-                >删除</el-button
+                >{{ t('common.delete') }}</el-button
               >
             </template>
           </el-table-column>
-          <el-table-column label="默认仓库" align="center" :show-overflow-tooltip="true">
+          <el-table-column :label="t('wms.material.defaultWarehouse')" align="center" :show-overflow-tooltip="true">
             <template #default="scope">
               {{ scope.row.defaultWarehouse?.warehouseName || "-" }}
             </template>
           </el-table-column>
-          <el-table-column label="默认库区" align="center" :show-overflow-tooltip="true">
+          <el-table-column :label="t('wms.material.defaultZone')" align="center" :show-overflow-tooltip="true">
             <template #default="scope">
               {{ scope.row.defaultZone?.zoneCode || "-" }}
             </template>
           </el-table-column>
-          <el-table-column label="默认库位" align="center" :show-overflow-tooltip="true">
+          <el-table-column :label="t('wms.material.defaultLocation')" align="center" :show-overflow-tooltip="true">
             <template #default="scope">
               {{ scope.row.defaultLocation?.locationCode || "-" }}
             </template>
@@ -220,57 +220,57 @@
     <!-- 添加或修改物料对话框 -->
     <el-dialog :title="title" v-model="open" width="80%" append-to-body @close="cancel">
       <el-tabs v-model="activeTab">
-        <el-tab-pane label="基本信息" name="base">
+        <el-tab-pane :label="t('wms.material.tabBasic')" name="base">
           <el-form ref="materialRef" :model="form" :rules="rules" label-width="auto">
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-form-item label="物料编码" prop="materialCode">
-                  <el-input v-model="form.materialCode" placeholder="请输入物料编码" maxlength="50" />
+                <el-form-item :label="t('wms.material.materialCode')" prop="materialCode">
+                  <el-input v-model="form.materialCode" :placeholder="t('wms.material.ph.inputCode')" maxlength="50" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="物料名称" prop="materialName">
-                  <el-input v-model="form.materialName" placeholder="请输入物料名称" maxlength="100" />
+                <el-form-item :label="t('wms.material.materialName')" prop="materialName">
+                  <el-input v-model="form.materialName" :placeholder="t('wms.material.ph.inputName')" maxlength="100" />
                 </el-form-item>
               </el-col>
             </el-row>
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-form-item label="物料类型" prop="materialType">
-                  <el-select v-model="form.materialType" placeholder="请选择" style="width: 100%">
+                <el-form-item :label="t('wms.material.materialType')" prop="materialType">
+                  <el-select v-model="form.materialType" :placeholder="t('wms.common.pleaseSelect')" style="width: 100%">
                     <el-option v-for="dict in wms_material_type" :key="dict.value" :label="dict.label" :value="dict.value" />
                   </el-select>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="物料分类" prop="categoryId">
-                  <DictSelect v-model="form.categoryId" :options="wms_material_category" placeholder="请选择物料分类" style="width: 100%" />
+                <el-form-item :label="t('wms.material.category')" prop="categoryId">
+                  <DictSelect v-model="form.categoryId" :options="wms_material_category" :placeholder="t('wms.material.ph.selectCategory')" style="width: 100%" />
                 </el-form-item>
               </el-col>
             </el-row>
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-form-item label="包装规格" prop="packSpecId">
-                  <el-select v-model="form.packSpecId" placeholder="请选择包装规格（可选）" clearable filterable style="width: 100%">
+                <el-form-item :label="t('wms.material.packSpec')" prop="packSpecId">
+                  <el-select v-model="form.packSpecId" :placeholder="t('wms.material.ph.selectPackSpec')" clearable filterable style="width: 100%">
                     <el-option v-for="ps in packSpecOptions" :key="ps.specId" :label="ps.levelName" :value="ps.specId" />
                   </el-select>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="规格" prop="spec">
-                  <el-input v-model="form.spec" placeholder="请输入规格" maxlength="100" />
+                <el-form-item :label="t('wms.material.spec')" prop="spec">
+                  <el-input v-model="form.spec" :placeholder="t('wms.material.ph.inputSpec')" maxlength="100" />
                 </el-form-item>
               </el-col>
             </el-row>
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-form-item label="型号" prop="model">
-                  <el-input v-model="form.model" placeholder="请输入型号" maxlength="100" />
+                <el-form-item :label="t('wms.material.model')" prop="model">
+                  <el-input v-model="form.model" :placeholder="t('wms.material.ph.inputModel')" maxlength="100" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="基本单位" prop="unit">
-                  <el-select v-model="form.unit" placeholder="请选择基本单位" clearable filterable style="width: 100%">
+                <el-form-item :label="t('wms.material.basicUnit')" prop="unit">
+                  <el-select v-model="form.unit" :placeholder="t('wms.material.ph.selectUnit')" clearable filterable style="width: 100%">
                     <el-option v-for="dict in wms_sys_unit_type" :key="dict.value" :label="dict.label" :value="dict.value" />
                   </el-select>
                 </el-form-item>
@@ -278,46 +278,46 @@
             </el-row>
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-form-item label="条码" prop="barcode">
-                  <el-input v-model="form.barcode" placeholder="请输入条码" maxlength="50" />
+                <el-form-item :label="t('wms.material.barcode')" prop="barcode">
+                  <el-input v-model="form.barcode" :placeholder="t('wms.material.ph.inputBarcode')" maxlength="50" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="安全库存" prop="safetyStock">
+                <el-form-item :label="t('wms.material.safetyStock')" prop="safetyStock">
                   <el-input-number controls-position="right" v-model="form.safetyStock" :min="0" :precision="2" :controls="false" style="width: 100%" />
                 </el-form-item>
               </el-col>
             </el-row>
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-form-item label="状态" prop="status">
+                <el-form-item :label="t('common.status')" prop="status">
                   <el-radio-group v-model="form.status">
-                    <el-radio value="0">启用</el-radio>
-                    <el-radio value="1">停用</el-radio>
+                    <el-radio value="0">{{ t('common.enable') }}</el-radio>
+                    <el-radio value="1">{{ t('common.disable') }}</el-radio>
                   </el-radio-group>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="备注" prop="remark">
-                  <el-input v-model="form.remark" placeholder="请输入备注" maxlength="500" />
+                <el-form-item :label="t('common.remark')" prop="remark">
+                  <el-input v-model="form.remark" :placeholder="t('common.input')" maxlength="500" />
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-divider content-position="left">默认库位</el-divider>
+            <el-divider content-position="left">{{ t('wms.material.defaultLocation') }}</el-divider>
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-form-item label="默认库位" prop="defaultWarehouseId">
-                  <LocationCascader v-model="cascaderValue" placeholder="请选择仓库/库区/库位" />
+                <el-form-item :label="t('wms.material.defaultLocation')" prop="defaultWarehouseId">
+                  <LocationCascader v-model="cascaderValue" :placeholder="t('wms.location.ph.selectWhZoneOrLocation')" />
                 </el-form-item>
               </el-col>
             </el-row>
           </el-form>
         </el-tab-pane>
-        <el-tab-pane label="供应商" name="supplier">
+        <el-tab-pane :label="t('wms.material.tabSupplier')" name="supplier">
           <template v-if="activeTab === 'supplier'">
           <div class="mb8">
             <el-button type="primary" plain icon="Plus" @click="handleAddSupplier"
-              >新增</el-button
+              >{{ t('common.add') }}</el-button
             >
             <el-button
               type="danger"
@@ -325,7 +325,7 @@
               icon="Delete"
               :disabled="supplierIds.length === 0"
               @click="handleDeleteSupplier"
-              >删除</el-button
+              >{{ t('common.delete') }}</el-button
             >
           </div>
           <el-table
@@ -341,19 +341,19 @@
               <template #default="scope">
                 <div v-if="scope.row.status === '0' && scope.row.inspectionMode && scope.row.inspectionMode !== 'exempt'" class="inspection-expand">
                   <el-descriptions :column="3" border>
-                    <el-descriptions-item label="AQL等级">
-                      <el-input v-model="scope.row.aqlLevel" placeholder="如 1.0/2.5/4.0" maxlength="20" clearable />
+                    <el-descriptions-item :label="t('wms.material.aqlLevel')">
+                      <el-input v-model="scope.row.aqlLevel" :placeholder="t('wms.material.ph.aqlExample')" maxlength="20" clearable />
                     </el-descriptions-item>
-                    <el-descriptions-item label="抽检比例(%)" :span="2">
+                    <el-descriptions-item :label="t('wms.material.sampleRatio')" :span="2">
                       <el-input-number controls-position="right" v-model="scope.row.sampleRatio" :min="0" :max="100" :precision="2" :controls="false" style="width:100%" />
                     </el-descriptions-item>
-                    <el-descriptions-item label="严重缺陷上限">
+                    <el-descriptions-item :label="t('wms.material.criticalLimit')">
                       <el-input-number controls-position="right" v-model="scope.row.criticalQty" :min="0" :controls="false" style="width:100%" />
                     </el-descriptions-item>
-                    <el-descriptions-item label="主要缺陷上限">
+                    <el-descriptions-item :label="t('wms.material.majorLimit')">
                       <el-input-number controls-position="right" v-model="scope.row.majorQty" :min="0" :controls="false" style="width:100%" />
                     </el-descriptions-item>
-                    <el-descriptions-item label="次要缺陷上限">
+                    <el-descriptions-item :label="t('wms.material.minorLimit')">
                       <el-input-number controls-position="right" v-model="scope.row.minorQty" :min="0" :controls="false" style="width:100%" />
                     </el-descriptions-item>
                   </el-descriptions>
@@ -363,18 +363,18 @@
             
             <el-table-column type="selection" width="50" align="center" />
 
-            <el-table-column label="供应商" align="center" min-width="220" :show-overflow-tooltip="true">
+            <el-table-column :label="t('wms.material.supplier')" align="center" min-width="220" :show-overflow-tooltip="true">
               <template #default="scope">
                 <PartnerSelect
                   v-model="scope.row.supplierId"
                   :label="scope.row.supplierName"
                   partner-type="supplier"
-                  placeholder="点击选择供应商"
+                  :placeholder="t('wms.material.ph.clickSupplier')"
                   @change="onSupplierChange(scope.row, $event)"
                 />
               </template>
             </el-table-column>
-            <el-table-column label="最小起订量" align="center">
+            <el-table-column :label="t('wms.material.moq')" align="center">
               <template #default="scope">
                 <el-input-number controls-position="right"
                   v-model="scope.row.moq"
@@ -385,7 +385,7 @@
                 />
               </template>
             </el-table-column>
-            <el-table-column label="交货周期(天)" align="center">
+            <el-table-column :label="t('wms.material.leadTime')" align="center">
               <template #default="scope">
                 <el-input-number controls-position="right"
                   v-model="scope.row.leadTime"
@@ -395,7 +395,7 @@
                 />
               </template>
             </el-table-column>
-            <el-table-column label="默认" align="center" width="70">
+            <el-table-column :label="t('wms.material.isDefault')" align="center" width="70">
               <template #default="scope">
                 <el-switch
                   v-model="scope.row.isDefault"
@@ -404,7 +404,7 @@
                 />
               </template>
             </el-table-column>
-            <el-table-column label="状态" align="center" width="70">
+            <el-table-column :label="t('common.status')" align="center" width="70">
               <template #default="scope">
                 <el-switch
                   v-model="scope.row.status"
@@ -413,18 +413,18 @@
                 />
               </template>
             </el-table-column>
-            <el-table-column label="质检模式" align="center" width="100">
+            <el-table-column :label="t('wms.material.inspectionMode')" align="center" width="100">
               <template #default="scope">
-                <el-select v-model="scope.row.inspectionMode" placeholder="免检" style="width:100%" @change="onInspectionModeChange(scope.row)">
-                  <el-option label="全检" value="all" />
-                  <el-option label="抽检" value="sampling" />
-                  <el-option label="免检" value="exempt" />
+                <el-select v-model="scope.row.inspectionMode" :placeholder="t('wms.material.exempt')" style="width:100%" @change="onInspectionModeChange(scope.row)">
+                  <el-option :label="t('wms.material.inspectAll')" value="all" />
+                  <el-option :label="t('wms.material.sampling')" value="sampling" />
+                  <el-option :label="t('wms.material.exempt')" value="exempt" />
                 </el-select>
               </template>
             </el-table-column>
-            <el-table-column label="备注" align="center" :show-overflow-tooltip="true">
+            <el-table-column :label="t('common.remark')" align="center" :show-overflow-tooltip="true">
               <template #default="scope">
-                <el-input v-model="scope.row.remark" placeholder="备注" maxlength="500" />
+                <el-input v-model="scope.row.remark" :placeholder="t('common.remark')" maxlength="500" />
               </template>
             </el-table-column>
           </el-table>
@@ -433,8 +433,8 @@
       </el-tabs>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+          <el-button @click="cancel">{{ t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -444,6 +444,7 @@
 <script setup name="WmsMaterial">
 import { ref, reactive, toRefs, computed, onMounted, nextTick, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import DictTag from "@/components/DictTag/index.vue";
 import DictSelect from "@/components/DictSelect";
 import { getDict, handleTree } from "@/utils";
@@ -462,6 +463,7 @@ import LocationCascader from "@/views/wms/location/cascader.vue";
 import PartnerSelect from "@/views/wms/partner/input.vue";
 
 // 字典：物料类型、计量单位、物料分类
+const { t } = useI18n();
 const { wms_material_type, wms_sys_unit_type, wms_material_category } = getDict(
   "wms_material_type",
   "wms_sys_unit_type",
@@ -553,10 +555,10 @@ const data = reactive({
     },
   },
   rules: {
-    materialCode: [{ required: true, message: "物料编码不能为空", trigger: "blur" }],
-    materialName: [{ required: true, message: "物料名称不能为空", trigger: "blur" }],
-    materialType: [{ required: true, message: "请选择物料类型", trigger: "change" }],
-    categoryId: [{ required: true, message: "请选择物料分类", trigger: "change" }],
+    materialCode: [{ required: true, message: () => t('wms.material.rules.codeRequired'), trigger: "blur" }],
+    materialName: [{ required: true, message: () => t('wms.material.rules.nameRequired'), trigger: "blur" }],
+    materialType: [{ required: true, message: () => t('wms.material.rules.typeRequired'), trigger: "change" }],
+    categoryId: [{ required: true, message: () => t('wms.material.rules.categoryRequired'), trigger: "change" }],
   },
 });
 
@@ -577,16 +579,16 @@ const cascaderValue = computed({
 
 const queryConfig = computed(() => [
   {
-    label: "物料编码/名称",
+    label: t('wms.material.ph.codeOrName'),
     prop: "keywords",
     type: "input",
-    placeholder: "请输入物料编码或名称",
+    placeholder: t('wms.material.ph.inputCodeOrName'),
   },
   {
-    label: "物料类型",
+    label: t('wms.material.materialType'),
     prop: "materialType",
     type: "select",
-    placeholder: "请选择物料类型",
+    placeholder: t('wms.material.ph.selectType'),
     options: wms_material_type?.value || [],
   },
 ]);
@@ -665,7 +667,7 @@ function handleAdd() {
   resetSupplier();
   loadPackSpecOptions();
   open.value = true;
-  title.value = "添加物料";
+  title.value = t('wms.material.addTitle');
 }
 
 /** 修改 */
@@ -699,7 +701,7 @@ function handleUpdate(row) {
     }
     loadPackSpecOptions();
     open.value = true;
-    title.value = "修改物料";
+    title.value = t('wms.material.editTitle');
     // 有效且非免检的供应商自动展开
     nextTick(() => {
       if (!supplierTableRef.value || !data.suppliers?.length) return;
@@ -722,7 +724,7 @@ async function submitForm() {
   } else {
     await updateMaterial(form.value);
   }
-  ElMessage.success("保存成功");
+  ElMessage.success(t('wms.common.savedSuccess'));
   open.value = false;
   getList();
 }
@@ -798,7 +800,7 @@ function handleAddSupplier() {
 /** 删除选中的供应商 */
 function handleDeleteSupplier() {
   if (supplierIds.value.length === 0) {
-    ElMessage.warning("请选择要删除的供应商");
+    ElMessage.warning(t('wms.material.selectSupplierToDelete'));
     return;
   }
   const suppliers = form.value.suppliers;
@@ -815,7 +817,7 @@ function handleDeleteSupplier() {
       (r) => !delIds.includes(r.materialSupplierId)
     );
     supplierIds.value = [];
-    ElMessage.success("删除成功");
+    ElMessage.success(t('wms.common.deleteSuccess'));
   }
   // 新增未保存的直接从列表移除
   if (toRemove.length > 0) {
@@ -833,15 +835,15 @@ function handleSupplierSelectionChange(selection) {
 /** 删除 */
 function handleDelete(row) {
   const materialIds = row.materialId || ids.value.join(",");
-  ElMessageBox.confirm(`是否确认删除物料编号为"${materialIds}"的数据项？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.common.deleteConfirm', { id: materialIds }), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => delMaterial(materialIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
 }
 
@@ -849,15 +851,15 @@ function handleDelete(row) {
 let statusChanging = false;
 function handleStatusChange(row) {
   if (statusChanging) return;
-  const text = row.status === "0" ? "启用" : "停用";
-  ElMessageBox.confirm(`确认要"${text}"物料"${row.materialName}"吗？`, "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  const text = row.status === "0" ? t('common.enable') : t('common.disable');
+  ElMessageBox.confirm(t('wms.material.statusConfirm', { action: text, name: row.materialName }), t('wms.common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => {
       changeMaterialStatus({ materialId: row.materialId, status: row.status }).then(() => {
-        ElMessage.success("操作成功");
+        ElMessage.success(t('wms.common.operateSuccess'));
       });
     })
     .catch(() => {

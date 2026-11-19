@@ -12,13 +12,13 @@
     <!-- 操作按钮 -->
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:locationLock:add']">新增</el-button>
+        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:locationLock:add']">{{ t('common.add') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:locationLock:edit']">修改</el-button>
+        <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:locationLock:edit']">{{ t('common.edit') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['wms:locationLock:remove']">删除</el-button>
+        <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['wms:locationLock:remove']">{{ t('common.delete') }}</el-button>
       </el-col>
         <right-toolbar
           v-model:showSearch="showSearch"
@@ -29,48 +29,45 @@
     <!-- 列表 -->
     <el-table v-loading="loading" :data="locationLockList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      
-      
-      
-      <el-table-column label="锁定类型" align="center" prop="lockType" :show-overflow-tooltip="true">
+      <el-table-column :label="t('wms.locationLock.lockType')" align="center" prop="lockType" :show-overflow-tooltip="true">
         <template #default="scope">
           <span>{{ getLockTypeLabel(scope.row.lockType) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="锁定原因" align="center" prop="lockReason" :show-overflow-tooltip="true" />
-      <el-table-column label="创建时间" align="center" prop="createTime" min-width="170" />
-      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+      <el-table-column :label="t('wms.locationLock.lockReason')" align="center" prop="lockReason" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('common.createTime')" align="center" prop="createTime" min-width="170" />
+      <el-table-column :label="t('common.actions')" align="center" width="150" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:locationLock:edit']">修改</el-button>
-          <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:locationLock:remove']">删除</el-button>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:locationLock:edit']">{{ t('common.edit') }}</el-button>
+          <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:locationLock:remove']">{{ t('common.delete') }}</el-button>
         </template>
       </el-table-column>
-        <el-table-column label="仓库" align="center" :show-overflow-tooltip="true">
-      <template #default="scope">
-        {{ scope.row.warehouse?.warehouseName || "-" }}
-      </template>
-    </el-table-column>
-    <el-table-column label="库区编码" align="center" :show-overflow-tooltip="true">
-      <template #default="scope">
-        {{ scope.row.zone?.zoneCode || "-" }}
-      </template>
-    </el-table-column>
-    <el-table-column label="库区" align="center" :show-overflow-tooltip="true">
-      <template #default="scope">
-        {{ scope.row.zone?.zoneName || "-" }}
-      </template>
-    </el-table-column>
-    <el-table-column label="库位编码" align="center" :show-overflow-tooltip="true">
-      <template #default="scope">
-        {{ scope.row.location?.locationCode || "-" }}
-      </template>
-    </el-table-column>
-    <el-table-column label="库位" align="center" :show-overflow-tooltip="true">
-      <template #default="scope">
-        {{ scope.row.location?.locationName || "-" }}
-      </template>
-    </el-table-column>
-</el-table>
+      <el-table-column :label="t('wms.common.warehouse')" align="center" :show-overflow-tooltip="true">
+        <template #default="scope">
+          {{ scope.row.warehouse?.warehouseName || "-" }}
+        </template>
+      </el-table-column>
+      <el-table-column :label="t('wms.locationLock.zoneCode')" align="center" :show-overflow-tooltip="true">
+        <template #default="scope">
+          {{ scope.row.zone?.zoneCode || "-" }}
+        </template>
+      </el-table-column>
+      <el-table-column :label="t('wms.common.zone')" align="center" :show-overflow-tooltip="true">
+        <template #default="scope">
+          {{ scope.row.zone?.zoneName || "-" }}
+        </template>
+      </el-table-column>
+      <el-table-column :label="t('wms.locationLock.locationCode')" align="center" :show-overflow-tooltip="true">
+        <template #default="scope">
+          {{ scope.row.location?.locationCode || "-" }}
+        </template>
+      </el-table-column>
+      <el-table-column :label="t('wms.common.location')" align="center" :show-overflow-tooltip="true">
+        <template #default="scope">
+          {{ scope.row.location?.locationName || "-" }}
+        </template>
+      </el-table-column>
+    </el-table>
 
     <pagination
       v-show="total > 0"
@@ -83,46 +80,46 @@
     <!-- 添加或修改对话框 -->
     <el-dialog :title="title" v-model="open" width="700px" append-to-body>
       <el-form ref="locationLockRef" :model="form" :rules="rules" label-width="auto">
-        <el-form-item label="仓库" prop="warehouseId">
-          <el-select v-model="form.warehouseId" placeholder="请选择仓库" @change="onWarehouseChange" style="width: 100%">
+        <el-form-item :label="t('wms.common.warehouse')" prop="warehouseId">
+          <el-select v-model="form.warehouseId" :placeholder="t('wms.locationLock.ph.selectWarehouse')" @change="onWarehouseChange" style="width: 100%">
             <el-option v-for="w in warehouseOptions" :key="w.warehouseId" :label="w.warehouseName" :value="w.warehouseId" />
           </el-select>
         </el-form-item>
-        <el-form-item label="库区" prop="zoneId">
-          <el-select v-model="form.zoneId" placeholder="请选择库区" @change="onZoneChange" style="width: 100%">
+        <el-form-item :label="t('wms.common.zone')" prop="zoneId">
+          <el-select v-model="form.zoneId" :placeholder="t('wms.locationLock.ph.selectZone')" @change="onZoneChange" style="width: 100%">
             <el-option v-for="z in zoneOptions" :key="z.zoneId" :label="z.zoneName" :value="z.zoneId" />
           </el-select>
         </el-form-item>
-        <el-form-item label="库位" prop="locationId">
-          <el-select v-model="form.locationId" placeholder="请选择库位" style="width: 100%">
+        <el-form-item :label="t('wms.common.location')" prop="locationId">
+          <el-select v-model="form.locationId" :placeholder="t('wms.locationLock.ph.selectLocation')" style="width: 100%">
             <el-option v-for="l in locationOptions" :key="l.locationId" :label="l.locationCode" :value="l.locationId" />
           </el-select>
         </el-form-item>
-        <el-form-item label="锁定类型" prop="lockType">
-          <el-select v-model="form.lockType" placeholder="请选择锁定类型" style="width: 100%">
+        <el-form-item :label="t('wms.locationLock.lockType')" prop="lockType">
+          <el-select v-model="form.lockType" :placeholder="t('wms.locationLock.ph.selectType')" style="width: 100%">
             <el-option v-for="d in lockTypeDict" :key="d.dictValue" :label="d.dictLabel" :value="d.dictValue" />
           </el-select>
         </el-form-item>
-        <el-form-item label="锁定原因" prop="lockReason">
-          <el-input v-model="form.lockReason" type="textarea" placeholder="请输入锁定原因" maxlength="255" />
+        <el-form-item :label="t('wms.locationLock.lockReason')" prop="lockReason">
+          <el-input v-model="form.lockReason" type="textarea" :placeholder="t('wms.locationLock.ph.inputReason')" maxlength="255" />
         </el-form-item>
-        <el-form-item label="锁定人" prop="lockUserId">
-          <UserInput v-model="form.lockUserId" style="width:100%" placeholder="请选择锁定人" />
+        <el-form-item :label="t('wms.locationLock.lockUser')" prop="lockUserId">
+          <UserInput v-model="form.lockUserId" style="width:100%" :placeholder="t('wms.locationLock.ph.selectLockUser')" />
         </el-form-item>
-        <el-form-item label="锁定时间" prop="lockTime">
-          <el-date-picker v-model="form.lockTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="请输入锁定时间" style="width: 100%" />
+        <el-form-item :label="t('wms.locationLock.lockTime')" prop="lockTime">
+          <el-date-picker v-model="form.lockTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" :placeholder="t('wms.locationLock.ph.lockTime')" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="解锁人" prop="unlockUserId">
-          <UserInput v-model="form.unlockUserId" style="width:100%" placeholder="请选择解锁人" />
+        <el-form-item :label="t('wms.locationLock.unlockUser')" prop="unlockUserId">
+          <UserInput v-model="form.unlockUserId" style="width:100%" :placeholder="t('wms.locationLock.ph.selectUnlockUser')" />
         </el-form-item>
-        <el-form-item label="解锁时间" prop="unlockTime">
-          <el-date-picker v-model="form.unlockTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="请输入解锁时间" style="width: 100%" />
+        <el-form-item :label="t('wms.locationLock.unlockTime')" prop="unlockTime">
+          <el-date-picker v-model="form.unlockTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" :placeholder="t('wms.locationLock.ph.unlockTime')" style="width: 100%" />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+          <el-button @click="cancel">{{ t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -133,6 +130,7 @@
 <script setup name="WmsLocationLock">
 import { ref, reactive, toRefs, computed, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import UserInput from "@/views/system/user/input.vue";
 import { getDicts } from "@/api/system/dict";
 import { listWarehouse } from "@/api/wms/warehouse";
@@ -148,6 +146,7 @@ import {
 import QueryForm from "@/components/QueryForm/index.vue";
 import RightToolbar from "@/components/RightToolbar/index.vue";
 
+const { t } = useI18n();
 const locationLockRef = ref(null);
 const locationLockList = ref([]);
 const open = ref(false);
@@ -178,19 +177,19 @@ const data = reactive({
 const { form, queryParams } = toRefs(data);
 
 const rules = computed(() => ({
-  warehouseId: [{ required: true, message: "请选择仓库", trigger: "change" }],
-  zoneId: [{ required: true, message: "请选择库区", trigger: "change" }],
-  locationId: [{ required: true, message: "请选择库位", trigger: "change" }],
-  lockType: [{ required: true, message: "请选择锁定类型", trigger: "change" }],
-  lockReason: [{ required: true, message: "请输入锁定原因", trigger: "blur" }],
+  warehouseId: [{ required: true, message: t('wms.locationLock.rules.warehouseRequired'), trigger: "change" }],
+  zoneId: [{ required: true, message: t('wms.locationLock.rules.zoneRequired'), trigger: "change" }],
+  locationId: [{ required: true, message: t('wms.locationLock.rules.locationRequired'), trigger: "change" }],
+  lockType: [{ required: true, message: t('wms.locationLock.rules.typeRequired'), trigger: "change" }],
+  lockReason: [{ required: true, message: t('wms.locationLock.rules.reasonRequired'), trigger: "blur" }],
 }));
 
 const queryConfig = computed(() => [
   {
-    label: "关键字",
+    label: t('wms.common.keywords'),
     prop: "keywords",
     type: "input",
-    placeholder: "请输入关键字",
+    placeholder: t('wms.locationLock.ph.keywords'),
   },
 ]);
 
@@ -307,7 +306,7 @@ function reset() {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加库位锁定";
+  title.value = t("wms.locationLock.addTitle");
 }
 
 /** 修改 */
@@ -325,7 +324,7 @@ function handleUpdate(row) {
       }
     }
     open.value = true;
-    title.value = "修改库位锁定";
+    title.value = t("wms.locationLock.editTitle");
   });
 }
 
@@ -335,7 +334,7 @@ function submitForm() {
     if (!valid) return;
     const api = form.value.lockId ? updateLocationLock : addLocationLock;
     api(form.value).then(() => {
-      ElMessage.success("保存成功");
+      ElMessage.success(t("wms.common.savedSuccess"));
       open.value = false;
       getList();
     });
@@ -351,15 +350,15 @@ function cancel() {
 /** 删除 */
 function handleDelete(row) {
   const delIds = row.lockId || ids.value.join(",");
-  ElMessageBox.confirm("是否确认删除选中的库位锁定数据项？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t("wms.locationLock.deleteConfirm"), t("wms.common.warning"), {
+    confirmButtonText: t("common.confirm"),
+    cancelButtonText: t("common.cancel"),
     type: "warning",
   })
     .then(() => delLocationLock(delIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t("wms.common.deleteSuccess"));
     });
 }
 

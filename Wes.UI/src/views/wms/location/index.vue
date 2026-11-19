@@ -12,13 +12,13 @@
     <!-- 操作按钮 -->
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:location:add']">新增</el-button>
+        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:location:add']">{{ t('common.add') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:location:edit']">修改</el-button>
+        <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:location:edit']">{{ t('common.edit') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['wms:location:remove']">删除</el-button>
+        <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['wms:location:remove']">{{ t('common.delete') }}</el-button>
       </el-col>
         <right-toolbar
           v-model:showSearch="showSearch"
@@ -29,28 +29,28 @@
     <!-- 列表 -->
     <el-table v-loading="loading" :data="locationList" @selection-change="handleSelectionChange" table-layout="fixed">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="仓库" align="center" :show-overflow-tooltip="true">
+      <el-table-column :label="t('wms.common.warehouse')" align="center" :show-overflow-tooltip="true">
         <template #default="scope">{{ scope.row.warehouse?.warehouseName || "-" }}</template>
       </el-table-column>
-      <el-table-column label="库区" align="center" :show-overflow-tooltip="true">
+      <el-table-column :label="t('wms.common.zone')" align="center" :show-overflow-tooltip="true">
         <template #default="scope">{{ scope.row.zone?.zoneName || "-" }}</template>
       </el-table-column>
-      <el-table-column label="库位编码" align="center" prop="locationCode" :show-overflow-tooltip="true" />
-      <el-table-column label="库位类型" align="center" prop="locationType">
+      <el-table-column :label="t('wms.location.locationCode')" align="center" prop="locationCode" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('wms.location.locationType')" align="center" prop="locationType">
         <template #default="scope">
           <dict-tag :options="location_type" :value="scope.row.locationType" />
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="locationStatus" width="80">
+      <el-table-column :label="t('common.status')" align="center" prop="locationStatus" width="80">
         <template #default="scope">
           <el-switch v-model="scope.row.locationStatus" active-value="0" inactive-value="1" @change="handleStatusChange(scope.row)" />
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createTime" min-width="170" />
-      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+      <el-table-column :label="t('common.createTime')" align="center" prop="createTime" min-width="170" />
+      <el-table-column :label="t('common.actions')" align="center" width="150" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:location:edit']">修改</el-button>
-          <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:location:remove']">删除</el-button>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:location:edit']">{{ t('common.edit') }}</el-button>
+          <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:location:remove']">{{ t('common.delete') }}</el-button>
         </template>
       </el-table-column>
 </el-table>
@@ -66,65 +66,65 @@
     <!-- 添加或修改对话框 -->
     <el-dialog :title="title" v-model="open" width="700px" append-to-body>
       <el-form ref="locationRef" :model="form" :rules="rules" label-width="auto">
-        <el-form-item label="仓库" prop="warehouseId">
-          <el-select v-model="form.warehouseId" placeholder="请选择仓库" @change="onWarehouseChange" style="width: 100%">
+        <el-form-item :label="t('wms.common.warehouse')" prop="warehouseId">
+          <el-select v-model="form.warehouseId" :placeholder="t('wms.location.ph.selectWarehouse')" @change="onWarehouseChange" style="width: 100%">
             <el-option v-for="w in warehouseOptions" :key="w.warehouseId" :label="w.warehouseName" :value="w.warehouseId" />
           </el-select>
         </el-form-item>
-        <el-form-item label="库区" prop="zoneId">
-          <el-select v-model="form.zoneId" placeholder="请选择库区" style="width: 100%">
+        <el-form-item :label="t('wms.common.zone')" prop="zoneId">
+          <el-select v-model="form.zoneId" :placeholder="t('wms.location.ph.selectZone')" style="width: 100%">
             <el-option v-for="z in zoneOptions" :key="z.zoneId" :label="z.zoneName" :value="z.zoneId" />
           </el-select>
         </el-form-item>
-        <el-form-item label="库位编码" prop="locationCode">
-          <el-input v-model="form.locationCode" placeholder="请输入库位编码" maxlength="50" />
+        <el-form-item :label="t('wms.location.locationCode')" prop="locationCode">
+          <el-input v-model="form.locationCode" :placeholder="t('wms.location.ph.inputCode')" maxlength="50" />
         </el-form-item>
-        <el-form-item label="库位名称" prop="locationName">
-          <el-input v-model="form.locationName" placeholder="请输入库位名称" maxlength="100" />
+        <el-form-item :label="t('wms.location.locationName')" prop="locationName">
+          <el-input v-model="form.locationName" :placeholder="t('wms.location.ph.inputName')" maxlength="100" />
         </el-form-item>
-        <el-form-item label="库位类型" prop="locationType">
-          <el-select v-model="form.locationType" placeholder="请选择库位类型" clearable style="width: 100%">
+        <el-form-item :label="t('wms.location.locationType')" prop="locationType">
+          <el-select v-model="form.locationType" :placeholder="t('wms.location.ph.selectType')" clearable style="width: 100%">
             <el-option v-for="dict in location_type" :key="dict.value" :label="dict.label" :value="dict.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="库位属性" prop="locationAttr">
-          <el-input v-model="form.locationAttr" placeholder="请输入库位属性" maxlength="50" />
+        <el-form-item :label="t('wms.location.locationAttr')" prop="locationAttr">
+          <el-input v-model="form.locationAttr" :placeholder="t('wms.location.ph.inputAttr')" maxlength="50" />
         </el-form-item>
-        <el-form-item label="货架编号" prop="shelfCode">
-          <el-input v-model="form.shelfCode" placeholder="请输入货架编号" maxlength="20" />
+        <el-form-item :label="t('wms.location.shelfCode')" prop="shelfCode">
+          <el-input v-model="form.shelfCode" :placeholder="t('wms.location.ph.inputShelfCode')" maxlength="20" />
         </el-form-item>
-        <el-form-item label="长度" prop="length">
+        <el-form-item :label="t('wms.location.length')" prop="length">
           <el-input-number controls-position="right" v-model="form.length" :min="0" :precision="2" :controls="false" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="宽度" prop="width">
+        <el-form-item :label="t('wms.location.width')" prop="width">
           <el-input-number controls-position="right" v-model="form.width" :min="0" :precision="2" :controls="false" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="高度" prop="height">
+        <el-form-item :label="t('wms.location.height')" prop="height">
           <el-input-number controls-position="right" v-model="form.height" :min="0" :precision="2" :controls="false" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="最大承重" prop="maxWeight">
+        <el-form-item :label="t('wms.location.maxWeight')" prop="maxWeight">
           <el-input-number controls-position="right" v-model="form.maxWeight" :min="0" :precision="2" :controls="false" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="最大容量" prop="maxVolume">
+        <el-form-item :label="t('wms.location.maxVolume')" prop="maxVolume">
           <el-input-number controls-position="right" v-model="form.maxVolume" :min="0" :precision="2" :controls="false" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="最大存储数量" prop="maxQuantity">
+        <el-form-item :label="t('wms.location.maxQuantity')" prop="maxQuantity">
           <el-input-number controls-position="right" v-model="form.maxQuantity" :min="0" :controls="false" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="库位状态" prop="locationStatus">
+        <el-form-item :label="t('wms.location.locationStatus')" prop="locationStatus">
           <el-radio-group v-model="form.locationStatus">
-            <el-radio value="0">启用</el-radio>
-            <el-radio value="1">停用</el-radio>
+            <el-radio value="0">{{ t('common.enable') }}</el-radio>
+            <el-radio value="1">{{ t('common.disable') }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" maxlength="500" />
+        <el-form-item :label="t('common.remark')" prop="remark">
+          <el-input v-model="form.remark" type="textarea" :placeholder="t('common.input')" maxlength="500" />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+          <el-button @click="cancel">{{ t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -135,6 +135,7 @@
 <script setup name="WmsLocation">
 import { ref, reactive, toRefs, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listLocation,
   getLocation,
@@ -150,6 +151,7 @@ import QueryForm from "@/components/QueryForm/index.vue";
 import RightToolbar from "@/components/RightToolbar/index.vue";
 import { getDict } from "@/utils";
 
+const { t } = useI18n();
 const { location_type } = getDict("wms_location_type");
 
 const locationRef = ref(null);
@@ -174,7 +176,7 @@ const data = reactive({
     keywords: undefined,
   },
   rules: {
-    locationCode: [{ required: true, message: "库位编码不能为空", trigger: "blur" }],
+    locationCode: [{ required: true, message: () => t('wms.location.rules.codeRequired'), trigger: "blur" }],
   },
 });
 
@@ -182,10 +184,10 @@ const { form, queryParams, rules } = toRefs(data);
 
 const queryConfig = computed(() => [
   {
-    label: "关键字",
+    label: t('wms.common.keywords'),
     prop: "keywords",
     type: "input",
-    placeholder: "请输入关键字",
+    placeholder: t('wms.common.ph.inputKeywords'),
   },
 ]);
 
@@ -272,7 +274,7 @@ function reset() {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加库位";
+  title.value = t('wms.location.addTitle');
 }
 
 /** 修改 */
@@ -286,7 +288,7 @@ function handleUpdate(row) {
       fetchZones(form.value.warehouseId);
     }
     open.value = true;
-    title.value = "修改库位";
+    title.value = t('wms.location.editTitle');
   });
 }
 
@@ -296,7 +298,7 @@ function submitForm() {
     if (!valid) return;
     const api = form.value.locationId ? updateLocation : addLocation;
     api(form.value).then(() => {
-      ElMessage.success("保存成功");
+      ElMessage.success(t('wms.common.savedSuccess'));
       open.value = false;
       getList();
     });
@@ -312,22 +314,22 @@ function cancel() {
 /** 删除 */
 function handleDelete(row) {
   const delIds = row.locationId || ids.value.join(",");
-  ElMessageBox.confirm(`是否确认删除编号为"${delIds}"的数据项？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.common.deleteConfirm', { id: delIds }), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => delLocation(delIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
 }
 
 /** 状态切换 */
 function handleStatusChange(row) {
   changeLocationStatus({ locationId: row.locationId, locationStatus: row.locationStatus }).then(() => {
-    ElMessage.success("状态更新成功");
+    ElMessage.success(t('wms.common.statusUpdateSuccess'));
   });
 }
 

@@ -12,13 +12,13 @@
     <!-- 操作按钮 -->
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:returnOut:add']">新增</el-button>
+        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:returnOut:add']">{{ t('common.add') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:returnOut:edit']">修改</el-button>
+        <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:returnOut:edit']">{{ t('common.edit') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['wms:returnOut:remove']">删除</el-button>
+        <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['wms:returnOut:remove']">{{ t('common.delete') }}</el-button>
       </el-col>
         <right-toolbar
           v-model:showSearch="showSearch"
@@ -29,49 +29,49 @@
     <!-- 列表 -->
     <el-table v-loading="loading" :data="returnOutList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="退货单号" align="center" prop="returnNo" :show-overflow-tooltip="true" width="180" />
-      <el-table-column label="退货类型" align="center" prop="returnType" width="100">
+      <el-table-column :label="t('wms.returnOrder.returnOrderNo')" align="center" prop="returnNo" :show-overflow-tooltip="true" width="180" />
+      <el-table-column :label="t('wms.returnOrder.returnType')" align="center" prop="returnType" width="100">
         <template #default="scope">
           <el-tag type="warning" size="small">{{ scope.row.returnType || "-" }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="仓库" align="center" :show-overflow-tooltip="true">
+      <el-table-column :label="t('wms.common.warehouse')" align="center" :show-overflow-tooltip="true">
         <template #default="scope">
           {{ scope.row.warehouse?.warehouseName || "-" }}
         </template>
       </el-table-column>
-      <el-table-column label="库区编码" align="center" :show-overflow-tooltip="true">
+      <el-table-column :label="t('wms.zone.zoneCode')" align="center" :show-overflow-tooltip="true">
         <template #default="scope">
           {{ scope.row.zone?.zoneCode || "-" }}
         </template>
       </el-table-column>
-      <el-table-column label="库区" align="center" :show-overflow-tooltip="true">
+      <el-table-column :label="t('wms.common.zone')" align="center" :show-overflow-tooltip="true">
         <template #default="scope">
           {{ scope.row.zone?.zoneName || "-" }}
         </template>
       </el-table-column>
-      <el-table-column label="客户" align="center" :show-overflow-tooltip="true">
+      <el-table-column :label="t('wms.delivery.customer')" align="center" :show-overflow-tooltip="true">
         <template #default="scope">
           {{ scope.row.customer?.partnerName || "-" }}
         </template>
       </el-table-column>
-      <el-table-column label="出库单号" align="center" :show-overflow-tooltip="true">
+      <el-table-column :label="t('wms.delivery.deliveryNo')" align="center" :show-overflow-tooltip="true">
         <template #default="scope">
           {{ scope.row.delivery?.deliveryNo || "-" }}
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="returnStatus" width="80">
+      <el-table-column :label="t('common.status')" align="center" prop="returnStatus" width="80">
         <template #default="scope">
           <el-tag :type="statusTagType(scope.row.returnStatus)" size="small">
             {{ statusLabel(scope.row.returnStatus) }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createTime" min-width="170" />
-      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+      <el-table-column :label="t('common.createTime')" align="center" prop="createTime" min-width="170" />
+      <el-table-column :label="t('common.actions')" align="center" width="150" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:returnOut:edit']">修改</el-button>
-          <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:returnOut:remove']">删除</el-button>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:returnOut:edit']">{{ t('common.edit') }}</el-button>
+          <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:returnOut:remove']">{{ t('common.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -87,48 +87,48 @@
     <!-- 添加或修改对话框 -->
     <el-dialog :title="title" v-model="open" width="700px" append-to-body>
       <el-form ref="returnOutRef" :model="form" :rules="rules" label-width="110px">
-        <el-form-item label="退货单号" prop="returnNo">
-          <el-input v-model="form.returnNo" placeholder="系统自动生成" maxlength="50" :readonly="true" />
+        <el-form-item :label="t('wms.returnOrder.returnOrderNo')" prop="returnNo">
+          <el-input v-model="form.returnNo" :placeholder="t('wms.receiving.ph.autoGenerated')" maxlength="50" :readonly="true" />
         </el-form-item>
-        <el-form-item label="退货类型" prop="returnType">
-          <el-select v-model="form.returnType" placeholder="请选择退货类型" style="width:100%">
-            <el-option label="退货出库" value="return_out" />
+        <el-form-item :label="t('wms.returnOrder.returnType')" prop="returnType">
+          <el-select v-model="form.returnType" :placeholder="t('wms.returnOrder.ph.selectType')" style="width:100%">
+            <el-option :label="t('wms.returnOut.typeReturnOut')" value="return_out" />
           </el-select>
         </el-form-item>
-        <el-form-item label="原出库id" prop="deliveryId">
-          <el-input v-model="form.deliveryId" placeholder="请输入原出库id" />
+        <el-form-item :label="t('wms.returnOut.deliveryId')" prop="deliveryId">
+          <el-input v-model="form.deliveryId" :placeholder="t('wms.returnOut.ph.inputDeliveryId')" />
         </el-form-item>
-        <el-form-item label="客户" prop="customerId">
-          <PartnerSelect v-model="form.customerId" partner-type="customer" placeholder="请选择客户" @change="onCustomerChange" />
+        <el-form-item :label="t('wms.delivery.customer')" prop="customerId">
+          <PartnerSelect v-model="form.customerId" partner-type="customer" :placeholder="t('wms.returnOut.ph.selectCustomer')" @change="onCustomerChange" />
         </el-form-item>
-        <el-form-item label="仓库" prop="warehouseId">
-          <el-input v-model="form.warehouseId" placeholder="请输入仓库id" />
+        <el-form-item :label="t('wms.common.warehouse')" prop="warehouseId">
+          <el-input v-model="form.warehouseId" :placeholder="t('wms.returnOut.ph.inputWarehouseId')" />
         </el-form-item>
-        <el-form-item label="库区" prop="zoneId">
-          <el-input v-model="form.zoneId" placeholder="请输入库区id" />
+        <el-form-item :label="t('wms.common.zone')" prop="zoneId">
+          <el-input v-model="form.zoneId" :placeholder="t('wms.returnOut.ph.inputZoneId')" />
         </el-form-item>
-        <el-form-item label="退货日期" prop="returnDate">
-          <el-date-picker v-model="form.returnDate" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="请输入退货日期" style="width: 100%" />
+        <el-form-item :label="t('wms.returnOut.returnDate')" prop="returnDate">
+          <el-date-picker v-model="form.returnDate" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" :placeholder="t('wms.returnOut.ph.inputReturnDate')" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="退货总数量" prop="totalQuantity">
+        <el-form-item :label="t('wms.returnOut.totalQuantity')" prop="totalQuantity">
           <el-input-number controls-position="right" v-model="form.totalQuantity" :min="0" :controls="false" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="退货原因" prop="returnReason">
-          <el-input v-model="form.returnReason" type="textarea" placeholder="请输入退货原因" maxlength="255" />
+        <el-form-item :label="t('wms.returnOrder.returnReason')" prop="returnReason">
+          <el-input v-model="form.returnReason" type="textarea" :placeholder="t('wms.returnOut.ph.inputReturnReason')" maxlength="255" />
         </el-form-item>
-        <el-form-item label="退货状态" prop="returnStatus">
-          <el-select v-model="form.returnStatus" placeholder="请选择状态" style="width:100%">
-            <el-option label="待审核" value="pending" />
-            <el-option label="已审核" value="approved" />
-            <el-option label="已收货" value="received" />
-            <el-option label="已完成" value="completed" />
+        <el-form-item :label="t('wms.returnOut.returnStatus')" prop="returnStatus">
+          <el-select v-model="form.returnStatus" :placeholder="t('wms.warehouse.ph.selectStatus')" style="width:100%">
+            <el-option :label="t('wms.returnOut.statusPending')" value="pending" />
+            <el-option :label="t('wms.returnOut.statusApproved')" value="approved" />
+            <el-option :label="t('wms.returnOut.statusReceived')" value="received" />
+            <el-option :label="t('wms.returnOut.statusCompleted')" value="completed" />
           </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+          <el-button @click="cancel">{{ t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -139,6 +139,7 @@
 <script setup name="WmsReturnOut">
 import { ref, reactive, toRefs, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listReturnOut,
   getReturnOut,
@@ -150,6 +151,7 @@ import QueryForm from "@/components/QueryForm/index.vue";
 import RightToolbar from "@/components/RightToolbar/index.vue";
 import PartnerSelect from "@/views/wms/partner/input.vue";
 
+const { t } = useI18n();
 const returnOutRef = ref(null);
 const returnOutList = ref([]);
 const open = ref(false);
@@ -177,21 +179,23 @@ const { form, queryParams, rules } = toRefs(data);
 
 const queryConfig = computed(() => [
   {
-    label: "关键字",
+    label: t('wms.common.keywords'),
     prop: "keywords",
     type: "input",
-    placeholder: "退货单号",
+    placeholder: t('wms.returnOut.ph.inputReturnNo'),
   },
 ]);
 
 // 状态映射
-const statusMap = {
-  pending: "待审核",
-  approved: "已审核",
-  received: "已收货",
-  completed: "已完成",
-};
-function statusLabel(s) { return statusMap[s] || s; }
+function statusLabel(s) {
+  const map = {
+    pending: t('wms.returnOut.statusPending'),
+    approved: t('wms.returnOut.statusApproved'),
+    received: t('wms.returnOut.statusReceived'),
+    completed: t('wms.returnOut.statusCompleted'),
+  };
+  return map[s] || s;
+}
 function statusTagType(s) {
   const map = { pending: "warning", approved: "", received: "info", completed: "success" };
   return map[s] || "";
@@ -258,7 +262,7 @@ function reset() {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加出库退货";
+  title.value = t('wms.returnOut.addTitle');
 }
 
 /** 修改 */
@@ -268,7 +272,7 @@ function handleUpdate(row) {
   getReturnOut(id).then((res) => {
     form.value = res.data || {};
     open.value = true;
-    title.value = "修改出库退货";
+    title.value = t('wms.returnOut.editTitle');
   });
 }
 
@@ -278,7 +282,7 @@ function submitForm() {
     if (!valid) return;
     const api = form.value.returnId ? updateReturnOut : addReturnOut;
     api(form.value).then(() => {
-      ElMessage.success("保存成功");
+      ElMessage.success(t('wms.common.savedSuccess'));
       open.value = false;
       getList();
     });
@@ -294,15 +298,15 @@ function cancel() {
 /** 删除 */
 function handleDelete(row) {
   const delIds = row.returnId || ids.value.join(",");
-  ElMessageBox.confirm(`是否确认删除编号为"${delIds}"的数据项？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.common.deleteConfirm', { id: delIds }), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => delReturnOut(delIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
 }
 

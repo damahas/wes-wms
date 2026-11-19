@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="选择仓库" v-model="isOpen" width="998px" append-to-body>
+  <el-dialog :title="t('wms.warehouse.selectTitle')" v-model="isOpen" width="998px" append-to-body>
     <query-form
       :config="queryConfig"
       v-model="queryParams"
@@ -16,12 +16,12 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="仓库编码" align="center" prop="warehouseCode" :show-overflow-tooltip="true" />
-      <el-table-column label="仓库名称" align="center" prop="warehouseName" :show-overflow-tooltip="true" />
-      <el-table-column label="状态" align="center" prop="status">
+      <el-table-column :label="t('wms.warehouse.warehouseCode')" align="center" prop="warehouseCode" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('wms.warehouse.warehouseName')" align="center" prop="warehouseName" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('common.status')" align="center" prop="status">
         <template #default="scope">
           <el-tag :type="scope.row.status === '0' ? 'success' : 'info'" size="small">
-            {{ scope.row.status === '0' ? '启用' : '停用' }}
+            {{ scope.row.status === '0' ? t('common.enable') : t('common.disable') }}
           </el-tag>
         </template>
       </el-table-column>
@@ -37,8 +37,8 @@
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="isOpen = false">取 消</el-button>
+        <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+        <el-button @click="isOpen = false">{{ t('common.cancel') }}</el-button>
       </div>
     </template>
   </el-dialog>
@@ -47,8 +47,11 @@
 <script setup>
 import { ref, reactive, computed } from "vue";
 import { ElMessage } from "element-plus";
+import { useI18n } from "vue-i18n";
 import { listWarehouse } from "@/api/wms/warehouse";
 import QueryForm from "@/components/QueryForm/index.vue";
+
+const { t } = useI18n();
 
 const loading = ref(true);
 const checked = ref([]);
@@ -63,7 +66,7 @@ const queryParams = reactive({
 });
 
 const queryConfig = computed(() => [
-  { label: "关键字", prop: "keywords", type: "input", placeholder: "请输入仓库编码/名称" },
+  { label: t('wms.warehouse.keywords'), prop: "keywords", type: "input", placeholder: t('wms.warehouse.ph.inputCodeOrName') },
 ]);
 
 const emit = defineEmits(["handleData"]);
@@ -113,7 +116,7 @@ function handleRowClick(row) {
 
 function submitForm() {
   if (checked.value.length === 0) {
-    ElMessage.warning("请至少选择一个仓库");
+    ElMessage.warning(t('wms.warehouse.selectAtLeastOne'));
     return false;
   }
   isOpen.value = false;

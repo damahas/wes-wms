@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="选择库存" v-model="isOpen" width="1080px" append-to-body>
+  <el-dialog :title="t('wms.stock.selectTitle')" v-model="isOpen" width="1080px" append-to-body>
     <query-form
       :config="queryConfig"
       v-model="queryParams.params"
@@ -25,40 +25,40 @@
           <el-checkbox :model-value="isChecked(scope.row)" @change="handleToggle(scope.row)" />
         </template>
       </el-table-column>
-      <el-table-column label="物料编码" align="center" prop="materialCode" width="120" :show-overflow-tooltip="true" />
-      <el-table-column label="物料名称" align="center" prop="materialName" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="批次" align="center" prop="batchNo" width="110">
+      <el-table-column :label="t('wms.stock.materialCode')" align="center" prop="materialCode" width="120" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('wms.stock.materialName')" align="center" prop="materialName" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('wms.stock.batchShort')" align="center" prop="batchNo" width="110">
         <template #default="scope">
           {{ scope.row.batchNo || "-" }}
         </template>
       </el-table-column>
-      <el-table-column label="仓库" align="center" width="110" :show-overflow-tooltip="true">
+      <el-table-column :label="t('wms.common.warehouse')" align="center" width="110" :show-overflow-tooltip="true">
         <template #default="scope">
           {{ scope.row.warehouse?.warehouseName || "-" }}
         </template>
       </el-table-column>
-      <el-table-column label="库位" align="center" prop="locationCode" width="110" :show-overflow-tooltip="true" />
-      <el-table-column label="库存" align="center" prop="stockQuantity" width="80" />
-      <el-table-column label="冻结" align="center" prop="freezeQuantity" width="80">
+      <el-table-column :label="t('wms.common.location')" align="center" prop="locationCode" width="110" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('wms.stock.stockShort')" align="center" prop="stockQuantity" width="80" />
+      <el-table-column :label="t('wms.stock.freezeShort')" align="center" prop="freezeQuantity" width="80">
         <template #default="scope">
           <span :class="{ 'text-frozen': (scope.row.freezeQuantity ?? 0) > 0 }">
             {{ scope.row.freezeQuantity ?? 0 }}
           </span>
         </template>
       </el-table-column>
-      <el-table-column label="锁定" align="center" prop="lockQuantity" width="80">
+      <el-table-column :label="t('wms.stock.lockShort')" align="center" prop="lockQuantity" width="80">
         <template #default="scope">
           <span :class="{ 'text-frozen': (scope.row.lockQuantity ?? 0) > 0 }">
             {{ scope.row.lockQuantity ?? 0 }}
           </span>
         </template>
       </el-table-column>
-      <el-table-column label="可用" align="center" width="90">
+      <el-table-column :label="t('wms.stock.availableShort')" align="center" width="90">
         <template #default="scope">
           <span class="text-available">{{ available(scope.row) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="有效期至" align="center" width="110">
+      <el-table-column :label="t('wms.common.expireDate')" align="center" width="110">
         <template #default="scope">
           {{ scope.row.expireDate ? String(scope.row.expireDate).slice(0, 10) : "-" }}
         </template>
@@ -75,8 +75,8 @@
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="isOpen = false">取 消</el-button>
+        <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+        <el-button @click="isOpen = false">{{ t('common.cancel') }}</el-button>
       </div>
     </template>
   </el-dialog>
@@ -85,8 +85,11 @@
 <script setup>
 import { ref, reactive, computed } from "vue";
 import { ElMessage } from "element-plus";
+import { useI18n } from "vue-i18n";
 import { listStock } from "@/api/wms/stock";
 import QueryForm from "@/components/QueryForm/index.vue";
+
+const { t } = useI18n();
 
 const props = defineProps({
   isSingle: { type: Boolean, default: true },
@@ -111,8 +114,8 @@ const queryParams = reactive({
 });
 
 const queryConfig = computed(() => [
-  { label: "关键字", prop: "keywords", type: "input", placeholder: "物料编码/名称/批次/库位" },
-  { label: "批次号", prop: "batchNo", type: "input", placeholder: "请输入批次号" },
+  { label: t("wms.common.keywords"), prop: "keywords", type: "input", placeholder: t("wms.stock.ph.keywords") },
+  { label: t("wms.common.batchNo"), prop: "batchNo", type: "input", placeholder: t("wms.stock.ph.batchNo") },
 ]);
 
 /** 可用 = 库存 - 冻结 - 锁定，不直接用 available_quantity，那个字段可能是脏的 */
@@ -122,7 +125,7 @@ function available(row) {
 }
 
 function tagText(item) {
-  return `${item.materialName} / ${item.batchNo || "无批次"} / ${item.locationCode}`;
+  return `${item.materialName} / ${item.batchNo || t("wms.move.noBatch")} / ${item.locationCode}`;
 }
 
 function isChecked(row) {
@@ -177,7 +180,7 @@ function resetQuery() {
 
 function submitForm() {
   if (checked.value.length === 0) {
-    ElMessage.warning("请至少选择一行库存");
+    ElMessage.warning(t("wms.stock.selectAtLeastOne"));
     return;
   }
   isOpen.value = false;

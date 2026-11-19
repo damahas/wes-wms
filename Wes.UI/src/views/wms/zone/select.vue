@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="选择库区" v-model="isOpen" width="998px" append-to-body>
+  <el-dialog :title="t('wms.zone.selectTitle')" v-model="isOpen" width="998px" append-to-body>
     <query-form
       :config="queryConfig"
       v-model="queryParams"
@@ -16,17 +16,17 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="库区编码" align="center" prop="zoneCode" :show-overflow-tooltip="true" />
-      <el-table-column label="库区名称" align="center" prop="zoneName" :show-overflow-tooltip="true" />
-      <el-table-column label="仓库" align="center" :show-overflow-tooltip="true">
+      <el-table-column :label="t('wms.zone.zoneCode')" align="center" prop="zoneCode" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('wms.zone.zoneName')" align="center" prop="zoneName" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('wms.common.warehouse')" align="center" :show-overflow-tooltip="true">
         <template #default="scope">
           {{ scope.row.warehouse?.warehouseName || "-" }}
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="zoneStatus">
+      <el-table-column :label="t('common.status')" align="center" prop="zoneStatus">
         <template #default="scope">
           <el-tag :type="scope.row.zoneStatus === '0' ? 'success' : 'info'" size="small">
-            {{ scope.row.zoneStatus === '0' ? '启用' : '停用' }}
+            {{ scope.row.zoneStatus === '0' ? t('common.enable') : t('common.disable') }}
           </el-tag>
         </template>
       </el-table-column>
@@ -42,8 +42,8 @@
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="isOpen = false">取 消</el-button>
+        <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+        <el-button @click="isOpen = false">{{ t('common.cancel') }}</el-button>
       </div>
     </template>
   </el-dialog>
@@ -52,8 +52,11 @@
 <script setup>
 import { ref, reactive, computed } from "vue";
 import { ElMessage } from "element-plus";
+import { useI18n } from "vue-i18n";
 import { listZone } from "@/api/wms/zone";
 import QueryForm from "@/components/QueryForm/index.vue";
+
+const { t } = useI18n();
 
 const loading = ref(true);
 const checked = ref([]);
@@ -68,7 +71,7 @@ const queryParams = reactive({
 });
 
 const queryConfig = computed(() => [
-  { label: "关键字", prop: "keywords", type: "input", placeholder: "请输入库区编码/名称" },
+  { label: t('wms.common.keywords'), prop: "keywords", type: "input", placeholder: t('wms.zone.ph.inputCodeOrName') },
 ]);
 
 const emit = defineEmits(["handleData"]);
@@ -118,7 +121,7 @@ function handleRowClick(row) {
 
 function submitForm() {
   if (checked.value.length === 0) {
-    ElMessage.warning("请至少选择一个库区");
+    ElMessage.warning(t('wms.zone.selectAtLeastOne'));
     return false;
   }
   isOpen.value = false;

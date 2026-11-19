@@ -12,13 +12,13 @@
     <!-- 操作按钮 -->
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="[perm('add')]">新增</el-button>
+        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="[perm('add')]">{{ t('common.add') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="[perm('edit')]">修改</el-button>
+        <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="[perm('edit')]">{{ t('common.edit') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="[perm('remove')]">删除</el-button>
+        <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="[perm('remove')]">{{ t('common.delete') }}</el-button>
       </el-col>
         <right-toolbar
           v-model:showSearch="showSearch"
@@ -29,20 +29,20 @@
     <!-- 列表 -->
     <el-table v-loading="loading" :data="partnerList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column :label="typeName + '编码'" align="center" prop="partnerCode" :show-overflow-tooltip="true" />
-      <el-table-column :label="typeName + '名称'" align="center" prop="partnerName" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('wms.partner.codeOf', { type: typeName })" align="center" prop="partnerCode" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('wms.partner.nameOf', { type: typeName })" align="center" prop="partnerName" :show-overflow-tooltip="true" />
 
-      <el-table-column label="省份" align="center" prop="province" :show-overflow-tooltip="true" />
-      <el-table-column label="状态" align="center" prop="status" width="80">
+      <el-table-column :label="t('wms.partner.province')" align="center" prop="province" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('common.status')" align="center" prop="status" width="80">
         <template #default="scope">
           <el-switch v-model="scope.row.status" active-value="0" inactive-value="1" @change="handleStatusChange(scope.row)" />
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createTime" min-width="170" />
-      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+      <el-table-column :label="t('common.createTime')" align="center" prop="createTime" min-width="170" />
+      <el-table-column :label="t('common.actions')" align="center" width="150" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="[perm('edit')]">修改</el-button>
-          <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="[perm('remove')]">删除</el-button>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="[perm('edit')]">{{ t('common.edit') }}</el-button>
+          <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="[perm('remove')]">{{ t('common.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -59,74 +59,74 @@
     <el-dialog :title="title" v-model="open" width="900px" append-to-body>
       <el-tabs v-model="activeTab">
         <!-- 基本信息 -->
-        <el-tab-pane label="基本信息" name="base">
+        <el-tab-pane :label="t('wms.material.tabBasic')" name="base">
           <el-form ref="partnerRef" :model="form" :rules="rules" label-width="auto">
-            <el-form-item :label="typeName + '编码'" prop="partnerCode">
-              <el-input v-model="form.partnerCode" :placeholder="'请输入' + typeName + '编码'" maxlength="50" />
+            <el-form-item :label="t('wms.partner.codeOf', { type: typeName })" prop="partnerCode">
+              <el-input v-model="form.partnerCode" :placeholder="t('wms.partner.ph.inputCodeOf', { type: typeName })" maxlength="50" />
             </el-form-item>
-            <el-form-item :label="typeName + '名称'" prop="partnerName">
-              <el-input v-model="form.partnerName" :placeholder="'请输入' + typeName + '名称'" maxlength="100" />
+            <el-form-item :label="t('wms.partner.nameOf', { type: typeName })" prop="partnerName">
+              <el-input v-model="form.partnerName" :placeholder="t('wms.partner.ph.inputNameOf', { type: typeName })" maxlength="100" />
             </el-form-item>
-            <el-form-item label="类型" prop="partnerType">
+            <el-form-item :label="t('wms.partner.typeLabel')" prop="partnerType">
               <el-radio-group v-model="form.partnerType" :disabled="!!form.partnerId">
-                <el-radio value="supplier">供应商</el-radio>
-                <el-radio value="customer">客户</el-radio>
+                <el-radio value="supplier">{{ t('wms.partner.supplier') }}</el-radio>
+                <el-radio value="customer">{{ t('wms.partner.customer') }}</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item label="省/市/区">
-              <el-cascader :options="regionOptions" v-model="regionArr" placeholder="请选择省/市/区" style="width: 100%" />
+            <el-form-item :label="t('wms.warehouse.region')">
+              <el-cascader :options="regionOptions" v-model="regionArr" :placeholder="t('wms.warehouse.ph.selectRegion')" style="width: 100%" />
             </el-form-item>
-            <el-form-item label="详细地址" prop="address">
-              <el-input v-model="form.address" type="textarea" placeholder="请输入详细地址" maxlength="255" />
+            <el-form-item :label="t('wms.warehouse.address')" prop="address">
+              <el-input v-model="form.address" type="textarea" :placeholder="t('wms.warehouse.ph.inputAddress')" maxlength="255" />
             </el-form-item>
-            <el-form-item label="合作开始日期" prop="cooperateStartDate">
-              <el-date-picker v-model="form.cooperateStartDate" type="date" value-format="YYYY-MM-DD" placeholder="请输入合作开始日期" style="width: 100%" />
+            <el-form-item :label="t('wms.partner.cooperateStartDate')" prop="cooperateStartDate">
+              <el-date-picker v-model="form.cooperateStartDate" type="date" value-format="YYYY-MM-DD" :placeholder="t('wms.partner.ph.inputCooperateStartDate')" style="width: 100%" />
             </el-form-item>
-            <el-form-item label="状态" prop="status">
+            <el-form-item :label="t('common.status')" prop="status">
               <el-radio-group v-model="form.status">
-                <el-radio value="0">启用</el-radio>
-                <el-radio value="1">停用</el-radio>
+                <el-radio value="0">{{ t('common.enable') }}</el-radio>
+                <el-radio value="1">{{ t('common.disable') }}</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item label="备注" prop="remark">
-              <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" maxlength="500" />
+            <el-form-item :label="t('common.remark')" prop="remark">
+              <el-input v-model="form.remark" type="textarea" :placeholder="t('common.input')" maxlength="500" />
             </el-form-item>
           </el-form>
         </el-tab-pane>
 
         <!-- 联系人 -->
-        <el-tab-pane label="联系人" name="contact">
+        <el-tab-pane :label="t('wms.partner.tabContact')" name="contact">
           <el-row :gutter="10" class="mb8">
             <el-col :span="1.5">
-              <el-button type="primary" plain icon="Plus" @click="handleContactAdd">新增联系人</el-button>
+              <el-button type="primary" plain icon="Plus" @click="handleContactAdd">{{ t('wms.partner.addContact') }}</el-button>
             </el-col>
             <el-col :span="1.5">
-              <el-button type="danger" plain icon="Delete" :disabled="contactMultiple" @click="handleContactDelete">删除选中</el-button>
+              <el-button type="danger" plain icon="Delete" :disabled="contactMultiple" @click="handleContactDelete">{{ t('wms.partner.deleteSelected') }}</el-button>
             </el-col>
           </el-row>
           <el-table :data="contactList" @selection-change="handleContactSelectionChange" table-layout="fixed">
             <el-table-column type="selection" width="55" align="center" />
-            <el-table-column label="姓名" align="center">
+            <el-table-column :label="t('wms.partner.contactName')" align="center">
               <template #default="scope">
-                <el-input v-model="scope.row.contactName" placeholder="姓名" />
+                <el-input v-model="scope.row.contactName" :placeholder="t('wms.partner.contactName')" />
               </template>
             </el-table-column>
-            <el-table-column label="职务" align="center">
+            <el-table-column :label="t('wms.partner.title')" align="center">
               <template #default="scope">
-                <el-input v-model="scope.row.title" placeholder="职务" />
+                <el-input v-model="scope.row.title" :placeholder="t('wms.partner.title')" />
               </template>
             </el-table-column>
-            <el-table-column label="电话" align="center">
+            <el-table-column :label="t('wms.partner.phone')" align="center">
               <template #default="scope">
-                <el-input v-model="scope.row.phone" placeholder="电话" />
+                <el-input v-model="scope.row.phone" :placeholder="t('wms.partner.phone')" />
               </template>
             </el-table-column>
-            <el-table-column label="邮箱" align="center" width="220">
+            <el-table-column :label="t('wms.partner.email')" align="center" width="220">
               <template #default="scope">
-                <el-input v-model="scope.row.email" placeholder="邮箱" />
+                <el-input v-model="scope.row.email" :placeholder="t('wms.partner.email')" />
               </template>
             </el-table-column>
-            <el-table-column label="默认" align="center" width="80">
+            <el-table-column :label="t('wms.material.isDefault')" align="center" width="80">
               <template #default="scope">
                 <el-switch v-model="scope.row.isDefault" active-value="1" inactive-value="0" />
               </template>
@@ -135,38 +135,38 @@
         </el-tab-pane>
 
         <!-- 收货地址 -->
-        <el-tab-pane label="收货地址" name="address">
+        <el-tab-pane :label="t('wms.partner.tabAddress')" name="address">
           <el-row :gutter="10" class="mb8">
             <el-col :span="1.5">
-              <el-button type="primary" plain icon="Plus" @click="handleAddressAdd">新增地址</el-button>
+              <el-button type="primary" plain icon="Plus" @click="handleAddressAdd">{{ t('wms.partner.addAddress') }}</el-button>
             </el-col>
             <el-col :span="1.5">
-              <el-button type="danger" plain icon="Delete" :disabled="addressMultiple" @click="handleAddressDelete">删除选中</el-button>
+              <el-button type="danger" plain icon="Delete" :disabled="addressMultiple" @click="handleAddressDelete">{{ t('wms.partner.deleteSelected') }}</el-button>
             </el-col>
           </el-row>
           <el-table :data="addressList" @selection-change="handleAddressSelectionChange">
             <el-table-column type="selection" width="55" align="center" />
-            <el-table-column label="省/市/区" align="center" min-width="220">
+            <el-table-column :label="t('wms.warehouse.region')" align="center" min-width="220">
               <template #default="scope">
-                <el-cascader :options="regionOptions" v-model="scope.row._region" placeholder="请选择" style="width: 100%" />
+                <el-cascader :options="regionOptions" v-model="scope.row._region" :placeholder="t('wms.common.pleaseSelect')" style="width: 100%" />
               </template>
             </el-table-column>
-            <el-table-column label="详细地址" align="center" min-width="200">
+            <el-table-column :label="t('wms.warehouse.address')" align="center" min-width="200">
               <template #default="scope">
-                <el-input v-model="scope.row.address" placeholder="详细地址" />
+                <el-input v-model="scope.row.address" :placeholder="t('wms.warehouse.address')" />
               </template>
             </el-table-column>
-            <el-table-column label="收货人" align="center" width="120">
+            <el-table-column :label="t('wms.partner.consignee')" align="center" width="120">
               <template #default="scope">
-                <el-input v-model="scope.row.contactName" placeholder="收货人" />
+                <el-input v-model="scope.row.contactName" :placeholder="t('wms.partner.consignee')" />
               </template>
             </el-table-column>
-            <el-table-column label="电话" align="center" width="140">
+            <el-table-column :label="t('wms.partner.phone')" align="center" width="140">
               <template #default="scope">
-                <el-input v-model="scope.row.contactPhone" placeholder="电话" />
+                <el-input v-model="scope.row.contactPhone" :placeholder="t('wms.partner.phone')" />
               </template>
             </el-table-column>
-            <el-table-column label="默认" align="center" width="80">
+            <el-table-column :label="t('wms.material.isDefault')" align="center" width="80">
               <template #default="scope">
                 <el-switch v-model="scope.row.isDefault" active-value="1" inactive-value="0" />
               </template>
@@ -177,8 +177,8 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+          <el-button @click="cancel">{{ t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -190,6 +190,7 @@
 import { ref, reactive, toRefs, computed, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listPartner,
   getPartner,
@@ -205,6 +206,7 @@ import QueryForm from "@/components/QueryForm/index.vue";
 import RightToolbar from "@/components/RightToolbar/index.vue";
 
 const route = useRoute();
+const { t } = useI18n();
 
 // 根据路由判断页面类型：/supplier → 供应商，/customer → 客户
 const pageType = computed(() => {
@@ -213,7 +215,7 @@ const pageType = computed(() => {
   return "supplier";
 });
 const isSupplier = computed(() => pageType.value === "supplier");
-const typeName = computed(() => (isSupplier.value ? "供应商" : "客户"));
+const typeName = computed(() => (isSupplier.value ? t('wms.partner.supplier') : t('wms.partner.customer')));
 const typeCode = computed(() => (isSupplier.value ? "supplier" : "customer"));
 
 const partnerRef = ref(null);
@@ -254,8 +256,8 @@ const data = reactive({
 const { form, queryParams } = toRefs(data);
 
 const rules = computed(() => ({
-  partnerCode: [{ required: true, message: `${typeName.value}编码不能为空`, trigger: "blur" }],
-  partnerName: [{ required: true, message: `${typeName.value}名称不能为空`, trigger: "blur" }],
+  partnerCode: [{ required: true, message: t('wms.partner.rules.codeRequired', { type: typeName.value }), trigger: "blur" }],
+  partnerName: [{ required: true, message: t('wms.partner.rules.nameRequired', { type: typeName.value }), trigger: "blur" }],
 }));
 
 // 根据路由类型（supplier/customer）同步 partnerType 并刷新列表
@@ -271,16 +273,16 @@ watch(typeCode, (val) => {
 
 const queryConfig = computed(() => [
   {
-    label: "关键字",
+    label: t('wms.common.keywords'),
     prop: "keywords",
     type: "input",
-    placeholder: `请输入${typeName.value}编码/名称`,
+    placeholder: t('wms.partner.ph.inputCodeOrName', { type: typeName.value }),
   },
   {
-    label: "状态",
+    label: t('common.status'),
     prop: "status",
     type: "select",
-    placeholder: "请选择状态",
+    placeholder: t('wms.warehouse.ph.selectStatus'),
   },
 ]);
 
@@ -353,7 +355,7 @@ function reset() {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = `添加${typeName.value}`;
+  title.value = t('wms.partner.addTitle', { type: typeName.value });
 }
 
 /** 修改 */
@@ -376,7 +378,7 @@ function handleUpdate(row) {
       }));
     });
     open.value = true;
-    title.value = `修改${typeName.value}`;
+    title.value = t('wms.partner.editTitle', { type: typeName.value });
   });
 }
 
@@ -405,13 +407,13 @@ function handleContactDelete() {
         contactList.value = contactList.value.filter((i) => !savedIds.includes(i.contactId));
       }
       contactIds.value = [];
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
   };
   if (savedIds.length > 0) {
-    ElMessageBox.confirm("是否确认删除选中的联系人？", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    ElMessageBox.confirm(t('wms.partner.deleteContactConfirm'), t('wms.common.warning'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       type: "warning",
     }).then(doDelete).catch(() => {});
   } else {
@@ -443,13 +445,13 @@ function handleAddressDelete() {
         addressList.value = addressList.value.filter((i) => !savedIds.includes(i.addressId));
       }
       addressIds.value = [];
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
   };
   if (savedIds.length > 0) {
-    ElMessageBox.confirm("是否确认删除选中的收货地址？", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    ElMessageBox.confirm(t('wms.partner.deleteAddressConfirm'), t('wms.common.warning'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       type: "warning",
     }).then(doDelete).catch(() => {});
   } else {
@@ -484,7 +486,7 @@ function submitForm() {
         return a.addressId ? updatePartnerAddress(a) : addPartnerAddress(a);
       });
       Promise.all([...cTasks, ...aTasks]).then(() => {
-        ElMessage.success("保存成功");
+        ElMessage.success(t('wms.common.savedSuccess'));
         open.value = false;
         getList();
       });
@@ -501,29 +503,29 @@ function cancel() {
 /** 删除 */
 function handleDelete(row) {
   const delIds = row.partnerId || ids.value.join(",");
-  ElMessageBox.confirm(`是否确认删除选中的${typeName.value}数据项？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.partner.deleteConfirm', { type: typeName.value }), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => delPartner(delIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
 }
 
 /** 状态切换 */
 function handleStatusChange(row) {
-  const text = row.status === "0" ? "启用" : "停用";
-  ElMessageBox.confirm(`确认要"${text}"该记录吗？`, "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  const text = row.status === "0" ? t('common.enable') : t('common.disable');
+  ElMessageBox.confirm(t('wms.common.statusConfirm', { action: text }), t('wms.common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => {
       changePartnerStatus({ partnerId: row.partnerId, status: row.status }).then(() => {
-        ElMessage.success("操作成功");
+        ElMessage.success(t('wms.common.operateSuccess'));
       });
     })
     .catch(() => {

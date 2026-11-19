@@ -17,7 +17,7 @@
         <el-button :icon="Search" :disabled="disabled" @click="openDialog" />
       </template>
     </el-autocomplete>
-    <el-dialog :title="'选择库位'" v-model="dialogVisible" width="998px" append-to-body @open="onDialogOpen">
+    <el-dialog :title="t('wms.location.selectTitle')" v-model="dialogVisible" width="998px" append-to-body @open="onDialogOpen">
       <query-form
         :config="queryConfig"
         v-model="queryParams"
@@ -34,22 +34,22 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="库位编码" align="center" prop="locationCode" :show-overflow-tooltip="true" />
-        <el-table-column label="库位名称" align="center" prop="locationName" :show-overflow-tooltip="true" />
-        <el-table-column label="仓库" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.location.locationCode')" align="center" prop="locationCode" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.location.locationName')" align="center" prop="locationName" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.common.warehouse')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.warehouse?.warehouseName || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="库区" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.zone')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.zone?.zoneName || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="状态" align="center" prop="locationStatus" width="80">
+        <el-table-column :label="t('common.status')" align="center" prop="locationStatus" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.locationStatus === '0' ? 'success' : 'info'" size="small">
-              {{ scope.row.locationStatus === '0' ? '启用' : '停用' }}
+              {{ scope.row.locationStatus === '0' ? t('common.enable') : t('common.disable') }}
             </el-tag>
           </template>
         </el-table-column>
@@ -65,8 +65,8 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+          <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -76,9 +76,12 @@
 <script setup>
 import { ref, reactive, computed, watch } from "vue";
 import { ElMessage } from "element-plus";
+import { useI18n } from "vue-i18n";
 import { Search } from "@element-plus/icons-vue";
 import { listLocation, getLocation } from "@/api/wms/location";
 import QueryForm from "@/components/QueryForm/index.vue";
+
+const { t } = useI18n();
 
 const props = defineProps({
   modelValue: { type: [String, Number], default: undefined },
@@ -106,10 +109,10 @@ const queryParams = reactive({
   keywords: undefined,
 });
 
-const placeholderText = computed(() => props.placeholder || "请选择库位");
+const placeholderText = computed(() => props.placeholder || t('wms.location.ph.selectLocation'));
 
 const queryConfig = computed(() => [
-  { label: "关键字", prop: "keywords", type: "input", placeholder: "请输入库位编码/名称" },
+  { label: t('wms.common.keywords'), prop: "keywords", type: "input", placeholder: t('wms.location.ph.inputCodeOrName') },
 ]);
 
 // 根据 modelValue 加载默认显示
@@ -229,7 +232,7 @@ function handleRowClick(row) {
 
 function submitForm() {
   if (!dialogItem.value) {
-    ElMessage.warning("请至少选择一个库位");
+    ElMessage.warning(t('wms.location.selectAtLeastOne'));
     return;
   }
   dialogVisible.value = false;

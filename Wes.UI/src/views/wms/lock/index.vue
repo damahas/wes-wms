@@ -12,14 +12,14 @@
       <!-- 操作按钮 -->
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
-          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:lock:add']">新增</el-button>
+          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:lock:add']">{{ t('common.add') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button v-if="canEdit(selectedRows[0] || {})" type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:lock:edit']">修改</el-button>
-          <el-button v-else type="info" plain icon="View" :disabled="single" @click="handleView(selectedRows[0])">明细</el-button>
+          <el-button v-if="canEdit(selectedRows[0] || {})" type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:lock:edit']">{{ t('common.edit') }}</el-button>
+          <el-button v-else type="info" plain icon="View" :disabled="single" @click="handleView(selectedRows[0])">{{ t('wms.receipt.details') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="danger" plain icon="Delete" :disabled="multiple || selectedRows.some((r) => !canEdit(r))" @click="handleDelete" v-hasPermi="['wms:lock:remove']">删除</el-button>
+          <el-button type="danger" plain icon="Delete" :disabled="multiple || selectedRows.some((r) => !canEdit(r))" @click="handleDelete" v-hasPermi="['wms:lock:remove']">{{ t('common.delete') }}</el-button>
         </el-col>
         <right-toolbar
           v-model:showSearch="showSearch"
@@ -30,58 +30,58 @@
       <!-- 列表 -->
       <el-table v-loading="loading" :data="lockList" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="锁定编号" align="center" prop="lockId" width="170" :show-overflow-tooltip="true" />
-        <el-table-column label="锁定类型" align="center" width="110">
+        <el-table-column :label="t('wms.lock.lockNo')" align="center" prop="lockId" width="170" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.lock.lockType')" align="center" width="110">
           <template #default="scope">
-            {{ lockTypeMap[scope.row.lockType] || "-" }}
+            {{ lockTypeLabel(scope.row.lockType) }}
           </template>
         </el-table-column>
-        <el-table-column label="仓库" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.warehouse')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.warehouse?.warehouseName || scope.row.warehouseName || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="库区" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.zone')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.zone?.zoneName || scope.row.zoneCode || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="库位" align="center" width="120" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.location')" align="center" width="120" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.location?.locationCode || scope.row.locationId || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="物料" align="center" min-width="170" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.material.title')" align="center" min-width="170" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ materialLabel(scope.row) }}
           </template>
         </el-table-column>
-        <el-table-column label="批次号" align="center" prop="batchNo" width="110" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.receiving.batchNo')" align="center" prop="batchNo" width="110" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.batchNo || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="锁定数量" align="center" prop="lockQuantity" width="90" />
-        <el-table-column label="已使用" align="center" prop="usedQuantity" width="80">
+        <el-table-column :label="t('wms.lock.lockQuantity')" align="center" prop="lockQuantity" width="90" />
+        <el-table-column :label="t('wms.lock.usedQuantity')" align="center" prop="usedQuantity" width="80">
           <template #default="scope">
             {{ scope.row.usedQuantity ?? 0 }}
           </template>
         </el-table-column>
-        <el-table-column label="状态" align="center" width="100">
+        <el-table-column :label="t('common.status')" align="center" width="100">
           <template #default="scope">
             <el-tag :type="lockStatusTag(scope.row.lockStatus)">
-              {{ lockStatusMap[scope.row.lockStatus] || "-" }}
+              {{ lockStatusLabel(scope.row.lockStatus) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" align="center" prop="createTime" min-width="170" />
-        <el-table-column label="操作" align="center" width="220" class-name="small-padding fixed-width">
+        <el-table-column :label="t('common.createTime')" align="center" prop="createTime" min-width="170" />
+        <el-table-column :label="t('common.actions')" align="center" width="220" class-name="small-padding fixed-width">
           <template #default="scope">
-            <el-button v-if="canEdit(scope.row)" link type="success" icon="Promotion" @click="handleExecute(scope.row)" v-hasPermi="['wms:lock:edit']">锁定</el-button>
-            <el-button v-if="scope.row.lockStatus === 'locked' || scope.row.lockStatus === 'partial'" link type="warning" icon="Unlock" @click="handleRelease(scope.row)" v-hasPermi="['wms:lock:edit']">释放</el-button>
-            <el-button v-if="canEdit(scope.row)" link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:lock:edit']">修改</el-button>
-            <el-button v-else link type="info" icon="View" @click="handleView(scope.row)">明细</el-button>
-            <el-button v-if="canEdit(scope.row)" link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:lock:remove']">删除</el-button>
+            <el-button v-if="canEdit(scope.row)" link type="success" icon="Promotion" @click="handleExecute(scope.row)" v-hasPermi="['wms:lock:edit']">{{ t('wms.lock.lock') }}</el-button>
+            <el-button v-if="scope.row.lockStatus === 'locked' || scope.row.lockStatus === 'partial'" link type="warning" icon="Unlock" @click="handleRelease(scope.row)" v-hasPermi="['wms:lock:edit']">{{ t('wms.lock.release') }}</el-button>
+            <el-button v-if="canEdit(scope.row)" link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:lock:edit']">{{ t('common.edit') }}</el-button>
+            <el-button v-else link type="info" icon="View" @click="handleView(scope.row)">{{ t('wms.receipt.details') }}</el-button>
+            <el-button v-if="canEdit(scope.row)" link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:lock:remove']">{{ t('common.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -99,40 +99,43 @@
         <el-form ref="lockRef" :model="form" :rules="rules" label-width="88px" class="nowrap-labels" :disabled="viewMode">
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="锁定类型" prop="lockType">
-                <el-select v-model="form.lockType" placeholder="请选择锁定类型" style="width:100%">
-                  <el-option v-for="(label, value) in lockTypeMap" :key="value" :label="label" :value="value" />
+              <el-form-item :label="t('wms.lock.lockType')" prop="lockType">
+                <el-select v-model="form.lockType" :placeholder="t('wms.lock.ph.selectType')" style="width:100%">
+                  <el-option :label="t('wms.lock.typeOrder')" value="order" />
+                  <el-option :label="t('wms.lock.typeProduce')" value="produce" />
+                  <el-option :label="t('wms.lock.typeExhibit')" value="exhibit" />
+                  <el-option :label="t('wms.lock.typeManual')" value="manual" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="来源单据号">
-                <el-input v-model="form.sourceNo" placeholder="来源单据号（选填）" maxlength="50" />
+              <el-form-item :label="t('wms.lock.sourceNo')">
+                <el-input v-model="form.sourceNo" :placeholder="t('wms.lock.ph.sourceNo')" maxlength="50" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="仓库" prop="warehouseId">
-                <WarehouseSelect v-model="form.warehouseId" placeholder="请选择仓库" :disabled="viewMode" @change="onWarehouseChange" />
+              <el-form-item :label="t('wms.common.warehouse')" prop="warehouseId">
+                <WarehouseSelect v-model="form.warehouseId" :placeholder="t('wms.warehouse.ph.selectWarehouse')" :disabled="viewMode" @change="onWarehouseChange" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="库位" prop="locationId">
+              <el-form-item :label="t('wms.common.location')" prop="locationId">
                 <LocationCascader
                   v-model="form.locCascader"
                   :warehouse-id="form.warehouseId"
                   :disabled="!form.warehouseId || viewMode"
-                  :placeholder="form.warehouseId ? '请选择库区/库位' : '请先选择仓库'"
+                  :placeholder="form.warehouseId ? t('wms.location.ph.selectZoneOrLocation') : t('wms.move.ph.selectWarehouseFirst')"
                   @update:model-value="onLocation"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="库存行" prop="stockId">
+              <el-form-item :label="t('wms.adjust.stockRow')" prop="stockId">
                 <el-select
                   v-if="!viewMode"
                   v-model="form.stockId"
                   :loading="stockLoading"
-                  :placeholder="form.locationId ? '选择要锁定的库存行（同物料同批次可能多条码）' : '先选库位'"
+                  :placeholder="form.locationId ? t('wms.lock.ph.pickStockRow') : t('wms.adjust.ph.selectLocationFirst')"
                   :disabled="!form.locationId"
                   style="width:100%"
                   @change="onStockPick"
@@ -148,39 +151,38 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="物料">
+              <el-form-item :label="t('wms.material.title')">
                 <span>{{ form.materialCode }} - {{ form.materialName || "-" }}</span>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="批次号">
-                <span>{{ form.batchNo || "无" }}</span>
+              <el-form-item :label="t('wms.receiving.batchNo')">
+                <span>{{ form.batchNo || t('wms.move.noBatch') }}</span>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="锁定数量" prop="lockQuantity">
+              <el-form-item :label="t('wms.lock.lockQuantity')" prop="lockQuantity">
                 <el-input-number v-model="form.lockQuantity" :min="0" :controls="false"
-                  :placeholder="form.stockAvailable != null ? `可锁定 ${form.stockAvailable}` : '锁定数量'"
+                  :placeholder="form.stockAvailable != null ? t('wms.lock.ph.lockable', { qty: form.stockAvailable }) : t('wms.lock.lockQuantity')"
                   style="width:100%" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="过期时间">
+              <el-form-item :label="t('wms.lock.expireTime')">
                 <el-date-picker v-model="form.expireTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss"
-                  placeholder="过期时间（选填）" style="width:100%" />
+                  :placeholder="t('wms.lock.ph.expireTime')" style="width:100%" />
               </el-form-item>
             </el-col>
           </el-row>
 
           <div class="form-tip text-muted">
-            精确到库存行：同物料同批次多条码时必须指定锁哪一行。执行锁定后该行可用库存减少、锁定数量增加，库存总量不变；
-            出库时优先消耗锁定量并自动核销锁定单（全部消耗自动转「已完成」）；释放后按未使用数量回补。
+            {{ t('wms.lock.formTip') }}
           </div>
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button v-if="!viewMode" type="primary" @click="submitForm">确 定</el-button>
-            <el-button @click="cancel">{{ viewMode ? "关 闭" : "取 消" }}</el-button>
+            <el-button v-if="!viewMode" type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+            <el-button @click="cancel">{{ viewMode ? t('common.close') : t('common.cancel') }}</el-button>
           </div>
         </template>
       </el-dialog>
@@ -191,6 +193,7 @@
 <script setup name="WmsLock">
 import { ref, reactive, toRefs, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listLock,
   getLock,
@@ -206,6 +209,7 @@ import RightToolbar from "@/components/RightToolbar/index.vue";
 import WarehouseSelect from "@/views/wms/warehouse/input.vue";
 import LocationCascader from "@/views/wms/location/cascader.vue";
 
+const { t } = useI18n();
 const lockRef = ref(null);
 const lockList = ref([]);
 const stockOptions = ref([]);
@@ -225,15 +229,20 @@ const selectedRows = ref([]);
 const showSearch = ref(true);
 
 // 锁定类型
-const lockTypeMap = {
-  order: "订单预留",
-  produce: "生产预留",
-  exhibit: "展会预留",
-  manual: "手动锁定",
-};
+const lockTypeMap = computed(() => ({
+  order: t("wms.lock.typeOrder"),
+  produce: t("wms.lock.typeProduce"),
+  exhibit: t("wms.lock.typeExhibit"),
+  manual: t("wms.lock.typeManual"),
+}));
 
 // 锁定状态：待锁定 → 已锁定 / 部分释放 → 已释放
-const lockStatusMap = { pending: "待锁定", locked: "已锁定", partial: "部分释放", released: "已释放" };
+const lockStatusMap = computed(() => ({
+  pending: t("wms.lock.statusPending"),
+  locked: t("wms.lock.statusLocked"),
+  partial: t("wms.lock.statusPartial"),
+  released: t("wms.lock.statusReleased"),
+}));
 const lockStatusTag = (s) => (s === "locked" || s === "partial" ? "warning" : s === "released" ? "success" : "info");
 
 /** 已开始锁定（已锁定/部分释放/已释放）的单据不能再修改或删除 */
@@ -250,11 +259,11 @@ const data = reactive({
     lockStatus: undefined,
   },
   rules: {
-    warehouseId: [{ required: true, message: "请选择仓库", trigger: "change" }],
-    materialId: [{ required: true, message: "请选择物料", trigger: "change" }],
-    locationId: [{ required: true, message: "请选择库位", trigger: "change" }],
-    lockQuantity: [{ required: true, message: "请输入锁定数量", trigger: "blur" }],
-    lockType: [{ required: true, message: "请选择锁定类型", trigger: "change" }],
+    warehouseId: [{ required: true, message: () => t('wms.lock.rules.warehouseRequired'), trigger: "change" }],
+    materialId: [{ required: true, message: () => t('wms.lock.rules.materialRequired'), trigger: "change" }],
+    locationId: [{ required: true, message: () => t('wms.lock.rules.locationRequired'), trigger: "change" }],
+    lockQuantity: [{ required: true, message: () => t('wms.lock.rules.quantityRequired'), trigger: "blur" }],
+    lockType: [{ required: true, message: () => t('wms.lock.rules.typeRequired'), trigger: "change" }],
   },
 });
 
@@ -262,21 +271,21 @@ const { form, queryParams, rules } = toRefs(data);
 
 const queryConfig = computed(() => [
   {
-    label: "关键字",
+    label: t('wms.common.keywords'),
     prop: "keywords",
     type: "input",
-    placeholder: "请输入物料编码/名称",
+    placeholder: t('wms.lock.ph.keywords'),
   },
   {
-    label: "状态",
+    label: t('common.status'),
     prop: "lockStatus",
     type: "select",
-    placeholder: "请选择状态",
+    placeholder: t('wms.warehouse.ph.selectStatus'),
     options: [
-      { label: "待锁定", value: "pending" },
-      { label: "已锁定", value: "locked" },
-      { label: "部分释放", value: "partial" },
-      { label: "已释放", value: "released" },
+      { label: t('wms.lock.statusPending'), value: "pending" },
+      { label: t('wms.lock.statusLocked'), value: "locked" },
+      { label: t('wms.lock.statusPartial'), value: "partial" },
+      { label: t('wms.lock.statusReleased'), value: "released" },
     ],
   },
 ]);
@@ -365,7 +374,7 @@ function reset() {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加库存锁定";
+  title.value = t("wms.lock.addTitle");
 }
 
 /** 修改 */
@@ -421,7 +430,7 @@ function fillForm(data) {
           form.value.stockLabel = matched.labelShort;
           form.value.stockAvailable = matched.available;
         } else if (data.stockId) {
-          form.value.stockLabel = "该库存行已不存在";
+          form.value.stockLabel = t("wms.lock.stockRowGone");
         }
       })
       .finally(() => {
@@ -429,7 +438,7 @@ function fillForm(data) {
       });
   }
   open.value = true;
-  title.value = viewMode.value ? "锁定单明细" : "修改库存锁定";
+  title.value = viewMode.value ? t("wms.lock.viewTitle") : t("wms.lock.editTitle");
 }
 
 /** 库位选择（两级：库区 → 库位） */
@@ -453,8 +462,8 @@ function makeStockOptions(rows) {
     const available = (Number(s.stockQuantity) || 0) - (Number(s.freezeQuantity) || 0) - (Number(s.lockQuantity) || 0);
     return {
       value: String(s.stockId),
-      label: `${s.materialCode || s.material?.materialCode} / 批次${s.batchNo || "无"}${s.barcode ? " / " + s.barcode : ""} / 可用 ${available}`,
-      labelShort: `${s.materialCode || s.material?.materialCode} / 批次${s.batchNo || "无"}${s.barcode ? " / " + s.barcode : ""} / 库存 ${s.stockQuantity}`,
+      label: `${s.materialCode || s.material?.materialCode} / ${t("wms.receiving.batchNo")}${s.batchNo || t("wms.move.noBatch")}${s.barcode ? " / " + s.barcode : ""} / ${t("wms.stock.available")} ${available}`,
+      labelShort: `${s.materialCode || s.material?.materialCode} / ${t("wms.receiving.batchNo")}${s.batchNo || t("wms.move.noBatch")}${s.barcode ? " / " + s.barcode : ""} / ${t("wms.stock.stockQuantity")} ${s.stockQuantity}`,
       available,
       stockId: s.stockId,
       materialId: s.materialId,
@@ -510,19 +519,19 @@ function submitForm() {
   lockRef.value.validate((valid) => {
     if (!valid) return;
     if (!form.value.locationId) {
-      ElMessage.warning("请选择库位");
+      ElMessage.warning(t("wms.lock.rules.locationRequired"));
       return;
     }
     if (!form.value.stockId) {
-      ElMessage.warning("请选择库存行（同物料同批次可能有多条码，必须精确到行）");
+      ElMessage.warning(t("wms.lock.pickStockRowWarn"));
       return;
     }
     if (!(form.value.lockQuantity > 0)) {
-      ElMessage.warning("锁定数量必须大于 0");
+      ElMessage.warning(t("wms.lock.qtyRequired"));
       return;
     }
     if (form.value.stockAvailable != null && form.value.lockQuantity > form.value.stockAvailable) {
-      ElMessage.warning(`锁定数量超过该库存行可用量（可用 ${form.value.stockAvailable}）`);
+      ElMessage.warning(t("wms.lock.qtyExceedWarn", { qty: form.value.stockAvailable }));
       return;
     }
 
@@ -551,7 +560,7 @@ function submitForm() {
 
     const api = form.value.lockId ? updateLock : addLock;
     api(payload).then(() => {
-      ElMessage.success("保存成功");
+      ElMessage.success(t("wms.common.savedSuccess"));
       open.value = false;
       getList();
     });
@@ -567,13 +576,13 @@ function cancel() {
 /** 执行锁定 */
 function handleExecute(row) {
   ElMessageBox.confirm(
-    `执行锁定单「${row.lockId}」将占用该库位的可用库存（库存总量不变），执行后不可修改。是否继续？`,
-    "锁定确认",
-    { confirmButtonText: "确定锁定", cancelButtonText: "取消", type: "warning" }
+    t("wms.lock.executeConfirmMsg", { no: row.lockId }),
+    t("wms.lock.executeConfirmTitle"),
+    { confirmButtonText: t("wms.lock.executeConfirmBtn"), cancelButtonText: t("common.cancel"), type: "warning" }
   )
     .then(() => executeLock(row.lockId))
     .then(() => {
-      ElMessage.success("锁定成功，可用库存已扣减");
+      ElMessage.success(t("wms.lock.executeSuccess"));
       getList();
     });
 }
@@ -581,13 +590,13 @@ function handleExecute(row) {
 /** 释放锁定 */
 function handleRelease(row) {
   ElMessageBox.confirm(
-    `释放锁定单「${row.lockId}」将回补该库位的可用库存（已消耗部分不退回）。是否继续？`,
-    "释放确认",
-    { confirmButtonText: "确定释放", cancelButtonText: "取消", type: "warning" }
+    t("wms.lock.releaseConfirmMsg", { no: row.lockId }),
+    t("wms.lock.releaseConfirmTitle"),
+    { confirmButtonText: t("wms.lock.releaseConfirmBtn"), cancelButtonText: t("common.cancel"), type: "warning" }
   )
     .then(() => releaseLock(row.lockId))
     .then(() => {
-      ElMessage.success("已释放，可用库存已回补");
+      ElMessage.success(t("wms.lock.releaseSuccess"));
       getList();
     });
 }
@@ -595,15 +604,15 @@ function handleRelease(row) {
 /** 删除 */
 function handleDelete(row) {
   const delIds = row.lockId || ids.value.join(",");
-  ElMessageBox.confirm(`是否确认删除锁定单编号为"${delIds}"的数据项？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t("wms.lock.deleteConfirm", { id: delIds }), t("wms.common.warning"), {
+    confirmButtonText: t("common.confirm"),
+    cancelButtonText: t("common.cancel"),
     type: "warning",
   })
     .then(() => delLock(delIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t("wms.common.deleteSuccess"));
     });
 }
 

@@ -16,7 +16,8 @@ namespace Wes.Business
 
 		public ResultData<List<SysMenuEntity>> GetList(MenuParam param);
 
-		public ReturnData Save(SysMenuEntity menu);
+		/// <summary>保存菜单（新增时返回含雪花主键的实体，供前端保存多语言翻译）</summary>
+		public ResultData<SysMenuEntity> Save(SysMenuEntity menu);
 
 		public ReturnData Delete(string ids);
 

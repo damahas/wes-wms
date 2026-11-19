@@ -578,9 +578,13 @@ function submitForm() {
   menuRef.value?.validate((valid) => {
     if (valid) {
       const apiCall = form.value.menuId ? updateMenu(form.value) : addMenu(form.value);
-      apiCall.then((response) => {
+      apiCall.then(async (response) => {
+        // 新增时后端返回含雪花主键的实体，用于保存多语言翻译
         const menuId = response.data?.menuId || form.value.menuId;
-        if (menuId) saveTranslations(menuId);
+        if (menuId) {
+          const ok = await saveTranslations(menuId);
+          if (!ok) ElMessage.warning(t('menuManage.i18nSaveFailed'));
+        }
         ElMessage.success(form.value.menuId ? t('common.editSuccess') : t('common.addSuccess'));
         open.value = false;
         getList();
@@ -603,31 +607,27 @@ async function loadMenuTranslations(menuId) {
   } catch { /* ignore */ }
 }
 
-/** 保存单条翻译（自动判断新增或更新） */
+/** 保存单条翻译（自动判断新增或更新；失败时抛出由调用方汇总） */
 async function upsertTranslation(menuId, lang, value) {
   if (!value) return;
   const key = `sys.menu.${menuId}`;
-  try {
-    const res = await listI18n({ params: { i18nKey: key, lang } });
-    const rows = res.rows || [];
-    const existing = rows.find(r => r.lang === lang);
-    if (existing?.i18nId) {
-      await updateI18n({ i18nId: existing.i18nId, i18nKey: key, lang, i18nValue: value });
-    } else {
-      await addI18n({ i18nKey: key, lang, i18nValue: value });
-    }
-  } catch (e) {
-    console.error("保存翻译失败:", e);
+  const res = await listI18n({ params: { i18nKey: key, lang } });
+  const rows = res.rows || [];
+  const existing = rows.find(r => r.lang === lang);
+  if (existing?.i18nId) {
+    await updateI18n({ i18nId: existing.i18nId, i18nKey: key, lang, i18nValue: value });
+  } else {
+    await addI18n({ i18nKey: key, lang, i18nValue: value });
   }
 }
 
-/** 保存菜单的多语言翻译 */
+/** 保存菜单的多语言翻译，返回是否全部成功 */
 async function saveTranslations(menuId) {
-  const promises = langList.value.map(l =>
-    upsertTranslation(menuId, l.langCode, i18nValues.value[l.langCode])
+  const results = await Promise.allSettled(
+    langList.value.map(l => upsertTranslation(menuId, l.langCode, i18nValues.value[l.langCode]))
   );
-  await Promise.all(promises);
   refreshI18nCache().catch(() => {});
+  return results.every(r => r.status === "fulfilled");
 }
 
 /** 删除按钮操作 */

@@ -4,23 +4,27 @@ import system from './zh/system'
 import flow from './zh/flow'
 import ai from './zh/ai'
 import home from './zh/home'
+import wms from './zh/wms'
 import systemEn from './en/system'
 import flowEn from './en/flow'
 import aiEn from './en/ai'
 import homeEn from './en/home'
+import wmsEn from './en/wms'
 
 const messages = {
   'zh-CN': {
     ...system,
     ...flow,
     ...ai,
-    ...home
+    ...home,
+    ...wms
   },
   'en-US': {
     ...systemEn,
     ...flowEn,
     ...aiEn,
-    ...homeEn
+    ...homeEn,
+    ...wmsEn
   }
 }
 

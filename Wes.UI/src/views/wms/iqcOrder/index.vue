@@ -9,42 +9,42 @@
 
       <!-- 列表 -->
       <el-table v-loading="loading" :data="dataList">
-        <el-table-column label="检验单号" align="center" min-width="200" show-overflow-tooltip>
+        <el-table-column :label="t('wms.iqcOrder.inspectionNo')" align="center" min-width="200" show-overflow-tooltip>
           <template #default="scope">
             <el-link type="primary" @click="handleView(scope.row)">{{ scope.row.inspectionNo }}</el-link>
           </template>
         </el-table-column>
-        <el-table-column label="收货单号" align="center" min-width="160" show-overflow-tooltip>
+        <el-table-column :label="t('wms.receiving.receivingNo')" align="center" min-width="160" show-overflow-tooltip>
           <template #default="scope">{{ scope.row.receiving?.receivingNo || "-" }}</template>
         </el-table-column>
-        <el-table-column label="供应商" align="center" min-width="180" show-overflow-tooltip>
+        <el-table-column :label="t('wms.material.supplier')" align="center" min-width="180" show-overflow-tooltip>
           <template #default="scope">{{ scope.row.supplier?.partnerName || "-" }}</template>
         </el-table-column>
-        <el-table-column label="物料" align="center" min-width="160" show-overflow-tooltip>
+        <el-table-column :label="t('wms.material.title')" align="center" min-width="160" show-overflow-tooltip>
           <template #default="scope">{{ scope.row.material?.materialName || scope.row.material?.materialCode || "-"
             }}</template>
         </el-table-column>
-        <el-table-column label="规格" align="center" prop="spec" min-width="120" show-overflow-tooltip />
-        <el-table-column label="收货数量" align="center" prop="deliveryQuantity" width="100" />
-        <el-table-column label="允许入库数" align="center" prop="allowQuantity" width="100" />
-        <el-table-column label="不良数量" align="center" prop="defectQuantity" width="100" />
-        <el-table-column label="退货数量" align="center" prop="returnQuantity" width="100" />
-        <el-table-column label="状态" align="center" width="100">
+        <el-table-column :label="t('wms.material.spec')" align="center" prop="spec" min-width="120" show-overflow-tooltip />
+        <el-table-column :label="t('wms.receiving.planQuantity')" align="center" prop="deliveryQuantity" width="100" />
+        <el-table-column :label="t('wms.iqcDefect.allowQuantity')" align="center" prop="allowQuantity" width="100" />
+        <el-table-column :label="t('wms.iqcDefect.defectQuantity')" align="center" prop="defectQuantity" width="100" />
+        <el-table-column :label="t('wms.receiving.returnQty')" align="center" prop="returnQuantity" width="100" />
+        <el-table-column :label="t('common.status')" align="center" width="100">
           <template #default="scope">
             <el-tag :type="statusTagType(scope.row.inspectStatus)">{{ statusLabel(scope.row.inspectStatus) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="检验人" align="center" width="100">
+        <el-table-column :label="t('wms.iqcDefect.inspector')" align="center" width="100">
           <template #default="scope">{{ scope.row.inspector || "-" }}</template>
         </el-table-column>
-        <el-table-column label="检验日期" align="center" min-width="170">
+        <el-table-column :label="t('wms.iqcDefect.inspectDate')" align="center" min-width="170">
           <template #default="scope">{{ scope.row.inspectDate ? scope.row.inspectDate.slice(0, 10) : "-" }}</template>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="160" fixed="right" class-name="iqc-op-col">
+        <el-table-column :label="t('common.actions')" align="center" width="160" fixed="right" class-name="iqc-op-col">
           <template #default="scope">
-            <el-button link type="primary" icon="View" @click="handleView(scope.row)">查看</el-button>
+            <el-button link type="primary" icon="View" @click="handleView(scope.row)">{{ t('wms.common.view') }}</el-button>
             <el-button v-if="scope.row.inspectStatus !== 'completed'" link type="primary" icon="Edit"
-              @click="handleEdit(scope.row)" v-hasPermi="['wms:iqcOrder:edit']">检验</el-button>
+              @click="handleEdit(scope.row)" v-hasPermi="['wms:iqcOrder:edit']">{{ t('wms.iqcOrder.inspect') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -56,81 +56,81 @@
       <el-dialog :title="title" v-model="open" width="90%" append-to-body @close="cancel">
         <!-- 检验单头信息 -->
         <el-descriptions :column="4" border class="mb16 desc-even">
-          <el-descriptions-item label="检验单号">{{ form.inspectionNo || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="收货单号">{{ form.receiving?.receivingNo || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="供应商">{{ form.supplier?.partnerName || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="状态">
+          <el-descriptions-item :label="t('wms.iqcOrder.inspectionNo')">{{ form.inspectionNo || "-" }}</el-descriptions-item>
+          <el-descriptions-item :label="t('wms.receiving.receivingNo')">{{ form.receiving?.receivingNo || "-" }}</el-descriptions-item>
+          <el-descriptions-item :label="t('wms.material.supplier')">{{ form.supplier?.partnerName || "-" }}</el-descriptions-item>
+          <el-descriptions-item :label="t('common.status')">
             <el-tag :type="statusTagType(form.inspectStatus)">{{ statusLabel(form.inspectStatus) }}</el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="物料编码">{{ form.material?.materialCode || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="物料名称">{{ form.material?.materialName || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="规格">{{ form.spec || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="单位">{{ form.unit || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="批次号">{{ form.batchNo || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="收货数量">{{ form.deliveryQuantity || 0 }}</el-descriptions-item>
-          <el-descriptions-item label="检验人">
+          <el-descriptions-item :label="t('wms.material.materialCode')">{{ form.material?.materialCode || "-" }}</el-descriptions-item>
+          <el-descriptions-item :label="t('wms.material.materialName')">{{ form.material?.materialName || "-" }}</el-descriptions-item>
+          <el-descriptions-item :label="t('wms.material.spec')">{{ form.spec || "-" }}</el-descriptions-item>
+          <el-descriptions-item :label="t('wms.receiving.unit')">{{ form.unit || "-" }}</el-descriptions-item>
+          <el-descriptions-item :label="t('wms.receiving.batchNo')">{{ form.batchNo || "-" }}</el-descriptions-item>
+          <el-descriptions-item :label="t('wms.receiving.planQuantity')">{{ form.deliveryQuantity || 0 }}</el-descriptions-item>
+          <el-descriptions-item :label="t('wms.iqcDefect.inspector')">
             <UserInput v-if="!readOnly" v-model="inspectorId" :label="form.inspector" @change="onInspectorChange" />
             <span v-else>{{ form.inspector || "-" }}</span>
           </el-descriptions-item>
-          <el-descriptions-item label="允许入库数">
+          <el-descriptions-item :label="t('wms.iqcDefect.allowQuantity')">
             <el-input-number v-if="!readOnly" v-model="form.allowQuantity" :min="0" :max="form.deliveryQuantity || 0"
               controls-position="right" />
             <span v-else>{{ form.allowQuantity ?? 0 }}</span>
           </el-descriptions-item>
-          <el-descriptions-item label="处置方式">
-            <el-select v-if="!readOnly" v-model="form.disposeType" placeholder="请选择" style="width:100%"
+          <el-descriptions-item :label="t('wms.iqcDefect.disposeType')">
+            <el-select v-if="!readOnly" v-model="form.disposeType" :placeholder="t('wms.common.pleaseSelect')" style="width:100%"
               @change="onDisposeTypeChange">
-              <el-option label="无需处置" value="none" />
-              <el-option label="退回供应商" value="return" />
-              <el-option label="让步接收" value="concession" />
-              <el-option label="挑选使用" value="sorting" />
+              <el-option :label="t('wms.iqcDefect.disposeNone')" value="none" />
+              <el-option :label="t('wms.iqcDefect.disposeReturn')" value="return" />
+              <el-option :label="t('wms.iqcDefect.disposeConcession')" value="concession" />
+              <el-option :label="t('wms.iqcDefect.disposeSorting')" value="sorting" />
             </el-select>
             <span v-else>{{ disposeLabel(form.disposeType) }}</span>
           </el-descriptions-item>
-          <el-descriptions-item v-if="showReturnQty" label="退货数量">
+          <el-descriptions-item v-if="showReturnQty" :label="t('wms.receiving.returnQty')">
             <el-input-number v-if="!readOnly" v-model="form.returnQuantity" :min="0" :max="form.deliveryQuantity || 0"
               controls-position="right" />
             <span v-else>{{ form.returnQuantity ?? 0 }}</span>
           </el-descriptions-item>
-          <el-descriptions-item v-if="showDefectQty" label="不良数量">
+          <el-descriptions-item v-if="showDefectQty" :label="t('wms.iqcDefect.defectQuantity')">
             <el-input-number v-if="!readOnly" v-model="form.defectQuantity" :min="0" :max="form.deliveryQuantity || 0"
               controls-position="right" />
             <span v-else>{{ form.defectQuantity ?? 0 }}</span>
           </el-descriptions-item>
-          <el-descriptions-item label="备注" :span="4">
-            <el-input v-if="!readOnly" v-model="form.remark" placeholder="备注" />
+          <el-descriptions-item :label="t('common.remark')" :span="4">
+            <el-input v-if="!readOnly" v-model="form.remark" :placeholder="t('common.remark')" />
             <span v-else>{{ form.remark || "-" }}</span>
           </el-descriptions-item>
         </el-descriptions>
 
         <!-- 检验明细 -->
-        <div class="iqc-section-title">检验明细</div>
+        <div class="iqc-section-title">{{ t('wms.iqcOrder.itemsTitle') }}</div>
         <div v-if="items.length > 0">
           <el-table :data="items" border style="width:100%">
-            <el-table-column label="序号" type="index" width="55" align="center" />
-            <el-table-column label="检验项编码" width="130" align="center">
+            <el-table-column :label="t('wms.common.index')" type="index" width="55" align="center" />
+            <el-table-column :label="t('wms.iqcItem.itemCode')" width="130" align="center">
               <template #default="s">
                 <span class="item-code-cell">
-                  <span v-if="s.row.isCritical === 1" class="critical-icon" title="关键项">!</span>
+                  <span v-if="s.row.isCritical === 1" class="critical-icon" :title="t('wms.iqcItem.isCritical')">!</span>
                   <span>{{ s.row.itemCode }}</span>
                 </span>
               </template>
             </el-table-column>
-            <el-table-column label="检验项名称" prop="itemName" min-width="160" show-overflow-tooltip />
-            <el-table-column label="检验类型" prop="inspectionType" width="90" show-overflow-tooltip />
-            <el-table-column label="标准值" width="140" show-overflow-tooltip>
+            <el-table-column :label="t('wms.iqcItem.itemName')" prop="itemName" min-width="160" show-overflow-tooltip />
+            <el-table-column :label="t('wms.iqcItem.itemType')" prop="inspectionType" width="90" show-overflow-tooltip />
+            <el-table-column :label="t('wms.iqcDefect.standardValue')" width="140" show-overflow-tooltip>
               <template #default="s">{{ s.row.standardValue || "-" }}{{ s.row.unit ? " " + s.row.unit : "" }}</template>
             </el-table-column>
-            <el-table-column label="检测方法/工具" prop="testMethod" min-width="160" show-overflow-tooltip>
+            <el-table-column :label="t('wms.iqcItem.testMethod')" prop="testMethod" min-width="160" show-overflow-tooltip>
               <template #default="s">{{ s.row.testMethod || "-" }}</template>
             </el-table-column>
-            <el-table-column label="检验结果" width="90" align="center" v-if="!readOnly">
+            <el-table-column :label="t('wms.iqcDefect.inspectResult')" width="90" align="center" v-if="!readOnly">
               <template #default="s">
                 <el-switch v-model="s.row.itemResult" active-value="OK" inactive-value="NG" active-text="OK"
                   inactive-text="NG" inline-prompt />
               </template>
             </el-table-column>
-            <el-table-column label="检验结果" width="80" align="center" v-else>
+            <el-table-column :label="t('wms.iqcDefect.inspectResult')" width="80" align="center" v-else>
               <template #default="s">
                 <el-tag :type="s.row.itemResult === 'OK' ? 'success' : s.row.itemResult === 'NG' ? 'danger' : ''">
                   {{ s.row.itemResult || "-" }}
@@ -139,22 +139,22 @@
             </el-table-column>
           </el-table>
         </div>
-        <div v-else style="color:#909399;font-size:13px;padding:16px 0;">暂无检验项，请先配置物料分类的检验项</div>
+        <div v-else style="color:#909399;font-size:13px;padding:16px 0;">{{ t('wms.iqcOrder.itemsEmpty') }}</div>
 
         <template #footer>
           <div class="dialog-footer" style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <template v-if="!readOnly && form.inspectionId && form.inspectStatus !== 'completed'">
-                <el-button type="success" icon="CircleCheck" @click="handleComplete">完成检验</el-button>
+                <el-button type="success" icon="CircleCheck" @click="handleComplete">{{ t('wms.iqcOrder.complete') }}</el-button>
               </template>
             </div>
             <div>
               <template v-if="readOnly">
-                <el-button @click="cancel">关 闭</el-button>
+                <el-button @click="cancel">{{ t('common.close') }}</el-button>
               </template>
               <template v-else>
-                <el-button type="primary" @click="submitForm">保 存</el-button>
-                <el-button @click="cancel">取 消</el-button>
+                <el-button type="primary" @click="submitForm">{{ t('common.save') }}</el-button>
+                <el-button @click="cancel">{{ t('common.cancel') }}</el-button>
               </template>
             </div>
           </div>
@@ -168,6 +168,7 @@
 import { ref, reactive, computed } from "vue";
 import { useStore } from "vuex";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listIqcOrder,
   getIqcOrder,
@@ -180,6 +181,7 @@ import QueryForm from "@/components/QueryForm/index.vue";
 import RightToolbar from "@/components/RightToolbar/index.vue";
 import UserInput from "@/views/system/user/input.vue";
 
+const { t } = useI18n();
 const store = useStore();
 const currentUser = computed(() => store.getters["user/userInfo"]);
 
@@ -192,16 +194,18 @@ const readOnly = ref(false);
 const showSearch = ref(true);
 
 const queryParams = reactive({ pageNum: 1, pageSize: 10, keywords: undefined, inspectStatus: undefined });
-const queryConfig = [
-  { label: "关键词", prop: "keywords", type: "input", placeholder: "检验单号/收货单号" },
+const queryConfig = computed(() => [
+  { label: t('wms.common.keywords'), prop: "keywords", type: "input", placeholder: t('wms.iqcOrder.ph.keywords') },
   {
-    label: "状态", prop: "inspectStatus", type: "select", placeholder: "请选择状态",
-    options: [{ label: "待检验", value: "pending" }, { label: "检验中", value: "inspecting" }, { label: "已完成", value: "completed" }]
+    label: t('common.status'), prop: "inspectStatus", type: "select", placeholder: t('wms.warehouse.ph.selectStatus'),
+    options: [{ label: t('wms.iqcOrder.statusPending'), value: "pending" }, { label: t('wms.iqcOrder.statusInspecting'), value: "inspecting" }, { label: t('wms.iqcOrder.statusCompleted'), value: "completed" }]
   },
-];
+]);
 
-const statusMap = { pending: "待检验", inspecting: "检验中", completed: "已完成" };
-function statusLabel(s) { return statusMap[s] || s; }
+function statusLabel(s) {
+  const map = { pending: t('wms.iqcOrder.statusPending'), inspecting: t('wms.iqcOrder.statusInspecting'), completed: t('wms.iqcOrder.statusCompleted') };
+  return map[s] || s;
+}
 function statusTagType(s) { const m = { pending: "warning", inspecting: "", completed: "success" }; return m[s] || ""; }
 
 const form = ref({});
@@ -237,8 +241,15 @@ const diffQty = computed(() =>
 );
 
 /** 处置方式 none-无需处置 return-退回供应商 concession-让步接收 sorting-挑选使用 */
-const disposeMap = { none: "无需处置", return: "退回供应商", concession: "让步接收", sorting: "挑选使用" };
-function disposeLabel(v) { return disposeMap[v] || "-"; }
+function disposeLabel(v) {
+  const map = {
+    none: t('wms.iqcDefect.disposeNone'),
+    return: t('wms.iqcDefect.disposeReturn'),
+    concession: t('wms.iqcDefect.disposeConcession'),
+    sorting: t('wms.iqcDefect.disposeSorting'),
+  };
+  return map[v] || "-";
+}
 
 /** 是否存在不良：存在差额 或 存在 NG 检验项 */
 const hasDefect = computed(() => diffQty.value > 0 || items.value.some((i) => i.itemResult === "NG"));
@@ -256,7 +267,7 @@ const showDefectQty = computed(() =>
 /** 初始化处置方式：已保存的值保持不变；否则允许入库数=收货数量 → 无需处置，有不良 → 退回供应商 */
 function initDisposeType() {
   const cur = form.value.disposeType;
-  if (cur && disposeMap[cur]) return;
+  if (cur && ["none", "return", "concession", "sorting"].includes(cur)) return;
   form.value.disposeType = hasDefect.value ? "return" : "none";
 }
 
@@ -292,7 +303,7 @@ function handleEdit(row) { loadForm(row.inspectionId, false); }
 /** 加载弹窗数据 */
 async function loadForm(inspectionId, isReadOnly) {
   readOnly.value = isReadOnly;
-  title.value = isReadOnly ? "查看检验单" : "检验单";
+  title.value = isReadOnly ? t('wms.iqcOrder.viewTitle') : t('wms.iqcOrder.editTitle');
   open.value = true;
   items.value = [];
 
@@ -337,17 +348,17 @@ async function loadTemplateItems() {
     templates = res.rows || res.data || [];
   } catch { templates = []; }
   if (templates.length === 0) return;
-  items.value = templates.map((t, idx) => ({
+  items.value = templates.map((tpl, idx) => ({
     itemId: 0,
     inspectionId: form.value.inspectionId || 0,
-    itemCode: t.itemCode,
-    itemName: t.itemName,
-    inspectionType: t.inspectionType,
-    standardValue: t.standardValue,
-    unit: t.unit,
-    isCritical: t.isCritical,
-    testMethod: t.testMethod,
-    sortNo: t.sortNo ?? idx + 1,
+    itemCode: tpl.itemCode,
+    itemName: tpl.itemName,
+    inspectionType: tpl.inspectionType,
+    standardValue: tpl.standardValue,
+    unit: tpl.unit,
+    isCritical: tpl.isCritical,
+    testMethod: tpl.testMethod,
+    sortNo: tpl.sortNo ?? idx + 1,
     itemResult: "OK",
   }));
 }
@@ -364,7 +375,7 @@ async function submitForm() {
       inspection: { ...form.value, supplier: undefined, material: undefined, receiving: undefined, receivingDetail: undefined },
       items: itemsToSave,
     });
-    ElMessage.success("保存成功");
+    ElMessage.success(t('wms.common.savedSuccess'));
     open.value = false;
     getList();
   } catch { /* API 层已统一提示 */ }
@@ -373,9 +384,9 @@ async function submitForm() {
 /** 完成检验 */
 function handleComplete() {
   const id = form.value.inspectionId;
-  if (!id) { ElMessage.warning("请先保存检验单"); return; }
-  ElMessageBox.confirm("确认完成检验？完成后数据将回写到收货单明细。", "提示",
-    { confirmButtonText: "确定", cancelButtonText: "取消", type: "success" }
+  if (!id) { ElMessage.warning(t('wms.iqcOrder.saveFirst')); return; }
+  ElMessageBox.confirm(t('wms.iqcOrder.completeConfirm'), t('wms.common.tip'),
+    { confirmButtonText: t('common.confirm'), cancelButtonText: t('common.cancel'), type: "success" }
   ).then(async () => {
     try {
       if (form.value.inspectStatus === "pending") form.value.inspectStatus = "inspecting";
@@ -385,7 +396,7 @@ function handleComplete() {
         items: itemsToSave,
       });
       await completeIqcOrder(id);
-      ElMessage.success("检验完成，数据已回写到收货单");
+      ElMessage.success(t('wms.iqcOrder.completedTip'));
       open.value = false;
       getList();
     } catch { /* API 层已统一提示 */ }

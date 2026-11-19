@@ -5,67 +5,67 @@
 
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
-          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:issueOrder:add']">新增</el-button>
+          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:issueOrder:add']">{{ t('common.add') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button v-if="canEdit(selectedRows[0] || {})" type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:issueOrder:edit']">修改</el-button>
-          <el-button v-else type="info" plain icon="View" :disabled="single" @click="handleView(selectedRows[0])">明细</el-button>
+          <el-button v-if="canEdit(selectedRows[0] || {})" type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:issueOrder:edit']">{{ t('common.edit') }}</el-button>
+          <el-button v-else type="info" plain icon="View" :disabled="single" @click="handleView(selectedRows[0])">{{ t('wms.receipt.details') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="danger" plain icon="Delete" :disabled="multiple || selectedRows.some((r) => !canEdit(r))" @click="handleDelete" v-hasPermi="['wms:issueOrder:remove']">删除</el-button>
+          <el-button type="danger" plain icon="Delete" :disabled="multiple || selectedRows.some((r) => !canEdit(r))" @click="handleDelete" v-hasPermi="['wms:issueOrder:remove']">{{ t('common.delete') }}</el-button>
         </el-col>
         <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
       </el-row>
 
       <el-table v-loading="loading" :data="issueOrderList" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="申请单号" align="center" prop="issueNo" :show-overflow-tooltip="true" />
-        <el-table-column label="类型" align="center" width="90">
+        <el-table-column :label="t('wms.issueOrder.issueNo')" align="center" prop="issueNo" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.issueOrder.typeLabel')" align="center" width="90">
           <template #default="scope">
             <el-tag :type="scope.row.outboundType === 'sales' ? 'success' : scope.row.outboundType === 'other' ? 'info' : ''" size="small">
-              {{ outboundTypeMap[scope.row.outboundType] || "生产领料" }}
+              {{ outboundTypeLabel(scope.row.outboundType) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="工单号/客户" align="center" width="140" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.issueOrder.workOrderOrCustomer')" align="center" width="140" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.outboundType === "sales" ? (scope.row.customerName || "-") : (scope.row.workOrderNo || "-") }}
           </template>
         </el-table-column>
-        <el-table-column label="领用部门" align="center" prop="deptName" width="110" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.issueOrder.dept')" align="center" prop="deptName" width="110" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.deptName || "-" }}</template>
         </el-table-column>
-        <el-table-column label="仓库" align="center" min-width="120" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.warehouse')" align="center" min-width="120" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.warehouse?.warehouseName || scope.row.warehouseName || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="需求数" align="center" prop="totalQuantity" width="80" />
-        <el-table-column label="已发" align="center" prop="issuedQuantity" width="80" />
-        <el-table-column label="欠料" align="center" width="90">
+        <el-table-column :label="t('wms.issueOrder.totalRequire')" align="center" prop="totalQuantity" width="80" />
+        <el-table-column :label="t('wms.issueOrder.issued')" align="center" prop="issuedQuantity" width="80" />
+        <el-table-column :label="t('wms.issueOrder.shortage')" align="center" width="90">
           <template #default="scope">
             <span :class="{ 'text-danger': (scope.row.shortageQuantity ?? 0) > 0 }">
               {{ scope.row.shortageQuantity ?? 0 }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="需求日期" align="center" width="110">
+        <el-table-column :label="t('wms.issueOrder.requireDate')" align="center" width="110">
           <template #default="scope">{{ (scope.row.requireDate || "").slice(0, 10) || "-" }}</template>
         </el-table-column>
-        <el-table-column label="状态" align="center" width="100">
+        <el-table-column :label="t('common.status')" align="center" width="100">
           <template #default="scope">
             <el-tag :type="issueStatusTag(scope.row.issueStatus)">
-              {{ issueStatusMap[scope.row.issueStatus] || "-" }}
+              {{ issueStatusLabel(scope.row.issueStatus) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" align="center" prop="createTime" min-width="170" />
-        <el-table-column label="操作" align="center" width="230" class-name="small-padding fixed-width">
+        <el-table-column :label="t('common.createTime')" align="center" prop="createTime" min-width="170" />
+        <el-table-column :label="t('common.actions')" align="center" width="230" class-name="small-padding fixed-width">
           <template #default="scope">
-            <el-button v-if="canIssue(scope.row)" link type="success" icon="Promotion" @click="handleIssue(scope.row)">发料</el-button>
-            <el-button v-if="canEdit(scope.row)" link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:issueOrder:edit']">修改</el-button>
-            <el-button v-else link type="info" icon="View" @click="handleView(scope.row)">明细</el-button>
-            <el-button v-if="canEdit(scope.row)" link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:issueOrder:remove']">删除</el-button>
+            <el-button v-if="canIssue(scope.row)" link type="success" icon="Promotion" @click="handleIssue(scope.row)">{{ t('wms.issueOrder.issue') }}</el-button>
+            <el-button v-if="canEdit(scope.row)" link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:issueOrder:edit']">{{ t('common.edit') }}</el-button>
+            <el-button v-else link type="info" icon="View" @click="handleView(scope.row)">{{ t('wms.receipt.details') }}</el-button>
+            <el-button v-if="canEdit(scope.row)" link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:issueOrder:remove']">{{ t('common.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -77,36 +77,39 @@
         <el-form ref="issueOrderRef" :model="form" :rules="rules" label-width="92px" class="nowrap-labels" :disabled="viewMode">
           <el-row :gutter="16">
             <el-col :span="8">
-              <el-form-item label="申请单号">
-                <el-input v-model="form.issueNo" placeholder="保存后自动生成" readonly />
+              <el-form-item :label="t('wms.issueOrder.issueNo')">
+                <el-input v-model="form.issueNo" :placeholder="t('wms.receipt.receiptNoAuto')" readonly />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="出库类型" prop="outboundType">
-                <el-select v-model="form.outboundType" placeholder="请选择出库类型" style="width: 100%">
-                  <el-option v-for="(label, value) in outboundTypeMap" :key="value" :label="label" :value="value" />
+              <el-form-item :label="t('wms.issueOrder.outboundType')" prop="outboundType">
+                <el-select v-model="form.outboundType" :placeholder="t('wms.issueOrder.ph.selectType')" style="width: 100%">
+                  <el-option :label="t('wms.issueOrder.typeIssue')" value="issue" />
+                  <el-option :label="t('wms.issueOrder.typeSales')" value="sales" />
+                  <el-option :label="t('wms.issueOrder.typeOther')" value="other" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="来源类型">
-                <el-select v-model="form.sourceType" placeholder="请选择来源类型" style="width: 100%">
-                  <el-option v-for="(label, value) in sourceTypeMap" :key="value" :label="label" :value="value" />
+              <el-form-item :label="t('wms.issueOrder.sourceType')">
+                <el-select v-model="form.sourceType" :placeholder="t('wms.issueOrder.ph.selectSourceType')" style="width: 100%">
+                  <el-option :label="t('wms.issueOrder.sourceMes')" value="mes" />
+                  <el-option :label="t('wms.issueOrder.sourceManual')" value="manual" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="来源单号">
-                <el-input v-model="form.sourceNo" placeholder="MES/ERP 下发时带入" maxlength="50" />
+              <el-form-item :label="t('wms.issueOrder.sourceNo')">
+                <el-input v-model="form.sourceNo" :placeholder="t('wms.issueOrder.ph.sourceNo')" maxlength="50" />
               </el-form-item>
             </el-col>
             <el-col v-if="form.outboundType !== 'sales'" :span="8">
-              <el-form-item label="生产工单号" prop="workOrderNo">
-                <el-input v-model="form.workOrderNo" placeholder="生产工单号（选填）" maxlength="50" />
+              <el-form-item :label="t('wms.issueOrder.workOrderNo')" prop="workOrderNo">
+                <el-input v-model="form.workOrderNo" :placeholder="t('wms.issueOrder.ph.workOrderNo')" maxlength="50" />
               </el-form-item>
             </el-col>
             <el-col v-if="form.outboundType !== 'sales'" :span="8">
-              <el-form-item label="领用部门">
+              <el-form-item :label="t('wms.issueOrder.dept')">
                 <el-tree-select
                   v-model="deptSelectedId"
                   :data="deptTree"
@@ -116,50 +119,50 @@
                   filterable
                   clearable
                   :disabled="viewMode"
-                  placeholder="请选择领用部门"
+                  :placeholder="t('wms.issueOrder.ph.selectDept')"
                   style="width: 100%"
                   @change="onDeptChange"
                 />
               </el-form-item>
             </el-col>
             <el-col v-if="form.outboundType === 'sales'" :span="8">
-              <el-form-item label="客户名称" prop="customerName">
-                <el-input v-model="form.customerName" placeholder="请输入客户名称" maxlength="100" />
+              <el-form-item :label="t('wms.issueOrder.customerName')" prop="customerName">
+                <el-input v-model="form.customerName" :placeholder="t('wms.issueOrder.ph.customerName')" maxlength="100" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item :label="form.outboundType === 'sales' ? '收货人' : '领用人'">
+              <el-form-item :label="form.outboundType === 'sales' ? t('wms.issueOrder.consignee') : t('wms.issueOrder.receiver')">
                 <el-select
                   v-if="form.outboundType !== 'sales'"
                   v-model="form.receiverId"
                   :loading="userLoading"
                   filterable
                   clearable
-                  :placeholder="deptSelectedId ? '请选择领用人' : '先选部门'"
+                  :placeholder="deptSelectedId ? t('wms.issueOrder.ph.selectReceiver') : t('wms.issueOrder.ph.selectDeptFirst')"
                   :disabled="!deptSelectedId || viewMode"
                   style="width: 100%"
                   @change="onReceiverPick"
                 >
                   <el-option v-for="u in userOptions" :key="u.value" :label="u.label" :value="u.value" />
                 </el-select>
-                <el-input v-else v-model="form.receiverName" placeholder="收货人" maxlength="50" />
+                <el-input v-else v-model="form.receiverName" :placeholder="t('wms.issueOrder.consignee')" maxlength="50" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="仓库" prop="warehouseId">
-                <WarehouseSelect v-model="form.warehouseId" placeholder="请选择仓库" :disabled="viewMode" />
+              <el-form-item :label="t('wms.common.warehouse')" prop="warehouseId">
+                <WarehouseSelect v-model="form.warehouseId" :placeholder="t('wms.warehouse.ph.selectWarehouse')" :disabled="viewMode" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="需求日期">
+              <el-form-item :label="t('wms.issueOrder.requireDate')">
                 <el-date-picker v-model="form.requireDate" type="date" value-format="YYYY-MM-DD"
-                  placeholder="请选择需求日期" style="width: 100%" />
+                  :placeholder="t('wms.issueOrder.ph.requireDate')" style="width: 100%" />
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="备注">
+              <el-form-item :label="t('common.remark')">
                 <el-input v-model="form.remark" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }"
-                  placeholder="请输入备注" maxlength="500" />
+                  :placeholder="t('common.input')" maxlength="500" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -168,52 +171,52 @@
         <!-- 明细操作按钮 -->
         <el-row :gutter="10" class="mb8" type="flex" align="middle">
           <el-col :span="3">
-            <el-button v-if="!form.issueId && !viewMode" class="detail-add-btn" type="primary" plain icon="Plus" @click="addDetail">添加明细</el-button>
+            <el-button v-if="!form.issueId && !viewMode" class="detail-add-btn" type="primary" plain icon="Plus" @click="addDetail">{{ t('wms.receiving.addDetail') }}</el-button>
           </el-col>
           <el-col :span="21" class="text-muted" style="line-height: 32px;">
-            合计需求 {{ totalRequire }}　已发 {{ totalIssued }}　欠料 {{ totalShortage }}
+            {{ t('wms.issueOrder.totalSummary', { require: totalRequire, issued: totalIssued, shortage: totalShortage }) }}
           </el-col>
         </el-row>
 
         <el-table :data="form.details" border size="small" max-height="360">
-          <el-table-column label="物料" align="center" min-width="260">
+          <el-table-column :label="t('wms.material.title')" align="center" min-width="260">
             <template #default="scope">
               <MaterialSelect
                 v-model="scope.row.materialId"
                 :label="scope.row.materialCode && scope.row.materialName ? scope.row.materialCode + ' - ' + scope.row.materialName : ''"
-                placeholder="请选择物料" :disabled="viewMode" @change="(m) => onMaterialChange(scope.row, m)"
+                :placeholder="t('wms.material.ph.selectMaterial')" :disabled="viewMode" @change="(m) => onMaterialChange(scope.row, m)"
                 style="width: 100%" />
             </template>
           </el-table-column>
-          <el-table-column label="批次号" align="center" width="140">
+          <el-table-column :label="t('wms.receiving.batchNo')" align="center" width="140">
             <template #default="scope">
-              <el-input v-model="scope.row.batchNo" placeholder="空则按 FEFO 自动挑" size="small" />
+              <el-input v-model="scope.row.batchNo" :placeholder="t('wms.issueOrder.ph.batchNo')" size="small" />
             </template>
           </el-table-column>
-          <el-table-column label="需求数量" align="center" width="110">
+          <el-table-column :label="t('wms.issueOrder.requireQuantity')" align="center" width="110">
             <template #default="scope">
               <el-input-number v-model="scope.row.requireQuantity" :min="0" :controls="false"
-                size="small" placeholder="数量" style="width: 100%" />
+                size="small" :placeholder="t('wms.receipt.quantity')" style="width: 100%" />
             </template>
           </el-table-column>
-          <el-table-column label="已发" align="center" width="80">
+          <el-table-column :label="t('wms.issueOrder.issued')" align="center" width="80">
             <template #default="scope">
               <span class="text-muted">{{ scope.row.issuedQuantity || 0 }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="欠料" align="center" width="80">
+          <el-table-column :label="t('wms.issueOrder.shortage')" align="center" width="80">
             <template #default="scope">
               <span :class="{ 'text-danger': Math.max(scope.row.requireQuantity - (scope.row.issuedQuantity || 0), 0) > 0 }">
                 {{ Math.max(scope.row.requireQuantity - (scope.row.issuedQuantity || 0), 0) }}
               </span>
             </template>
           </el-table-column>
-          <el-table-column label="备注" align="center" min-width="140">
+          <el-table-column :label="t('common.remark')" align="center" min-width="140">
             <template #default="scope">
-              <el-input v-model="scope.row.remark" size="small" placeholder="备注" maxlength="255" />
+              <el-input v-model="scope.row.remark" size="small" :placeholder="t('common.remark')" maxlength="255" />
             </template>
           </el-table-column>
-          <el-table-column label="操作" align="center" width="60">
+          <el-table-column :label="t('common.actions')" align="center" width="60">
             <template #default="scope">
               <el-button link type="danger" icon="Delete" @click="removeDetail(scope.$index)"></el-button>
             </template>
@@ -222,8 +225,8 @@
 
         <template #footer>
           <div class="dialog-footer">
-            <el-button v-if="!viewMode" type="primary" @click="submitForm">确 定</el-button>
-            <el-button @click="cancel">{{ viewMode ? "关 闭" : "取 消" }}</el-button>
+            <el-button v-if="!viewMode" type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+            <el-button @click="cancel">{{ viewMode ? t('common.close') : t('common.cancel') }}</el-button>
           </div>
         </template>
       </el-dialog>
@@ -234,6 +237,7 @@
 <script setup name="WmsIssueOrder">
 import { ref, reactive, toRefs, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listIssueOrder,
   getIssueOrder,
@@ -249,6 +253,7 @@ import WarehouseSelect from "@/views/wms/warehouse/input.vue";
 import MaterialSelect from "@/views/wms/material/input.vue";
 import { listUser, deptTreeSelect } from "@/api/system/user";
 
+const { t } = useI18n();
 const issueOrderRef = ref(null);
 
 /** 部门树 / 领用人选项 */
@@ -347,18 +352,31 @@ const selectedRows = ref([]);
 const showSearch = ref(true);
 
 // 来源类型
-const sourceTypeMap = { mes: "MES下发", manual: "手工新建" };
+function sourceTypeLabel(v) {
+  const map = { mes: t('wms.issueOrder.sourceMes'), manual: t('wms.issueOrder.sourceManual') };
+  return map[v] || "-";
+}
 
 // 出库类型
-const outboundTypeMap = { issue: "生产领料", sales: "销售发货", other: "其他" };
+function outboundTypeLabel(v) {
+  const map = {
+    issue: t('wms.issueOrder.typeIssue'),
+    sales: t('wms.issueOrder.typeSales'),
+    other: t('wms.issueOrder.typeOther'),
+  };
+  return map[v] || t('wms.issueOrder.typeIssue');
+}
 
 // 发料状态：待发料 → 部分发料 → 已发完 / 已取消
-const issueStatusMap = {
-  pending: "待发料",
-  partial: "部分发料",
-  issued: "已发完",
-  cancelled: "已取消",
-};
+function issueStatusLabel(s) {
+  const map = {
+    pending: t('wms.issueOrder.statusPending'),
+    partial: t('wms.issueOrder.statusPartial'),
+    issued: t('wms.issueOrder.statusIssued'),
+    cancelled: t('wms.issueOrder.statusCancelled'),
+  };
+  return map[s] || "-";
+}
 const issueStatusTag = (s) =>
   s === "pending" ? "info" : s === "partial" ? "warning" : s === "issued" ? "success" : "danger";
 
@@ -384,36 +402,36 @@ const data = reactive({
     workOrderNo: undefined,
   },
   rules: {
-    warehouseId: [{ required: true, message: "请选择仓库", trigger: "change" }],
-    outboundType: [{ required: true, message: "请选择出库类型", trigger: "change" }],
+    warehouseId: [{ required: true, message: () => t('wms.receipt.rules.warehouseRequired'), trigger: "change" }],
+    outboundType: [{ required: true, message: () => t('wms.issueOrder.rules.typeRequired'), trigger: "change" }],
   },
 });
 
 const { form, queryParams, rules } = toRefs(data);
 
 const queryConfig = computed(() => [
-  { label: "关键字", prop: "keywords", type: "input", placeholder: "单号/工单号/部门/客户" },
+  { label: t('wms.common.keywords'), prop: "keywords", type: "input", placeholder: t('wms.issueOrder.ph.keywords') },
   {
-    label: "出库类型",
+    label: t('wms.issueOrder.outboundType'),
     prop: "outboundType",
     type: "select",
-    placeholder: "请选择出库类型",
+    placeholder: t('wms.issueOrder.ph.selectType'),
     options: [
-      { label: "生产领料", value: "issue" },
-      { label: "销售发货", value: "sales" },
-      { label: "其他", value: "other" },
+      { label: t('wms.issueOrder.typeIssue'), value: "issue" },
+      { label: t('wms.issueOrder.typeSales'), value: "sales" },
+      { label: t('wms.issueOrder.typeOther'), value: "other" },
     ],
   },
   {
-    label: "状态",
+    label: t('common.status'),
     prop: "issueStatus",
     type: "select",
-    placeholder: "请选择状态",
+    placeholder: t('wms.warehouse.ph.selectStatus'),
     options: [
-      { label: "待发料", value: "pending" },
-      { label: "部分发料", value: "partial" },
-      { label: "已发完", value: "issued" },
-      { label: "已取消", value: "cancelled" },
+      { label: t('wms.issueOrder.statusPending'), value: "pending" },
+      { label: t('wms.issueOrder.statusPartial'), value: "partial" },
+      { label: t('wms.issueOrder.statusIssued'), value: "issued" },
+      { label: t('wms.issueOrder.statusCancelled'), value: "cancelled" },
     ],
   },
 ]);
@@ -504,7 +522,7 @@ function reset() {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加出库申请";
+  title.value = t('wms.issueOrder.addTitle');
 }
 
 /** 修改 */
@@ -520,7 +538,7 @@ function handleView(row) {
   reset();
   viewMode.value = true;
   getIssueOrder(row.issueId).then((res) => fillForm(res.data || {}));
-  title.value = "出库申请明细";
+  title.value = t('wms.issueOrder.viewTitle');
 }
 
 /** 填充表单 */
@@ -562,7 +580,7 @@ function fillForm(d) {
     if (d.receiverId && !userAllOptions.value.some((u) => u.value === d.receiverId)) {
       // 用户已不在系统（离职等）：补临时选项保住显示
       if (d.receiverName) {
-        userAllOptions.value.push({ value: d.receiverId, label: `${d.receiverName}（原）`, name: d.receiverName });
+        userAllOptions.value.push({ value: d.receiverId, label: `${d.receiverName}（${t('wms.issueOrder.ph.former')}）`, name: d.receiverName });
         userOptions.value = userAllOptions.value;
       } else {
         form.value.receiverId = undefined;
@@ -570,7 +588,7 @@ function fillForm(d) {
     }
   });
   open.value = true;
-  title.value = "修改出库申请";
+  title.value = t('wms.issueOrder.editTitle');
 }
 
 /** 明细：新增一行 */
@@ -610,22 +628,22 @@ function submitForm() {
 
     const details = form.value.details || [];
     if (details.length === 0) {
-      ElMessage.warning("请至少添加一条领料明细！");
+      ElMessage.warning(t('wms.issueOrder.selectAtLeastOneDetail'));
       return;
     }
     for (const d of details) {
       if (!d.materialId) {
-        ElMessage.warning("请选择领料物料！");
+        ElMessage.warning(t('wms.issueOrder.selectMaterialRequired'));
         return;
       }
       if (!(d.requireQuantity > 0)) {
-        ElMessage.warning("需求数量必须大于0！");
+        ElMessage.warning(t('wms.issueOrder.requireQtyRequired'));
         return;
       }
     }
 
     if (form.value.outboundType === "sales" && !form.value.customerName) {
-      ElMessage.warning("销售发货请填写客户名称！");
+      ElMessage.warning(t('wms.issueOrder.customerRequired'));
       return;
     }
 
@@ -656,7 +674,7 @@ function submitForm() {
 
     const api = form.value.issueId ? updateIssueOrder : addIssueOrder;
     api(payload).then(() => {
-      ElMessage.success("保存成功");
+      ElMessage.success(t('wms.common.savedSuccess'));
       open.value = false;
       getList();
     });
@@ -672,27 +690,27 @@ function cancel() {
 /** 发料 */
 function handleIssue(row) {
   ElMessageBox.confirm(
-    `对领料单「${row.issueNo}」执行发料：按先过期先出挑批次，库存有多少发多少，不足部分记为欠料。是否继续？`,
-    "发料确认",
-    { confirmButtonText: "确定发料", cancelButtonText: "取消", type: "warning" }
+    t('wms.issueOrder.issueConfirmMsg', { no: row.issueNo }),
+    t('wms.issueOrder.issueConfirmTitle'),
+    { confirmButtonText: t('wms.issueOrder.issueConfirmBtn'), cancelButtonText: t('common.cancel'), type: "warning" }
   )
     .then(() => issueIssueOrder(row.issueId))
     .then((res) => {
-      ElMessage.success(res.msg || "发料成功");
+      ElMessage.success(res.msg || t('wms.issueOrder.issueSuccess'));
       getList();
     });
 }
 
 /** 取消领料单 */
 function handleCancel(row) {
-  ElMessageBox.confirm(`确认取消领料单「${row.issueNo}」？`, "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.issueOrder.cancelConfirm', { no: row.issueNo }), t('wms.common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => cancelIssueOrder(row.issueId))
     .then(() => {
-      ElMessage.success("已取消");
+      ElMessage.success(t('wms.returnOrder.cancelledTip'));
       getList();
     });
 }
@@ -700,15 +718,15 @@ function handleCancel(row) {
 /** 删除 */
 function handleDelete(row) {
   const delIds = row.issueId || ids.value.join(",");
-  ElMessageBox.confirm(`是否确认删除领料单编号为"${delIds}"的数据项？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.issueOrder.deleteConfirm', { id: delIds }), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => delIssueOrder(delIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
 }
 

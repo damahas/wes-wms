@@ -12,41 +12,40 @@
       <el-row :gutter="10" class="mb8">
         <right-toolbar
           v-model:showSearch="showSearch"
-          hint="实时库存由入库上架、出库、移库、盘点、库存调整等业务单据驱动，不能直接修改或删除。
-需要修正库存数量请使用「库存调整」。"
+          :hint="t('wms.stock.hint')"
           @queryTable="getList"
         ></right-toolbar>
       </el-row>
 
       <el-table v-loading="loading" :data="stockList">
-        <el-table-column label="库存条码" align="center" prop="barcode" width="160" :show-overflow-tooltip="true" />
-        <el-table-column label="物料编码" align="center" prop="materialCode" :show-overflow-tooltip="true" />
-        <el-table-column label="物料名称" align="center" prop="materialName" :show-overflow-tooltip="true" />
-        <el-table-column label="规格" align="center" prop="spec" :show-overflow-tooltip="true" />
-        <el-table-column label="批次号" align="center" prop="batchNo" :show-overflow-tooltip="true" />
-        <el-table-column label="仓库" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.stock.barcode')" align="center" prop="barcode" width="160" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.stock.materialCode')" align="center" prop="materialCode" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.stock.materialName')" align="center" prop="materialName" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.stock.spec')" align="center" prop="spec" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.common.batchNo')" align="center" prop="batchNo" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.common.warehouse')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.warehouseName || scope.row.warehouse?.warehouseName || "-" }}</template>
         </el-table-column>
-        <el-table-column label="库区" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.zone')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.zoneName || scope.row.zone?.zoneName || "-" }}</template>
         </el-table-column>
-        <el-table-column label="库位编码" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.location.locationCode')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.locationCode || scope.row.location?.locationCode || "-" }}</template>
         </el-table-column>
-        <el-table-column label="单位" align="center" prop="unit" :show-overflow-tooltip="true" />
-        <el-table-column label="库存数量" align="center" prop="stockQuantity" />
-        <el-table-column label="可用数量" align="center" prop="availableQuantity" />
-        <el-table-column label="冻结数量" align="center" prop="freezeQuantity" />
-        <el-table-column label="锁定数量" align="center" prop="lockQuantity" />
-        <el-table-column label="生产日期" align="center" prop="productionDate" width="120" />
-        <el-table-column label="失效日期" align="center" prop="expireDate" width="120" />
-        <el-table-column label="创建时间" align="center" prop="createTime" min-width="170" />
-        <el-table-column label="供应商" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.receiving.unit')" align="center" prop="unit" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.stock.stockQuantity')" align="center" prop="stockQuantity" />
+        <el-table-column :label="t('wms.stock.availableQuantity')" align="center" prop="availableQuantity" />
+        <el-table-column :label="t('wms.stock.freezeQuantity')" align="center" prop="freezeQuantity" />
+        <el-table-column :label="t('wms.stock.lockQuantity')" align="center" prop="lockQuantity" />
+        <el-table-column :label="t('wms.stock.productionDate')" align="center" prop="productionDate" width="120" />
+        <el-table-column :label="t('wms.stock.expireDate')" align="center" prop="expireDate" width="120" />
+        <el-table-column :label="t('common.createTime')" align="center" prop="createTime" min-width="170" />
+        <el-table-column :label="t('wms.stock.supplier')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.supplier?.partnerName || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="来源入库单" align="center" min-width="170" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.stock.sourceReceipt')" align="center" min-width="170" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.receiptId || "-" }}
           </template>
@@ -66,10 +65,12 @@
 
 <script setup name="WmsStock">
 import { ref, reactive, toRefs, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { listStock } from "@/api/wms/stock";
 import QueryForm from "@/components/QueryForm/index.vue";
 import RightToolbar from "@/components/RightToolbar/index.vue";
 
+const { t } = useI18n();
 const stockList = ref([]);
 const loading = ref(true);
 const total = ref(0);
@@ -87,10 +88,10 @@ const { queryParams } = toRefs(data);
 
 const queryConfig = computed(() => [
   {
-    label: "关键字",
+    label: t("wms.common.keywords"),
     prop: "keywords",
     type: "input",
-    placeholder: "请输入关键字",
+    placeholder: t("wms.common.ph.inputKeywords"),
   },
 ]);
 

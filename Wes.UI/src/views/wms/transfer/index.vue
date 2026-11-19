@@ -5,69 +5,69 @@
 
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
-          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:transfer:add']">新增</el-button>
+          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:transfer:add']">{{ t('common.add') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button v-if="canEdit(selectedRows[0] || {})" type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:transfer:edit']">修改</el-button>
-          <el-button v-else type="info" plain icon="View" :disabled="single" @click="handleView(selectedRows[0])">明细</el-button>
+          <el-button v-if="canEdit(selectedRows[0] || {})" type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:transfer:edit']">{{ t('common.edit') }}</el-button>
+          <el-button v-else type="info" plain icon="View" :disabled="single" @click="handleView(selectedRows[0])">{{ t('wms.receipt.details') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="warning" plain icon="Upload" :disabled="single || !canOut(selectedRows[0])" @click="handleOut" v-hasPermi="['wms:transfer:out']">移出</el-button>
+          <el-button type="warning" plain icon="Upload" :disabled="single || !canOut(selectedRows[0])" @click="handleOut" v-hasPermi="['wms:transfer:out']">{{ t('wms.transfer.out') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="success" plain icon="Download" :disabled="single || !canIn(selectedRows[0])" @click="handleIn" v-hasPermi="['wms:transfer:in']">移入</el-button>
+          <el-button type="success" plain icon="Download" :disabled="single || !canIn(selectedRows[0])" @click="handleIn" v-hasPermi="['wms:transfer:in']">{{ t('wms.transfer.in') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="danger" plain icon="Delete" :disabled="multiple || selectedRows.some((r) => !canEdit(r))" @click="handleDelete" v-hasPermi="['wms:transfer:remove']">删除</el-button>
+          <el-button type="danger" plain icon="Delete" :disabled="multiple || selectedRows.some((r) => !canEdit(r))" @click="handleDelete" v-hasPermi="['wms:transfer:remove']">{{ t('common.delete') }}</el-button>
         </el-col>
         <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
       </el-row>
 
       <el-table v-loading="loading" :data="transferList" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="调拨单号" align="center" prop="transferNo" :show-overflow-tooltip="true" />
-        <el-table-column label="调出仓库" align="center" min-width="120" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.transfer.transferNo')" align="center" prop="transferNo" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.transfer.fromWarehouse')" align="center" min-width="120" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.fromWarehouse?.warehouseName || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="调入仓库" align="center" min-width="120" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.transfer.toWarehouse')" align="center" min-width="120" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.toWarehouse?.warehouseName || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="总数" align="center" prop="totalQuantity" width="80" />
-        <el-table-column label="已出库" align="center" prop="outQuantity" width="80" />
-        <el-table-column label="已入库" align="center" prop="inQuantity" width="80" />
-        <el-table-column label="在途" align="center" width="80">
+        <el-table-column :label="t('wms.transfer.total')" align="center" prop="totalQuantity" width="80" />
+        <el-table-column :label="t('wms.transfer.outQty')" align="center" prop="outQuantity" width="80" />
+        <el-table-column :label="t('wms.transfer.inQty')" align="center" prop="inQuantity" width="80" />
+        <el-table-column :label="t('wms.transfer.inTransit')" align="center" width="80">
           <template #default="scope">
             <span :class="{ 'text-warn': (scope.row.inTransitQuantity ?? 0) > 0 }">
               {{ scope.row.inTransitQuantity ?? 0 }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="状态" align="center" width="100">
+        <el-table-column :label="t('common.status')" align="center" width="100">
           <template #default="scope">
             <el-tag :type="statusTag(scope.row.transferStatus)">
-              {{ statusMap[scope.row.transferStatus] || "-" }}
+              {{ statusLabel(scope.row.transferStatus) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="移出人/时间" align="center" min-width="170">
+        <el-table-column :label="t('wms.transfer.outByTime')" align="center" min-width="170">
           <template #default="scope">
             {{ scope.row.outBy ? scope.row.outBy + " " + (scope.row.outTime || "").slice(5, 16) : "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="移入人/时间" align="center" min-width="170">
+        <el-table-column :label="t('wms.transfer.inByTime')" align="center" min-width="170">
           <template #default="scope">
             {{ scope.row.inBy ? scope.row.inBy + " " + (scope.row.inTime || "").slice(5, 16) : "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+        <el-table-column :label="t('common.actions')" align="center" width="150" class-name="small-padding fixed-width">
           <template #default="scope">
-            <el-button v-if="canOut(scope.row)" link type="warning" icon="Upload" @click="handleOut(scope.row)" v-hasPermi="['wms:transfer:out']">移出</el-button>
-            <el-button v-if="canIn(scope.row)" link type="success" icon="Download" @click="handleIn(scope.row)" v-hasPermi="['wms:transfer:in']">移入</el-button>
-            <el-button v-if="canEdit(scope.row)" link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:transfer:remove']">删除</el-button>
+            <el-button v-if="canOut(scope.row)" link type="warning" icon="Upload" @click="handleOut(scope.row)" v-hasPermi="['wms:transfer:out']">{{ t('wms.transfer.out') }}</el-button>
+            <el-button v-if="canIn(scope.row)" link type="success" icon="Download" @click="handleIn(scope.row)" v-hasPermi="['wms:transfer:in']">{{ t('wms.transfer.in') }}</el-button>
+            <el-button v-if="canEdit(scope.row)" link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:transfer:remove']">{{ t('common.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -79,36 +79,36 @@
         <el-form ref="transferRef" :model="form" :rules="rules" label-width="92px" class="nowrap-labels" :disabled="viewMode">
           <el-row :gutter="16">
             <el-col :span="8">
-              <el-form-item label="调拨单号">
-                <el-input v-model="form.transferNo" placeholder="保存后自动生成" readonly />
+              <el-form-item :label="t('wms.transfer.transferNo')">
+                <el-input v-model="form.transferNo" :placeholder="t('wms.receipt.receiptNoAuto')" readonly />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="调出仓库" prop="fromWarehouseId">
-                <WarehouseSelect v-model="form.fromWarehouseId" placeholder="请选择调出仓库" @change="onWarehouseChange" />
+              <el-form-item :label="t('wms.transfer.fromWarehouse')" prop="fromWarehouseId">
+                <WarehouseSelect v-model="form.fromWarehouseId" :placeholder="t('wms.transfer.ph.selectFromWarehouse')" @change="onWarehouseChange" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="调入仓库" prop="toWarehouseId">
-                <WarehouseSelect v-model="form.toWarehouseId" placeholder="请选择调入仓库" />
+              <el-form-item :label="t('wms.transfer.toWarehouse')" prop="toWarehouseId">
+                <WarehouseSelect v-model="form.toWarehouseId" :placeholder="t('wms.transfer.ph.selectToWarehouse')" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="调拨类型">
-                <el-select v-model="form.transferType" placeholder="请选择类型" style="width: 100%">
-                  <el-option label="普通调拨" value="normal" />
-                  <el-option label="紧急调拨" value="urgent" />
+              <el-form-item :label="t('wms.transfer.transferType')">
+                <el-select v-model="form.transferType" :placeholder="t('wms.common.pleaseSelect')" style="width: 100%">
+                  <el-option :label="t('wms.transfer.typeNormal')" value="normal" />
+                  <el-option :label="t('wms.transfer.typeUrgent')" value="urgent" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="16">
-              <el-form-item label="调拨原因">
-                <el-input v-model="form.transferReason" placeholder="如：产线缺料，从主仓调拨" maxlength="255" />
+              <el-form-item :label="t('wms.transfer.transferReason')">
+                <el-input v-model="form.transferReason" :placeholder="t('wms.transfer.ph.reasonExample')" maxlength="255" />
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="备注">
-                <el-input v-model="form.remark" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" placeholder="请输入备注" maxlength="500" />
+              <el-form-item :label="t('common.remark')">
+                <el-input v-model="form.remark" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" :placeholder="t('common.input')" maxlength="500" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -116,9 +116,9 @@
 
         <el-row :gutter="10" class="mb8">
           <el-col :span="2">
-            <el-button v-if="!form.transferId && !viewMode" class="detail-add-btn" type="primary" plain icon="Plus" @click="openStockDialog">添加明细</el-button>
+            <el-button v-if="!form.transferId && !viewMode" class="detail-add-btn" type="primary" plain icon="Plus" @click="openStockDialog">{{ t('wms.receiving.addDetail') }}</el-button>
           </el-col>
-          <span class="text-muted">合计 {{ totalQty }}；数量跟随库存行不可改（一条库存一个条码），收货库位不用在这里填，货到了由调入仓现场定</span>
+          <span class="text-muted">{{ t('wms.transfer.totalHint', { total: totalQty }) }}</span>
         </el-row>
 
         <!-- 库存行一律从弹窗多选进来，行内不可再换，要改就删行重挑 -->
@@ -131,24 +131,24 @@
         />
 
         <el-table :data="form.details" border size="small" max-height="360">
-          <el-table-column label="库存（物料 / 批次 / 调出库位）" align="center" min-width="320">
+          <el-table-column :label="t('wms.transfer.stockCol')" align="center" min-width="320">
             <template #default="scope">
               <span>{{ scope.row.stockLabel }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="调拨数量" align="center" width="110">
+          <el-table-column :label="t('wms.transfer.transferQty')" align="center" width="110">
             <template #default="scope">
-              <span title="一条库存一个条码，数量跟随库存行，改了就跟标签对不上">
+              <span :title="t('wms.move.quantityTip')">
                 {{ scope.row.transferQuantity }}
               </span>
             </template>
           </el-table-column>
-          <el-table-column label="备注" align="center" min-width="120">
+          <el-table-column :label="t('common.remark')" align="center" min-width="120">
             <template #default="scope">
-              <el-input v-model="scope.row.remark" size="small" placeholder="备注" maxlength="255" />
+              <el-input v-model="scope.row.remark" size="small" :placeholder="t('common.remark')" maxlength="255" />
             </template>
           </el-table-column>
-          <el-table-column label="操作" align="center" width="60">
+          <el-table-column :label="t('common.actions')" align="center" width="60">
             <template #default="scope">
               <el-button link type="danger" icon="Delete" @click="removeDetail(scope.$index)"></el-button>
             </template>
@@ -157,54 +157,54 @@
 
         <template #footer>
           <div class="dialog-footer">
-            <el-button v-if="!viewMode" type="primary" @click="submitForm">确 定</el-button>
-            <el-button @click="cancel">{{ viewMode ? "关 闭" : "取 消" }}</el-button>
+            <el-button v-if="!viewMode" type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+            <el-button @click="cancel">{{ viewMode ? t('common.close') : t('common.cancel') }}</el-button>
           </div>
         </template>
       </el-dialog>
 
       <!-- 移入收货 -->
-      <el-dialog title="调拨收货" v-model="inOpen" width="900px" append-to-body>
+      <el-dialog :title="t('wms.transfer.inDialogTitle')" v-model="inOpen" width="900px" append-to-body>
         <el-alert type="info" show-icon :closable="false" class="mb8">
-          单号 {{ inForm.transferNo }}　按实际到货数量填写；少收的部分会继续记为在途，不会凭空消失
+          {{ t('wms.transfer.inDialogAlert', { no: inForm.transferNo }) }}
         </el-alert>
         <el-table :data="inForm.items" border size="small" max-height="420">
-          <el-table-column label="物料" align="center" min-width="180" :show-overflow-tooltip="true">
+          <el-table-column :label="t('wms.material.title')" align="center" min-width="180" :show-overflow-tooltip="true">
             <template #default="scope">
               {{ scope.row.materialCode }} {{ scope.row.materialName }}
             </template>
           </el-table-column>
-          <el-table-column label="批次" align="center" prop="batchNo" width="110" />
-          <el-table-column label="条码" align="center" width="130" :show-overflow-tooltip="true">
+          <el-table-column :label="t('wms.receiving.batchNo')" align="center" prop="batchNo" width="110" />
+          <el-table-column :label="t('wms.receipt.barcode')" align="center" width="130" :show-overflow-tooltip="true">
             <template #default="scope">
               {{ scope.row.barcode || "-" }}
             </template>
           </el-table-column>
-          <el-table-column label="在途" align="center" width="80">
+          <el-table-column :label="t('wms.transfer.inTransit')" align="center" width="80">
             <template #default="scope">
               <span class="text-warn">{{ scope.row.transitQty }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="实收数量" align="center" width="130">
+          <el-table-column :label="t('wms.transfer.receivedQty')" align="center" width="130">
             <template #default="scope">
               <el-input-number v-model="scope.row.quantity" :min="0" :max="scope.row.transitQty"
                 :precision="3" :controls="false" size="small" style="width: 100%" />
             </template>
           </el-table-column>
-          <el-table-column label="收货库位" align="center" width="220">
+          <el-table-column :label="t('wms.transfer.receiveLocation')" align="center" width="220">
             <template #default="scope">
               <LocationCascader
                 v-model="scope.row.toLocCascader"
                 :warehouse-id="inForm.toWarehouseId"
-                :placeholder="inForm.toWarehouseId ? '库区/库位' : '请先选仓库'"
+                :placeholder="inForm.toWarehouseId ? t('wms.move.ph.zoneOrLocation') : t('wms.move.ph.selectWarehouseFirst')"
                 @update:model-value="(val) => onInLocation(val, scope.$index)" />
             </template>
           </el-table-column>
         </el-table>
         <template #footer>
           <div class="dialog-footer">
-            <el-button type="primary" @click="submitIn">确认收货</el-button>
-            <el-button @click="inOpen = false">取 消</el-button>
+            <el-button type="primary" @click="submitIn">{{ t('wms.transfer.confirmReceive') }}</el-button>
+            <el-button @click="inOpen = false">{{ t('common.cancel') }}</el-button>
           </div>
         </template>
       </el-dialog>
@@ -215,6 +215,7 @@
 <script setup name="WmsTransfer">
 import { ref, reactive, toRefs, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listTransfer, getTransfer, addTransfer, updateTransfer, delTransfer, outTransfer, inTransfer,
 } from "@/api/wms/transfer";
@@ -224,6 +225,7 @@ import WarehouseSelect from "@/views/wms/warehouse/input.vue";
 import SelectStock from "@/views/wms/stock/select.vue";
 import LocationCascader from "@/views/wms/location/cascader.vue";
 
+const { t } = useI18n();
 const transferRef = ref(null);
 const transferList = ref([]);
 const open = ref(false);
@@ -244,12 +246,15 @@ const inOpen = ref(false);
 const inForm = ref({ transferId: undefined, transferNo: "", toWarehouseId: undefined, items: [] });
 
 // 待调拨 → 移出 → 在途 → 移入 → 已完成
-const statusMap = {
-  pending: "待调拨",
-  in_transit: "在途",
-  completed: "已完成",
-  cancelled: "已取消",
-};
+function statusLabel(s) {
+  const map = {
+    pending: t('wms.transfer.statusPending'),
+    in_transit: t('wms.transfer.statusInTransit'),
+    completed: t('wms.returnOrder.statusCompleted'),
+    cancelled: t('wms.receiving.statusCancelled'),
+  };
+  return map[s] || "-";
+}
 const statusTag = (s) =>
   s === "pending" ? "info" : s === "in_transit" ? "warning" : s === "completed" ? "success" : "danger";
 
@@ -275,25 +280,25 @@ const data = reactive({
     transferStatus: undefined,
   },
   rules: {
-    fromWarehouseId: [{ required: true, message: "请选择调出仓库", trigger: "change" }],
-    toWarehouseId: [{ required: true, message: "请选择调入仓库", trigger: "change" }],
+    fromWarehouseId: [{ required: true, message: () => t('wms.transfer.ph.selectFromWarehouse'), trigger: "change" }],
+    toWarehouseId: [{ required: true, message: () => t('wms.transfer.ph.selectToWarehouse'), trigger: "change" }],
   },
 });
 
 const { form, queryParams, rules } = toRefs(data);
 
 const queryConfig = computed(() => [
-  { label: "关键字", prop: "keywords", type: "input", placeholder: "调拨单号" },
+  { label: t('wms.common.keywords'), prop: "keywords", type: "input", placeholder: t('wms.transfer.ph.inputTransferNo') },
   {
-    label: "状态",
+    label: t('common.status'),
     prop: "transferStatus",
     type: "select",
-    placeholder: "请选择状态",
+    placeholder: t('wms.warehouse.ph.selectStatus'),
     options: [
-      { label: "待调拨", value: "pending" },
-      { label: "在途", value: "in_transit" },
-      { label: "已完成", value: "completed" },
-      { label: "已取消", value: "cancelled" },
+      { label: t('wms.transfer.statusPending'), value: "pending" },
+      { label: t('wms.transfer.statusInTransit'), value: "in_transit" },
+      { label: t('wms.returnOrder.statusCompleted'), value: "completed" },
+      { label: t('wms.receiving.statusCancelled'), value: "cancelled" },
     ],
   },
 ]);
@@ -352,7 +357,7 @@ function reset() {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加调拨单";
+  title.value = t('wms.transfer.addTitle');
 }
 
 function handleUpdate(row) {
@@ -366,7 +371,7 @@ function handleView(row) {
   reset();
   viewMode.value = true;
   getTransfer(row.transferId).then((res) => fillForm(res.data || {}));
-  title.value = "调拨单明细";
+  title.value = t('wms.transfer.viewTitle');
 }
 
 function fillForm(d) {
@@ -383,7 +388,7 @@ function fillForm(d) {
       detailId: x.detailId,
       // 明细没存库存行 id，编辑时用文本把当前这行显示出来（真值仍在下面几个字段里）
       stockId: undefined,
-      stockLabel: [x.materialCode, x.materialName, x.batchNo ? "批次" + x.batchNo : "无批次", x.fromLocationCode]
+      stockLabel: [x.materialCode, x.materialName, x.batchNo ? `${t('wms.receiving.batchNo')}${x.batchNo}` : t('wms.move.noBatch'), x.fromLocationCode]
         .filter(Boolean).join(" / "),
       materialId: x.materialId,
       materialCode: x.materialCode,
@@ -396,7 +401,7 @@ function fillForm(d) {
     })),
   };
   open.value = true;
-  title.value = "修改调拨单";
+  title.value = t('wms.transfer.editTitle');
 }
 
 /**
@@ -406,7 +411,7 @@ function fillForm(d) {
 function onWarehouseChange() {
   if ((form.value.details || []).length === 0) return;
   form.value.details = [];
-  ElMessage.warning("调出仓库已变更，明细已清空，请重新挑选库存");
+  ElMessage.warning(t('wms.transfer.fromWarehouseChanged'));
 }
 
 
@@ -418,7 +423,7 @@ function onWarehouseChange() {
  */
 function openStockDialog() {
   if (!form.value.fromWarehouseId) {
-    ElMessage.warning("请先选择调出仓库，再挑选要调的库存");
+    ElMessage.warning(t('wms.transfer.selectFromWarehouseFirst'));
     return;
   }
   stockSelectRef.value?.open();
@@ -438,7 +443,7 @@ function onStockSelected(items) {
     form.value.details.push({
       detailId: undefined,
       stockId: stock.stockId,
-      stockLabel: `${stock.materialCode || ""} ${stock.materialName || ""} / ${stock.batchNo || "无批次"} / ${stock.locationCode || ""}`,
+      stockLabel: `${stock.materialCode || ""} ${stock.materialName || ""} / ${stock.batchNo || t('wms.move.noBatch')} / ${stock.locationCode || ""}`,
       materialId: stock.materialId,
       materialCode: stock.materialCode || "",
       materialName: stock.materialName || "",
@@ -450,7 +455,7 @@ function onStockSelected(items) {
       remark: undefined,
     });
   }
-  if (skipped > 0) ElMessage.info(`有 ${skipped} 行库存已在明细中，已跳过`);
+  if (skipped > 0) ElMessage.info(t('wms.move.skippedRows', { count: skipped }));
 }
 
 function removeDetail(index) {
@@ -467,26 +472,26 @@ function submitForm() {
     if (!valid) return;
 
     if (form.value.fromWarehouseId === form.value.toWarehouseId) {
-      ElMessage.warning("调出与调入仓库相同，库内搬货请使用移库单！");
+      ElMessage.warning(t('wms.transfer.sameWarehouseWarn'));
       return;
     }
 
     const details = form.value.details || [];
     if (details.length === 0) {
-      ElMessage.warning("请至少添加一条调拨明细！");
+      ElMessage.warning(t('wms.transfer.selectAtLeastOneDetail'));
       return;
     }
     for (const d of details) {
       if (!d.materialId) {
-        ElMessage.warning("请选择调拨物料！");
+        ElMessage.warning(t('wms.transfer.selectMaterialRequired'));
         return;
       }
       if (!(d.transferQuantity > 0)) {
-        ElMessage.warning("调拨数量必须大于0！");
+        ElMessage.warning(t('wms.transfer.qtyRequired'));
         return;
       }
       if (!d.fromLocationId) {
-        ElMessage.warning("请选择调出库位！");
+        ElMessage.warning(t('wms.transfer.fromLocationRequired'));
         return;
       }
     }
@@ -513,7 +518,7 @@ function submitForm() {
 
     const api = form.value.transferId ? updateTransfer : addTransfer;
     api(payload).then(() => {
-      ElMessage.success("保存成功");
+      ElMessage.success(t('wms.common.savedSuccess'));
       open.value = false;
       getList();
     });
@@ -525,13 +530,13 @@ function handleOut(row) {
   const target = row?.transferId ? row : selectedRows.value[0];
   if (!target) return;
   ElMessageBox.confirm(
-    `确认对调拨单「${target.transferNo}」执行移出？将扣减调出仓的库存，货物进入在途状态，等待调入仓收货。`,
-    "移出确认",
-    { confirmButtonText: "确定移出", cancelButtonText: "取消", type: "warning" }
+    t('wms.transfer.outConfirmMsg', { no: target.transferNo }),
+    t('wms.transfer.outConfirmTitle'),
+    { confirmButtonText: t('wms.transfer.outConfirmBtn'), cancelButtonText: t('common.cancel'), type: "warning" }
   )
     .then(() => outTransfer(target.transferId))
     .then((res) => {
-      ElMessage.success(res.msg || "移出成功");
+      ElMessage.success(res.msg || t('wms.transfer.outSuccess'));
       getList();
     });
 }
@@ -575,16 +580,16 @@ function onInLocation(val, index) {
 function submitIn() {
   const items = inForm.value.items.filter((i) => i.quantity > 0);
   if (items.length === 0) {
-    ElMessage.warning("请填写实收数量！");
+    ElMessage.warning(t('wms.transfer.inputReceivedQty'));
     return;
   }
   for (const i of items) {
     if (!i.toLocationId) {
-      ElMessage.warning(`请选择【${i.materialName}】的收货库位！`);
+      ElMessage.warning(t('wms.transfer.selectReceiveLocation', { name: i.materialName }));
       return;
     }
     if (i.quantity > i.transitQty) {
-      ElMessage.warning(`【${i.materialName}】实收不能超过在途数量！`);
+      ElMessage.warning(t('wms.transfer.receivedExceedTransit', { name: i.materialName }));
       return;
     }
   }
@@ -597,7 +602,7 @@ function submitIn() {
       toLocationId: i.toLocationId,
     })),
   }).then((res) => {
-    ElMessage.success(res.msg || "收货成功");
+    ElMessage.success(res.msg || t('wms.transfer.receiveSuccess'));
     inOpen.value = false;
     getList();
   });
@@ -605,15 +610,15 @@ function submitIn() {
 
 function handleDelete(row) {
   const delIds = row.transferId || ids.value.join(",");
-  ElMessageBox.confirm(`是否确认删除调拨单编号为"${delIds}"的数据项？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.transfer.deleteConfirm', { id: delIds }), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => delTransfer(delIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
 }
 

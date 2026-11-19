@@ -12,19 +12,19 @@
     <!-- 操作按钮 -->
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:returnOrder:add']">新增</el-button>
+        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:returnOrder:add']">{{ t('common.add') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:returnOrder:edit']">修改</el-button>
+        <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:returnOrder:edit']">{{ t('common.edit') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['wms:returnOrder:remove']">删除</el-button>
+        <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['wms:returnOrder:remove']">{{ t('common.delete') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="success" plain icon="CircleCheck" :disabled="multiple" @click="handleConfirmReturn" v-hasPermi="['wms:returnOrder:edit']">确认退货</el-button>
+        <el-button type="success" plain icon="CircleCheck" :disabled="multiple" @click="handleConfirmReturn" v-hasPermi="['wms:returnOrder:edit']">{{ t('wms.returnOrder.confirmReturn') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" plain icon="CircleClose" :disabled="multiple" @click="handleCancelReturn" v-hasPermi="['wms:returnOrder:edit']">取消退货</el-button>
+        <el-button type="danger" plain icon="CircleClose" :disabled="multiple" @click="handleCancelReturn" v-hasPermi="['wms:returnOrder:edit']">{{ t('wms.returnOrder.cancelReturn') }}</el-button>
       </el-col>
         <right-toolbar
           v-model:showSearch="showSearch"
@@ -35,37 +35,37 @@
     <!-- 列表 -->
     <el-table v-loading="loading" :data="returnOrderList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="退货单号" align="center" prop="returnOrderNo" :show-overflow-tooltip="true" width="180" />
-      <el-table-column label="退货类型" align="center" prop="returnType" width="100">
+      <el-table-column :label="t('wms.returnOrder.returnOrderNo')" align="center" prop="returnOrderNo" :show-overflow-tooltip="true" width="180" />
+      <el-table-column :label="t('wms.returnOrder.returnType')" align="center" prop="returnType" width="100">
         <template #default="scope">
           <el-tag :type="returnTypeTagType(scope.row.returnType)" size="small">
             {{ returnTypeLabel(scope.row.returnType) }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="供应商" align="center" :show-overflow-tooltip="true" min-width="180">
+      <el-table-column :label="t('wms.material.supplier')" align="center" :show-overflow-tooltip="true" min-width="180">
         <template #default="scope">
           {{ scope.row.supplier?.partnerName || "-" }}
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="returnStatus" width="80">
+      <el-table-column :label="t('common.status')" align="center" prop="returnStatus" width="80">
         <template #default="scope">
           <el-tag :type="statusTagType(scope.row.returnStatus)" size="small">
             {{ statusLabel(scope.row.returnStatus) }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createTime" min-width="170" />
-      <el-table-column label="操作" align="center" width="240" class-name="small-padding fixed-width">
+      <el-table-column :label="t('common.createTime')" align="center" prop="createTime" min-width="170" />
+      <el-table-column :label="t('common.actions')" align="center" width="240" class-name="small-padding fixed-width">
         <template #default="scope">
           <template v-if="isFinalStatus(scope.row.returnStatus)">
-            <el-button link type="primary" icon="View" @click="handleUpdate(scope.row)" v-hasPermi="['wms:returnOrder:edit']">查看</el-button>
+            <el-button link type="primary" icon="View" @click="handleUpdate(scope.row)" v-hasPermi="['wms:returnOrder:edit']">{{ t('wms.common.view') }}</el-button>
           </template>
           <template v-else>
-            <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:returnOrder:edit']">修改</el-button>
-            <el-button link type="success" icon="CircleCheck" @click="handleConfirmReturn(scope.row)" v-hasPermi="['wms:returnOrder:edit']">确认退货</el-button>
-            <el-button link type="danger" icon="CircleClose" @click="handleCancelReturn(scope.row)" v-hasPermi="['wms:returnOrder:edit']">取消退货</el-button>
-            <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:returnOrder:remove']">删除</el-button>
+            <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:returnOrder:edit']">{{ t('common.edit') }}</el-button>
+            <el-button link type="success" icon="CircleCheck" @click="handleConfirmReturn(scope.row)" v-hasPermi="['wms:returnOrder:edit']">{{ t('wms.returnOrder.confirmReturn') }}</el-button>
+            <el-button link type="danger" icon="CircleClose" @click="handleCancelReturn(scope.row)" v-hasPermi="['wms:returnOrder:edit']">{{ t('wms.returnOrder.cancelReturn') }}</el-button>
+            <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:returnOrder:remove']">{{ t('common.delete') }}</el-button>
           </template>
         </template>
       </el-table-column>
@@ -85,39 +85,39 @@
       <el-form ref="returnOrderRef" :model="form" :rules="rules" label-width="110px" class="mb16">
         <el-row :gutter="20">
           <el-col :span="8">
-            <el-form-item label="退货单号" prop="returnOrderNo">
-              <el-input v-model="form.returnOrderNo" placeholder="系统自动生成" maxlength="50" :readonly="true" />
+            <el-form-item :label="t('wms.returnOrder.returnOrderNo')" prop="returnOrderNo">
+              <el-input v-model="form.returnOrderNo" :placeholder="t('wms.receiving.ph.autoGenerated')" maxlength="50" :readonly="true" />
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="退货类型" prop="returnType">
-              <el-select v-model="form.returnType" placeholder="请选择退货类型" style="width:100%" :disabled="readOnly">
-                <el-option label="质检不合格" value="iqc_unqualified" />
-                <el-option label="其他" value="other" />
+            <el-form-item :label="t('wms.returnOrder.returnType')" prop="returnType">
+              <el-select v-model="form.returnType" :placeholder="t('wms.returnOrder.ph.selectType')" style="width:100%" :disabled="readOnly">
+                <el-option :label="t('wms.returnOrder.typeIqcUnqualified')" value="iqc_unqualified" />
+                <el-option :label="t('wms.returnOrder.typeOther')" value="other" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="供应商" prop="supplierId">
-              <PartnerSelect v-model="form.supplierId" partner-type="supplier" placeholder="请选择供应商" @change="onSupplierChange" :disabled="readOnly" />
+            <el-form-item :label="t('wms.material.supplier')" prop="supplierId">
+              <PartnerSelect v-model="form.supplierId" partner-type="supplier" :placeholder="t('wms.material.ph.clickSupplier')" @change="onSupplierChange" :disabled="readOnly" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="20">
           <el-col :span="8">
-            <el-form-item label="状态" prop="returnStatus">
-              <el-select v-model="form.returnStatus" placeholder="请选择状态" style="width:100%" :disabled="readOnly">
-                <el-option label="待处理" value="pending" />
-                <el-option label="已完成" value="completed" />
-                <el-option label="已取消" value="cancelled" />
+            <el-form-item :label="t('common.status')" prop="returnStatus">
+              <el-select v-model="form.returnStatus" :placeholder="t('wms.warehouse.ph.selectStatus')" style="width:100%" :disabled="readOnly">
+                <el-option :label="t('wms.returnOrder.statusPending')" value="pending" />
+                <el-option :label="t('wms.returnOrder.statusCompleted')" value="completed" />
+                <el-option :label="t('wms.returnOrder.statusCancelled')" value="cancelled" />
               </el-select>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="20">
           <el-col :span="24">
-            <el-form-item label="备注" prop="remark">
-              <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" maxlength="500" :disabled="readOnly" />
+            <el-form-item :label="t('common.remark')" prop="remark">
+              <el-input v-model="form.remark" type="textarea" :placeholder="t('common.input')" maxlength="500" :disabled="readOnly" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -126,30 +126,30 @@
       <!-- 明细表 -->
       <div class="detail-section">
         <div class="detail-header mb8">
-          <span class="detail-title">退货明细</span>
-          <el-button class="detail-add-btn" type="primary" icon="Plus" @click="addDetailRow" v-hasPermi="['wms:returnOrder:add']" v-if="!readOnly">添加明细</el-button>
+          <span class="detail-title">{{ t('wms.returnOrder.detailTitle') }}</span>
+          <el-button class="detail-add-btn" type="primary" icon="Plus" @click="addDetailRow" v-hasPermi="['wms:returnOrder:add']" v-if="!readOnly">{{ t('wms.receiving.addDetail') }}</el-button>
         </div>
         <el-table :data="detailList" border stripe max-height="350" style="width:100%">
-          <el-table-column label="序号" type="index" width="55" align="center" />
-          <el-table-column label="物料" min-width="160">
+          <el-table-column :label="t('wms.common.index')" type="index" width="55" align="center" />
+          <el-table-column :label="t('wms.material.title')" min-width="160">
             <template #default="scope">
               <MaterialSelect
                 v-model="scope.row.materialId"
                 :label="scope.row.materialCode && scope.row.materialName ? scope.row.materialCode + ' - ' + scope.row.materialName : ''"
-                placeholder="请选择物料"
+                :placeholder="t('wms.material.ph.selectMaterial')"
                 @change="onMaterialChange($event, scope.$index)"
                 :disabled="readOnly"
               />
             </template>
           </el-table-column>
-          <el-table-column label="规格" prop="spec" width="160">
+          <el-table-column :label="t('wms.material.spec')" prop="spec" width="160">
             <template #default="scope">
-              <el-input :model-value="scope.row.spec" placeholder="从物料带出" readonly />
+              <el-input :model-value="scope.row.spec" :placeholder="t('wms.receiving.ph.fromMaterial')" readonly />
             </template>
           </el-table-column>
-          <el-table-column label="单位" prop="unit" width="160">
+          <el-table-column :label="t('wms.receiving.unit')" prop="unit" width="160">
             <template #default="scope">
-              <el-select v-model="scope.row.unit" placeholder="单位" filterable style="width:100%" :disabled="readOnly">
+              <el-select v-model="scope.row.unit" :placeholder="t('wms.receiving.unit')" filterable style="width:100%" :disabled="readOnly">
                 <el-option
                   v-for="opt in unitOptions(scope.row)"
                   :key="opt.specId"
@@ -159,29 +159,29 @@
               </el-select>
             </template>
           </el-table-column>
-          <el-table-column label="批次号" prop="batchNo" width="160">
+          <el-table-column :label="t('wms.receiving.batchNo')" prop="batchNo" width="160">
             <template #default="scope">
-              <el-input v-model="scope.row.batchNo" placeholder="批次号" :disabled="readOnly" />
+              <el-input v-model="scope.row.batchNo" :placeholder="t('wms.receiving.batchNo')" :disabled="readOnly" />
             </template>
           </el-table-column>
-          <el-table-column label="退货数量" prop="planQuantity" width="160">
+          <el-table-column :label="t('wms.returnOrder.returnQty')" prop="planQuantity" width="160">
             <template #default="scope">
               <el-input-number controls-position="right" v-model="scope.row.planQuantity" :min="1" :controls="true"
                 style="width:100%" :disabled="readOnly" />
             </template>
           </el-table-column>
-          <el-table-column label="退货原因" prop="returnReason" min-width="150">
+          <el-table-column :label="t('wms.returnOrder.returnReason')" prop="returnReason" min-width="150">
             <template #default="scope">
-              <el-input v-model="scope.row.returnReason" placeholder="退货原因" :disabled="readOnly" />
+              <el-input v-model="scope.row.returnReason" :placeholder="t('wms.returnOrder.returnReason')" :disabled="readOnly" />
             </template>
           </el-table-column>
-          <el-table-column label="默认库位" width="220">
+          <el-table-column :label="t('wms.material.defaultLocation')" width="220">
             <template #default="scope">
               <el-cascader
                 :model-value="scope.row.locationCascader"
                 :options="locationCascaderOptions"
                 :props="{ expandTrigger: 'hover' }"
-                placeholder="仓库/库区/库位"
+                :placeholder="t('wms.location.ph.selectWhZoneOrLocation')"
                 clearable
                 :disabled="readOnly"
                 style="width:100%"
@@ -189,7 +189,7 @@
               />
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="60" align="center" v-if="!readOnly">
+          <el-table-column :label="t('common.actions')" width="60" align="center" v-if="!readOnly">
             <template #default="scope">
               <el-button link type="danger" icon="Delete"
                 @click="removeDetailRow(scope.$index)" />
@@ -197,18 +197,18 @@
           </el-table-column>
         </el-table>
         <div class="detail-footer mt8">
-          <span>合计数量：<b>{{ totalPlanQuantity }}</b></span>
+          <span>{{ t('wms.receiving.totalQuantity') }}：<b>{{ totalPlanQuantity }}</b></span>
         </div>
       </div>
 
       <template #footer>
         <div class="dialog-footer">
           <template v-if="readOnly">
-            <el-button @click="cancel">关 闭</el-button>
+            <el-button @click="cancel">{{ t('common.close') }}</el-button>
           </template>
           <template v-else>
-            <el-button type="primary" @click="submitForm">保 存</el-button>
-            <el-button @click="cancel">取 消</el-button>
+            <el-button type="primary" @click="submitForm">{{ t('common.save') }}</el-button>
+            <el-button @click="cancel">{{ t('common.cancel') }}</el-button>
           </template>
         </div>
       </template>
@@ -220,6 +220,7 @@
 <script setup name="WmsReturnOrder">
 import { ref, reactive, toRefs, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listReturnOrder,
   getReturnOrder,
@@ -238,6 +239,7 @@ import RightToolbar from "@/components/RightToolbar/index.vue";
 import MaterialSelect from "@/views/wms/material/input.vue";
 import PartnerSelect from "@/views/wms/partner/input.vue";
 
+const { t } = useI18n();
 const returnOrderRef = ref(null);
 const returnOrderList = ref([]);
 const open = ref(false);
@@ -270,7 +272,7 @@ const data = reactive({
     returnStatus: undefined,
   },
   rules: {
-    supplierName: [{ required: true, message: "请选择供应商", trigger: "change" }],
+    supplierName: [{ required: true, message: () => t('wms.receiving.rules.supplierRequired'), trigger: "change" }],
   },
 });
 
@@ -278,52 +280,56 @@ const { form, queryParams, rules } = toRefs(data);
 
 const queryConfig = computed(() => [
   {
-    label: "关键字",
+    label: t('wms.common.keywords'),
     prop: "keywords",
     type: "input",
-    placeholder: "退货单号/供应商",
+    placeholder: t('wms.returnOrder.ph.keywords'),
   },
   {
-    label: "退货类型",
+    label: t('wms.returnOrder.returnType'),
     prop: "returnType",
     type: "select",
-    placeholder: "请选择类型",
+    placeholder: t('wms.returnOrder.ph.selectType'),
     options: [
-      { label: "质检不合格", value: "iqc_unqualified" },
-      { label: "其他", value: "other" },
+      { label: t('wms.returnOrder.typeIqcUnqualified'), value: "iqc_unqualified" },
+      { label: t('wms.returnOrder.typeOther'), value: "other" },
     ],
   },
   {
-    label: "状态",
+    label: t('common.status'),
     prop: "returnStatus",
     type: "select",
-    placeholder: "请选择状态",
+    placeholder: t('wms.warehouse.ph.selectStatus'),
     options: [
-      { label: "待处理", value: "pending" },
-      { label: "已完成", value: "completed" },
-      { label: "已取消", value: "cancelled" },
+      { label: t('wms.returnOrder.statusPending'), value: "pending" },
+      { label: t('wms.returnOrder.statusCompleted'), value: "completed" },
+      { label: t('wms.returnOrder.statusCancelled'), value: "cancelled" },
     ],
   },
 ]);
 
 // 状态映射
-const statusMap = {
-  pending: "待处理",
-  completed: "已完成",
-  cancelled: "已取消",
-};
-function statusLabel(s) { return statusMap[s] || s; }
+function statusLabel(s) {
+  const map = {
+    pending: t('wms.returnOrder.statusPending'),
+    completed: t('wms.returnOrder.statusCompleted'),
+    cancelled: t('wms.returnOrder.statusCancelled'),
+  };
+  return map[s] || s;
+}
 function statusTagType(s) {
   const map = { pending: "warning", completed: "success", cancelled: "info" };
   return map[s] || "";
 }
 
 // 退货类型映射
-const returnTypeMap = {
-  iqc_unqualified: "质检不合格",
-  other: "其他",
-};
-function returnTypeLabel(s) { return returnTypeMap[s] || s; }
+function returnTypeLabel(s) {
+  const map = {
+    iqc_unqualified: t('wms.returnOrder.typeIqcUnqualified'),
+    other: t('wms.returnOrder.typeOther'),
+  };
+  return map[s] || s;
+}
 function returnTypeTagType(s) {
   const map = { iqc_unqualified: "danger", other: "warning" };
   return map[s] || "";
@@ -400,7 +406,7 @@ async function handleAdd() {
   readOnly.value = false;
   await loadLocationTree();
   open.value = true;
-  title.value = "添加退货单";
+  title.value = t('wms.returnOrder.addTitle');
 }
 
 /** 修改/查看 */
@@ -435,7 +441,7 @@ async function handleUpdate(row) {
   );
   detailList.value = details;
   open.value = true;
-  title.value = readOnly.value ? "查看退货单" : "修改退货单";
+  title.value = readOnly.value ? t('wms.returnOrder.viewTitle') : t('wms.returnOrder.editTitle');
 }
 
 /** 提交 */
@@ -443,7 +449,7 @@ function submitForm() {
   returnOrderRef.value.validate((valid) => {
     if (!valid) return;
     if (detailList.value.length === 0) {
-      ElMessage.warning("请至少添加一条退货明细");
+      ElMessage.warning(t('wms.returnOrder.selectAtLeastOneDetail'));
       return;
     }
     const dto = {
@@ -456,7 +462,7 @@ function submitForm() {
     };
     const api = form.value.returnOrderId ? updateReturnOrder : addReturnOrder;
     api(dto).then(() => {
-      ElMessage.success("保存成功");
+      ElMessage.success(t('wms.common.savedSuccess'));
       open.value = false;
       getList();
     });
@@ -466,14 +472,14 @@ function submitForm() {
 /** 确认退货（左侧按钮 → 确认框 → 调接口） */
 function handleConfirmReturn(row) {
   const id = row?.returnOrderId || ids.value[0];
-  if (!id) { ElMessage.warning("请先选择一条退货单"); return; }
-  ElMessageBox.confirm("确认该退货单已完成退货？", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  if (!id) { ElMessage.warning(t('wms.returnOrder.selectFirst')); return; }
+  ElMessageBox.confirm(t('wms.returnOrder.confirmReturnMsg'), t('wms.common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "success",
   }).then(async () => {
     await updateReturnOrder({ returnOrder: { returnOrderId: id, returnStatus: "completed" }, details: [] });
-    ElMessage.success("退货确认成功");
+    ElMessage.success(t('wms.returnOrder.returnConfirmed'));
     getList();
   });
 }
@@ -481,14 +487,14 @@ function handleConfirmReturn(row) {
 /** 取消退货（左侧按钮 → 确认框 → 调接口） */
 function handleCancelReturn(row) {
   const id = row?.returnOrderId || ids.value[0];
-  if (!id) { ElMessage.warning("请先选择一条退货单"); return; }
-  ElMessageBox.confirm("确认取消该退货单？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  if (!id) { ElMessage.warning(t('wms.returnOrder.selectFirst')); return; }
+  ElMessageBox.confirm(t('wms.returnOrder.cancelReturnConfirm'), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   }).then(async () => {
     await updateReturnOrder({ returnOrder: { returnOrderId: id, returnStatus: "cancelled" }, details: [] });
-    ElMessage.success("已取消");
+    ElMessage.success(t('wms.returnOrder.cancelledTip'));
     getList();
   });
 }
@@ -502,15 +508,15 @@ function cancel() {
 /** 删除 */
 function handleDelete(row) {
   const delIds = row.returnOrderId || ids.value.join(",");
-  ElMessageBox.confirm("是否确认删除该退货单及其明细？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.returnOrder.deleteConfirm'), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => delReturnOrder(delIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
 }
 
@@ -648,9 +654,9 @@ function unitOptions(row) {
       if (p.uom && !opts.some((o) => o.value === p.uom)) {
         let label = p.uom;
         if (p.isBase === 1) {
-          label += "（基本单位）";
+          label += `（${t('wms.receiving.baseUnit')}）`;
         } else if (!p.parentId) {
-          label += "（顶层）";
+          label += `（${t('wms.receiving.topLevel')}）`;
         } else {
           const factor = convFactor(p, set);
           const baseUom = set.find((n) => n.isBase === 1)?.uom || p.uom;

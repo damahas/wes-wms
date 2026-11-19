@@ -456,6 +456,7 @@ export default {
     i18nEnName: 'English(en-US)',
     rules: { menuNameRequired: 'Menu name is required', orderNumRequired: 'Menu order is required', pathRequired: 'Route path is required' },
     confirm: { delete: 'Are you sure to delete "{name}"?' },
+    i18nSaveFailed: 'Menu saved, but some language translations failed. Please fill them in the I18n entries page',
   },
   deptManage: {
     addTitle: 'Add Department',

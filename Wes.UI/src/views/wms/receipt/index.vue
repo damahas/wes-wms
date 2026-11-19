@@ -12,14 +12,14 @@
     <!-- 操作按钮 -->
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:receipt:add']">新增</el-button>
+        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:receipt:add']">{{ t('common.add') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button v-if="canEdit(selectedRows[0] || {})" type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:receipt:edit']">修改</el-button>
-        <el-button v-else type="info" plain icon="View" :disabled="single" @click="handleView(selectedRows[0])">明细</el-button>
+        <el-button v-if="canEdit(selectedRows[0] || {})" type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:receipt:edit']">{{ t('common.edit') }}</el-button>
+        <el-button v-else type="info" plain icon="View" :disabled="single" @click="handleView(selectedRows[0])">{{ t('wms.receipt.details') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" plain icon="Delete" :disabled="multiple || selectedRows.some((r) => !canEdit(r))" @click="handleDelete" v-hasPermi="['wms:receipt:remove']">删除</el-button>
+        <el-button type="danger" plain icon="Delete" :disabled="multiple || selectedRows.some((r) => !canEdit(r))" @click="handleDelete" v-hasPermi="['wms:receipt:remove']">{{ t('common.delete') }}</el-button>
       </el-col>
         <right-toolbar
           v-model:showSearch="showSearch"
@@ -30,32 +30,32 @@
     <!-- 列表 -->
     <el-table v-loading="loading" :data="receiptList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="入库单号" align="center" prop="receiptNo" :show-overflow-tooltip="true" />
-      <el-table-column label="入库类型" align="center" :show-overflow-tooltip="true">
+      <el-table-column :label="t('wms.receipt.receiptNo')" align="center" prop="receiptNo" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('wms.receipt.receiptType')" align="center" :show-overflow-tooltip="true">
         <template #default="scope">
-          {{ receiptTypeMap[scope.row.receiptType] || "-" }}
+          {{ receiptTypeLabel(scope.row.receiptType) }}
         </template>
       </el-table-column>
-      <el-table-column label="仓库" align="center" :show-overflow-tooltip="true">
+      <el-table-column :label="t('wms.common.warehouse')" align="center" :show-overflow-tooltip="true">
         <template #default="scope">
           {{ scope.row.warehouse?.warehouseName || "-" }}
         </template>
       </el-table-column>
-      <el-table-column label="总数量" align="center" prop="totalQuantity" />
-      <el-table-column label="状态" align="center" width="100">
+      <el-table-column :label="t('wms.receipt.totalQuantity')" align="center" prop="totalQuantity" />
+      <el-table-column :label="t('common.status')" align="center" width="100">
         <template #default="scope">
           <el-tag :type="receiptStatusTag(scope.row.receiptStatus)">
-            {{ receiptStatusMap[scope.row.receiptStatus] || "-" }}
+            {{ receiptStatusLabel(scope.row.receiptStatus) }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createTime" min-width="170" />
-      <el-table-column label="操作" align="center" width="220" class-name="small-padding fixed-width">
+      <el-table-column :label="t('common.createTime')" align="center" prop="createTime" min-width="170" />
+      <el-table-column :label="t('common.actions')" align="center" width="220" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="warning" icon="Printer" @click="handlePrintLabel(scope.row)">标签</el-button>
-          <el-button v-if="canEdit(scope.row)" link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:receipt:edit']">修改</el-button>
-          <el-button v-else link type="info" icon="View" @click="handleView(scope.row)">明细</el-button>
-          <el-button v-if="canEdit(scope.row)" link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:receipt:remove']">删除</el-button>
+          <el-button link type="warning" icon="Printer" @click="handlePrintLabel(scope.row)">{{ t('wms.receipt.label') }}</el-button>
+          <el-button v-if="canEdit(scope.row)" link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:receipt:edit']">{{ t('common.edit') }}</el-button>
+          <el-button v-else link type="info" icon="View" @click="handleView(scope.row)">{{ t('wms.receipt.details') }}</el-button>
+          <el-button v-if="canEdit(scope.row)" link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:receipt:remove']">{{ t('common.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -73,53 +73,53 @@
       <el-form ref="receiptRef" :model="form" :rules="rules" label-width="88px" class="nowrap-labels" :disabled="viewMode">
         <!-- 基本信息 -->
         <div class="section-head">
-          <span class="section-title">基本信息</span>
+          <span class="section-title">{{ t('wms.material.tabBasic') }}</span>
           <span class="section-extra">
-            {{ form.receiptNo ? "单号 " + form.receiptNo : "单号保存后自动生成" }}
+            {{ form.receiptNo ? t('wms.receipt.receiptNoPrefix') + ' ' + form.receiptNo : t('wms.receipt.receiptNoAuto') }}
           </span>
         </div>
         <el-row :gutter="16">
           <el-col :span="6">
-            <el-form-item label="入库类型" prop="receiptType">
-              <el-select v-model="form.receiptType" placeholder="请选择入库类型" clearable style="width:100%" :disabled="!!form.receiptId" @change="onReceiptTypeChange">
-                <el-option label="采购入库" value="purchase" />
-                <el-option label="生产入库" value="produce" />
-                <el-option label="退货入库" value="return_in" />
-                <el-option label="其他入库" value="other" />
+            <el-form-item :label="t('wms.receipt.receiptType')" prop="receiptType">
+              <el-select v-model="form.receiptType" :placeholder="t('wms.receipt.ph.selectType')" clearable style="width:100%" :disabled="!!form.receiptId" @change="onReceiptTypeChange">
+                <el-option :label="t('wms.receipt.typePurchase')" value="purchase" />
+                <el-option :label="t('wms.receipt.typeProduce')" value="produce" />
+                <el-option :label="t('wms.receipt.typeReturnIn')" value="return_in" />
+                <el-option :label="t('wms.receipt.typeOther')" value="other" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="仓库" prop="warehouseId">
-              <WarehouseSelect v-model="form.warehouseId" placeholder="请选择仓库" :disabled="viewMode" @change="onWarehouseChange" />
+            <el-form-item :label="t('wms.common.warehouse')" prop="warehouseId">
+              <WarehouseSelect v-model="form.warehouseId" :placeholder="t('wms.warehouse.ph.selectWarehouse')" :disabled="viewMode" @change="onWarehouseChange" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="入库日期" prop="receiptDate">
+            <el-form-item :label="t('wms.receipt.receiptDate')" prop="receiptDate">
               <el-date-picker v-model="form.receiptDate" type="date" value-format="YYYY-MM-DD"
-                placeholder="请选择入库日期" style="width:100%" />
+                :placeholder="t('wms.receipt.ph.selectDate')" style="width:100%" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item v-if="form.receiptType === 'purchase'" label="收货单" prop="sourceId">
-              <ReceivingSelect v-model="form.sourceId" placeholder="请选择收货单" :disabled="!!form.receiptId" @change="onReceivingChange" />
+            <el-form-item v-if="form.receiptType === 'purchase'" :label="t('wms.receipt.sourceReceiving')" prop="sourceId">
+              <ReceivingSelect v-model="form.sourceId" :placeholder="t('wms.receiving.ph.selectReceiving')" :disabled="!!form.receiptId" @change="onReceivingChange" />
             </el-form-item>
-            <el-form-item v-else-if="form.receiptType === 'produce'" label="生产单号" prop="sourceId">
-              <el-input v-model="form.sourceId" placeholder="请输入生产单号" maxlength="50" />
+            <el-form-item v-else-if="form.receiptType === 'produce'" :label="t('wms.receipt.sourceProduce')" prop="sourceId">
+              <el-input v-model="form.sourceId" :placeholder="t('wms.receipt.ph.inputProduceNo')" maxlength="50" />
             </el-form-item>
-            <el-form-item v-else-if="form.receiptType === 'return_in'" label="退货单号" prop="sourceId">
-              <el-input v-model="form.sourceId" placeholder="请输入退货单号" maxlength="50" />
+            <el-form-item v-else-if="form.receiptType === 'return_in'" :label="t('wms.receipt.sourceReturn')" prop="sourceId">
+              <el-input v-model="form.sourceId" :placeholder="t('wms.receipt.ph.inputReturnNo')" maxlength="50" />
             </el-form-item>
-            <el-form-item v-else-if="form.receiptType === 'other'" label="来源单号" prop="sourceId">
-              <el-input v-model="form.sourceId" placeholder="请输入来源单号" maxlength="50" />
+            <el-form-item v-else-if="form.receiptType === 'other'" :label="t('wms.receipt.sourceOther')" prop="sourceId">
+              <el-input v-model="form.sourceId" :placeholder="t('wms.receipt.ph.inputSourceNo')" maxlength="50" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="16">
           <el-col :span="24">
-            <el-form-item label="备注" prop="remark">
+            <el-form-item :label="t('common.remark')" prop="remark">
               <el-input v-model="form.remark" type="textarea" :autosize="{ minRows: 1, maxRows: 3 }"
-                placeholder="请输入备注（选填）" maxlength="500" />
+                :placeholder="t('wms.receipt.ph.inputRemarkOptional')" maxlength="500" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -129,10 +129,10 @@
       <div class="detail-section">
         <!-- 入库明细 -->
         <div class="section-head">
-          <span class="section-title">入库明细</span>
+          <span class="section-title">{{ t('wms.receipt.detailTitle') }}</span>
           <span class="section-badge">{{ detailList.length }}</span>
           <el-button class="section-extra detail-add-btn" type="primary" plain icon="Plus"
-            @click="openMaterialDialog" v-if="!form.receiptId && !viewMode">添加明细</el-button>
+            @click="openMaterialDialog" v-if="!form.receiptId && !viewMode">{{ t('wms.receiving.addDetail') }}</el-button>
         </div>
         <el-row :gutter="16">
           <!-- 左：明细列表（一行一条，状态看色点，详情悬停显示） -->
@@ -152,7 +152,7 @@
                     {{
                       row.materialName
                         ? (row.materialCode ? row.materialCode + " - " + row.materialName : row.materialName)
-                        : "（未选择物料）"
+                        : t('wms.receipt.noMaterial')
                     }}
                   </span>
                   <span v-if="row.spec" class="item-spec">{{ row.spec }}</span>
@@ -160,7 +160,7 @@
                 <span class="item-qty">{{ row.receiptQuantity || 0 }}{{ row.unit || "" }}</span>
                 <span class="status-dot" :class="'dot-' + (row.detailStatus || 'pending')" />
               </div>
-              <el-empty v-if="!detailList.length" description="暂无明细" :image-size="60" />
+              <el-empty v-if="!detailList.length" :description="t('wms.receipt.noDetail')" :image-size="60" />
             </div>
           </el-col>
 
@@ -170,38 +170,38 @@
               <el-tabs v-model="detailTab" class="pane-tabs">
                 <!-- 明细信息 -->
                 <el-tab-pane name="info">
-                  <template #label>明细信息</template>
+                  <template #label>{{ t('wms.receipt.tabInfo') }}</template>
                   <div class="pane-header">
                     <span class="pane-title">
-                      明细 #{{ currentDetailIndex + 1 }}：
+                      {{ t('wms.receipt.detail') }} #{{ currentDetailIndex + 1 }}：
                       <span v-if="currentDetailRow.materialCode" class="material-code">{{ currentDetailRow.materialCode }}</span>
-                      {{ currentDetailRow.materialName || "未选择物料" }}
+                      {{ currentDetailRow.materialName || t('wms.receipt.unselectedMaterial') }}
                       <span v-if="currentDetailRow.spec" class="text-muted">（{{ currentDetailRow.spec }}）</span>
                     </span>
                     <span class="pane-ops">
                       <el-tag v-if="currentDetailRow.detailStatus === 'shelved'" type="success" size="small">
-                        已上架，只读
+                        {{ t('wms.receipt.shelvedReadonly') }}
                       </el-tag>
                       <el-button
                         v-if="!viewMode && currentDetailRow.detailId && currentDetailRow.detailStatus !== 'shelved'"
                         size="small" type="primary" @click="openShelve(currentDetailRow)"
-                      >上架</el-button>
+                      >{{ t('wms.receipt.shelve') }}</el-button>
                       <el-button
                         v-if="!form.receiptId && !viewMode" size="small" type="danger" plain icon="Delete"
                         @click="removeDetailRow(currentDetailIndex)"
-                      >删除</el-button>
+                      >{{ t('common.delete') }}</el-button>
                     </span>
                   </div>
                   <el-form :model="currentDetailRow" label-width="84px" class="nowrap-labels" :disabled="viewMode || currentDetailRow.detailStatus === 'shelved'">
                     <el-row :gutter="16">
                       <el-col :span="12">
-                        <el-form-item label="数量">
+                        <el-form-item :label="t('wms.receipt.quantity')">
                           <el-input-number controls-position="right" v-model="currentDetailRow.receiptQuantity" :min="0" style="width:100%" />
                         </el-form-item>
                       </el-col>
                       <el-col :span="12">
-                        <el-form-item label="单位">
-                          <el-select v-model="currentDetailRow.unit" placeholder="单位" filterable style="width:100%">
+                        <el-form-item :label="t('wms.receiving.unit')">
+                          <el-select v-model="currentDetailRow.unit" :placeholder="t('wms.receiving.unit')" filterable style="width:100%">
                             <el-option
                               v-for="opt in unitOptions(currentDetailRow)"
                               :key="opt.specId"
@@ -212,13 +212,13 @@
                         </el-form-item>
                       </el-col>
                       <el-col :span="24">
-                        <el-form-item label="库位">
+                        <el-form-item :label="t('wms.common.location')">
                           <!-- 仓库由单据固定，这里只选库区/库位 -->
                           <LocationCascader
                             v-model="currentDetailRow.locCascader"
                             :warehouse-id="form.warehouseId"
                             :disabled="viewMode || !form.warehouseId"
-                            :placeholder="form.warehouseId ? '请选择库区/库位' : '请先选择仓库'"
+                            :placeholder="form.warehouseId ? t('wms.location.ph.selectZoneOrLocation') : t('wms.receipt.ph.selectWarehouseFirst')"
                             @update:model-value="(val) => (currentDetailRow.locationId = val?.[1])"
                           />
                         </el-form-item>
@@ -226,28 +226,28 @@
                     </el-row>
                     <!-- 批次 / 日期 / 供应商：纯分组标题，无折叠交互（避免误点） -->
                     <div class="detail-group">
-                      <div class="group-title">批次 / 日期 / 供应商</div>
+                      <div class="group-title">{{ t('wms.receipt.groupBatch') }}</div>
                       <el-row :gutter="16">
                         <el-col :span="12">
-                          <el-form-item label="批次号">
-                            <el-input v-model="currentDetailRow.batchNo" placeholder="批次号" />
+                          <el-form-item :label="t('wms.receiving.batchNo')">
+                            <el-input v-model="currentDetailRow.batchNo" :placeholder="t('wms.receiving.batchNo')" />
                           </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                          <el-form-item label="供应商">
-                            <PartnerSelect v-model="currentDetailRow.supplierId" partner-type="supplier" placeholder="请选择供应商" :disabled="viewMode" />
+                          <el-form-item :label="t('wms.material.supplier')">
+                            <PartnerSelect v-model="currentDetailRow.supplierId" partner-type="supplier" :placeholder="t('wms.material.ph.clickSupplier')" :disabled="viewMode" />
                           </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                          <el-form-item label="生产日期">
+                          <el-form-item :label="t('wms.receipt.productionDate')">
                             <el-date-picker v-model="currentDetailRow.materialionDate" type="date" value-format="YYYY-MM-DD"
-                              placeholder="生产日期" style="width:100%" />
+                              :placeholder="t('wms.receipt.productionDate')" style="width:100%" />
                           </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                          <el-form-item label="失效日期">
+                          <el-form-item :label="t('wms.receipt.expireDate')">
                             <el-date-picker v-model="currentDetailRow.expireDate" type="date" value-format="YYYY-MM-DD"
-                              placeholder="失效日期" style="width:100%" />
+                              :placeholder="t('wms.receipt.expireDate')" style="width:100%" />
                           </el-form-item>
                         </el-col>
                       </el-row>
@@ -258,72 +258,71 @@
                 <!-- 条码 -->
                 <el-tab-pane name="barcode">
                   <template #label>
-                    条码<span class="tab-badge">{{ barcodeList.length }}</span>
+                    {{ t('wms.receipt.barcode') }}<span class="tab-badge">{{ barcodeList.length }}</span>
                   </template>
                   <template v-if="currentDetailRow.detailId">
                     <div class="pane-header">
                       <span class="text-muted">
-                        合计 {{ barcodeTotal }} / 明细数量 {{ currentDetailQty
-                        }}<template v-if="!viewMode">　拆分：均分填份数（3），不等分填 10,5</template>
+                        {{ t('wms.receipt.barcodeSummary', { total: barcodeTotal, qty: currentDetailQty }) }}<template v-if="!viewMode">　{{ t('wms.receipt.splitHint') }}</template>
                       </span>
                       <el-button v-if="!viewMode" size="small" type="primary" :disabled="selectedBarcodes.length < 2" @click="doMergeBarcodes">
-                        合并所选
+                        {{ t('wms.receipt.mergeSelected') }}
                       </el-button>
                     </div>
                     <el-table :data="barcodeList" border max-height="400" @selection-change="(v) => (selectedBarcodes = v)">
                       <el-table-column v-if="!viewMode" type="selection" width="45" :selectable="(row) => row.status !== 'shelved'" />
-                      <el-table-column label="序号" prop="seqNo" width="60" align="center" />
-                      <el-table-column label="条码" prop="barcode" min-width="160" />
-                      <el-table-column label="数量" prop="quantity" width="80" align="center" />
-                      <el-table-column label="状态" width="90" align="center">
+                      <el-table-column :label="t('wms.common.index')" prop="seqNo" width="60" align="center" />
+                      <el-table-column :label="t('wms.receipt.barcode')" prop="barcode" min-width="160" />
+                      <el-table-column :label="t('wms.receipt.quantity')" prop="quantity" width="80" align="center" />
+                      <el-table-column :label="t('common.status')" width="90" align="center">
                         <template #default="scope">
                           <el-tag :type="scope.row.status === 'shelved' ? 'success' : 'info'" size="small">
-                            {{ scope.row.status === "shelved" ? "已上架" : "待上架" }}
+                            {{ scope.row.status === "shelved" ? t('wms.receipt.statusShelved') : t('wms.receipt.statusPendingShelve') }}
                           </el-tag>
                         </template>
                       </el-table-column>
-                      <el-table-column v-if="!viewMode" label="操作" width="80" align="center">
+                      <el-table-column v-if="!viewMode" :label="t('common.actions')" width="80" align="center">
                         <template #default="scope">
                           <el-button link type="primary" :disabled="scope.row.status === 'shelved'"
-                            @click="splitBarcodeRow(scope.row)">拆分</el-button>
+                            @click="splitBarcodeRow(scope.row)">{{ t('wms.receipt.split') }}</el-button>
                         </template>
                       </el-table-column>
                     </el-table>
                   </template>
-                  <el-empty v-else description="保存入库单后自动生成条码" :image-size="60" />
+                  <el-empty v-else :description="t('wms.receipt.barcodeEmpty')" :image-size="60" />
                 </el-tab-pane>
               </el-tabs>
             </div>
-            <el-empty v-else :description="viewMode ? '在左侧点击一条明细查看' : '在左侧点击一条明细进行编辑'" :image-size="60" />
+            <el-empty v-else :description="viewMode ? t('wms.receipt.clickToView') : t('wms.receipt.clickToEdit')" :image-size="60" />
           </el-col>
         </el-row>
       </div>
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button v-if="!viewMode" type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">{{ viewMode ? "关 闭" : "取 消" }}</el-button>
+          <el-button v-if="!viewMode" type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+          <el-button @click="cancel">{{ viewMode ? t('common.close') : t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
 
     <!-- 明细上架 -->
-    <el-dialog title="明细上架" v-model="shelveOpen" width="460px" append-to-body>
+    <el-dialog :title="t('wms.receipt.shelveTitle')" v-model="shelveOpen" width="460px" append-to-body>
       <el-form :model="shelveForm" label-width="90px">
-        <el-form-item label="待上架条码">
-          <el-input :model-value="`${shelveForm.pendingBarcodeCount || 0} 个（按序号依次上架）`" readonly />
+        <el-form-item :label="t('wms.receipt.pendingBarcodeCount')">
+          <el-input :model-value="t('wms.receipt.pendingBarcodeValue', { count: shelveForm.pendingBarcodeCount || 0 })" readonly />
         </el-form-item>
-        <el-form-item label="物料">
+        <el-form-item :label="t('wms.material.title')">
           <el-input :model-value="shelveForm.materialLabel" readonly />
         </el-form-item>
-        <el-form-item label="待上架数量">
+        <el-form-item :label="t('wms.receipt.pendingQty')">
           <el-input :model-value="String(shelveForm.remainQty)" readonly />
         </el-form-item>
-        <el-form-item label="上架条码数">
+        <el-form-item :label="t('wms.receipt.shelveBarcodeCount')">
           <el-input-number v-model="shelveForm.quantity" :min="1" :max="shelveForm.pendingBarcodeCount || shelveForm.remainQty || 1"
             controls-position="right" style="width:100%" />
         </el-form-item>
-        <el-form-item label="上架库位">
+        <el-form-item :label="t('wms.receipt.shelveLocation')">
           <!-- 仓库由单据固定，只选库区/库位 -->
           <LocationCascader
             v-model="shelveForm.locCascader"
@@ -333,8 +332,8 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button type="primary" @click="submitShelve">确 定</el-button>
-        <el-button @click="shelveOpen = false">取 消</el-button>
+        <el-button type="primary" @click="submitShelve">{{ t('common.submit') }}</el-button>
+        <el-button @click="shelveOpen = false">{{ t('common.cancel') }}</el-button>
       </template>
     </el-dialog>
 
@@ -353,6 +352,7 @@
 <script setup name="WmsReceipt">
 import { ref, reactive, toRefs, computed, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listReceipt,
   getReceipt,
@@ -375,6 +375,7 @@ import ReceivingSelect from "@/views/wms/receiving/input.vue";
 import LocationCascader from "@/views/wms/location/cascader.vue";
 import MaterialMultiSelect from "@/views/wms/material/select.vue";
 
+const { t } = useI18n();
 const receiptRef = ref(null);
 const receiptList = ref([]);
 const open = ref(false);
@@ -389,15 +390,21 @@ const viewMode = ref(false);
 /** 列表当前勾选的行（顶部按钮据此在 修改 / 明细 之间切换） */
 const selectedRows = ref([]);
 
-const receiptTypeMap = {
-  purchase: "采购入库",
-  produce: "生产入库",
-  return_in: "退货入库",
-  other: "其他入库",
-};
+function receiptTypeLabel(v) {
+  const map = {
+    purchase: t('wms.receipt.typePurchase'),
+    produce: t('wms.receipt.typeProduce'),
+    return_in: t('wms.receipt.typeReturnIn'),
+    other: t('wms.receipt.typeOther'),
+  };
+  return map[v] || "-";
+}
 
 // 入库单状态：待入库 → 上架中（部分明细已上架）→ 已入库（全部明细上架完成）
-const receiptStatusMap = { pending_in: "待入库", shelfing: "上架中", in_stock: "已入库" };
+function receiptStatusLabel(s) {
+  const map = { pending_in: t('wms.receipt.statusPendingIn'), shelfing: t('wms.receipt.statusShelfing'), in_stock: t('wms.receipt.statusInStock') };
+  return map[s] || "-";
+}
 const receiptStatusTag = (s) => (s === "in_stock" ? "success" : s === "shelfing" ? "warning" : "info");
 
 // 已开始上架（上架中/已入库）的单据不能再修改或删除：
@@ -407,7 +414,10 @@ function canEdit(row) {
 }
 
 // 明细上架状态
-const detailStatusMap = { pending: "待上架", shelving: "上架中", shelved: "已上架" };
+function detailStatusLabel(s) {
+  const map = { pending: t('wms.receipt.statusPendingShelve'), shelving: t('wms.receipt.statusShelfing'), shelved: t('wms.receipt.statusShelved') };
+  return map[s] || "-";
+}
 
 const showSearch = ref(true);
 
@@ -429,8 +439,8 @@ function onDetailRowClick(row) {
 /** 左侧列表悬停提示：把规格、状态、上架进度收进 tooltip，保持列表一行一条 */
 function itemTip(row) {
   const parts = [];
-  parts.push(detailStatusMap[row.detailStatus || "pending"]);
-  parts.push(`已上架 ${row.shelfQuantity || 0}/${row.receiptQuantity || 0}`);
+  parts.push(detailStatusLabel(row.detailStatus || "pending"));
+  parts.push(`${t('wms.receipt.shelvedProgress', { a: row.shelfQuantity || 0, b: row.receiptQuantity || 0 })}`);
   return parts.join("　");
 }
 
@@ -455,14 +465,14 @@ const data = reactive({
     receiptStatus: undefined,
   },
   rules: {
-    receiptType: [{ required: true, message: "请选择入库类型", trigger: "change" }],
-    warehouseId: [{ required: true, message: "请选择仓库", trigger: "change" }],
-    receiptDate: [{ required: true, message: "请选择入库日期", trigger: "change" }],
+    receiptType: [{ required: true, message: () => t('wms.receipt.rules.typeRequired'), trigger: "change" }],
+    warehouseId: [{ required: true, message: () => t('wms.receipt.rules.warehouseRequired'), trigger: "change" }],
+    receiptDate: [{ required: true, message: () => t('wms.receipt.rules.dateRequired'), trigger: "change" }],
     sourceId: [
       {
         // 采购入库必须关联收货单，其余类型来源单号可留空
         validator: (rule, value, callback) => {
-          if (form.value.receiptType === "purchase" && !value) callback(new Error("请选择收货单"));
+          if (form.value.receiptType === "purchase" && !value) callback(new Error(t('wms.receipt.rules.receivingRequired')));
           else callback();
         },
         trigger: "change",
@@ -475,20 +485,20 @@ const { form, queryParams, rules } = toRefs(data);
 
 const queryConfig = computed(() => [
   {
-    label: "关键字",
+    label: t('wms.common.keywords'),
     prop: "keywords",
     type: "input",
-    placeholder: "请输入关键字",
+    placeholder: t('common.input'),
   },
   {
-    label: "状态",
+    label: t('common.status'),
     prop: "receiptStatus",
     type: "select",
-    placeholder: "请选择状态",
+    placeholder: t('wms.warehouse.ph.selectStatus'),
     options: [
-      { label: "待入库", value: "pending_in" },
-      { label: "上架中", value: "shelfing" },
-      { label: "已入库", value: "in_stock" },
+      { label: t('wms.receipt.statusPendingIn'), value: "pending_in" },
+      { label: t('wms.receipt.statusShelfing'), value: "shelfing" },
+      { label: t('wms.receipt.statusInStock'), value: "in_stock" },
     ],
   },
 ]);
@@ -558,7 +568,7 @@ function reset() {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加入库单";
+  title.value = t('wms.receipt.addTitle');
 }
 
 /** 修改 */
@@ -610,7 +620,7 @@ function fillForm(data) {
   // 默认选中第一条明细到编辑区
   if (detailList.value.length) onDetailRowClick(detailList.value[0]);
   open.value = true;
-  title.value = viewMode.value ? "入库单明细" : "修改入库单";
+  title.value = viewMode.value ? t('wms.receipt.viewTitle') : t('wms.receipt.editTitle');
 }
 
 /** 上架弹窗 */
@@ -654,9 +664,9 @@ async function loadBarcodes(row) {
 async function splitBarcodeRow(row) {
   try {
     const { value } = await ElMessageBox.prompt(
-      `原数量 ${row.quantity}。均分请填份数（如 3），不等分请填逗号分隔的数量（如 10,5）`,
-      "拆分条码",
-      { inputPattern: /^[\d.\s,]+$/, inputErrorMessage: "只能填数字，或逗号分隔的数字" }
+      t('wms.receipt.splitPrompt', { qty: row.quantity }),
+      t('wms.receipt.splitTitle'),
+      { inputPattern: /^[\d.\s,]+$/, inputErrorMessage: t('wms.receipt.splitInputError') }
     );
     const input = (value || "").trim();
     let quantities = [];
@@ -665,7 +675,7 @@ async function splitBarcodeRow(row) {
     } else {
       const n = Number(input);
       if (!Number.isInteger(n) || n < 2) {
-        ElMessage.warning("均分份数必须是大于 1 的整数");
+        ElMessage.warning(t('wms.receipt.splitCountWarn'));
         return;
       }
       const base = Math.floor((row.quantity || 0) / n);
@@ -674,14 +684,14 @@ async function splitBarcodeRow(row) {
       );
     }
     if (quantities.length < 2) {
-      ElMessage.warning("至少拆成 2 个条码");
+      ElMessage.warning(t('wms.receipt.splitMinWarn'));
       return;
     }
     await splitReceiptBarcode(form.value.receiptId, currentDetailRow.value.detailId, {
       barcodeId: row.barcodeId,
       quantities,
     });
-    ElMessage.success("拆分成功");
+    ElMessage.success(t('wms.receipt.splitSuccess'));
     await loadBarcodes();
     await refreshCurrentDetail();
   } catch (e) {
@@ -695,7 +705,7 @@ async function doMergeBarcodes() {
     await mergeReceiptBarcodes(form.value.receiptId, currentDetailRow.value.detailId, {
       barcodeIds: selectedBarcodes.value.map((r) => r.barcodeId),
     });
-    ElMessage.success("合并成功");
+    ElMessage.success(t('wms.receipt.mergeSuccess'));
     selectedBarcodes.value = [];
     await loadBarcodes();
     await refreshCurrentDetail();
@@ -719,7 +729,7 @@ async function refreshCurrentDetail() {
 function openShelve(row) {
   const remain = (row.receiptQuantity || 0) - (row.shelfQuantity || 0);
   if (remain <= 0) {
-    ElMessage.warning("该明细已全部上架");
+    ElMessage.warning(t('wms.receipt.allShelved'));
     return;
   }
   const pendingBarcodes = Math.max((row.barcodeCount || 0) - (row.shelvedBarcodeCount || 0), 0);
@@ -737,11 +747,11 @@ function openShelve(row) {
 /** 提交上架 */
 function submitShelve() {
   if (!shelveForm.locationId) {
-    ElMessage.warning("请选择上架库位");
+    ElMessage.warning(t('wms.receipt.selectShelveLocation'));
     return;
   }
   if (!shelveForm.quantity || shelveForm.quantity <= 0) {
-    ElMessage.warning("上架数量必须大于0");
+    ElMessage.warning(t('wms.receipt.shelveQtyWarn'));
     return;
   }
   const receiptId = shelveForm.receiptId;
@@ -749,7 +759,7 @@ function submitShelve() {
     locationId: shelveForm.locationId,
     quantity: shelveForm.quantity,
   }).then(() => {
-    ElMessage.success("上架成功");
+    ElMessage.success(t('wms.receipt.shelveSuccess'));
     shelveOpen.value = false;
     // 刷新明细状态/条码/已上架数量与主表状态
     getReceipt(receiptId).then((res) => fillForm(res.data || {}));
@@ -763,17 +773,17 @@ function submitForm() {
     if (!valid) return;
     // 校验明细
     if (detailList.value.length === 0) {
-      ElMessage.warning("请至少添加一条入库明细");
+      ElMessage.warning(t('wms.receipt.selectAtLeastOneDetail'));
       return;
     }
     for (let i = 0; i < detailList.value.length; i++) {
       const d = detailList.value[i];
       if (!d.materialId) {
-        ElMessage.warning(`第 ${i + 1} 行：请选择物料`);
+        ElMessage.warning(t('wms.receipt.rowMaterialRequired', { no: i + 1 }));
         return;
       }
       if (!d.receiptQuantity || d.receiptQuantity <= 0) {
-        ElMessage.warning(`第 ${i + 1} 行：入库数量必须大于0`);
+        ElMessage.warning(t('wms.receipt.rowQtyRequired', { no: i + 1 }));
         return;
       }
     }
@@ -788,7 +798,7 @@ function submitForm() {
       return rest;
     });
     api(submitData).then(() => {
-      ElMessage.success("保存成功");
+      ElMessage.success(t('wms.common.savedSuccess'));
       open.value = false;
       getList();
     });
@@ -804,15 +814,15 @@ function cancel() {
 /** 删除 */
 function handleDelete(row) {
   const delIds = row.receiptId || ids.value.join(",");
-  ElMessageBox.confirm(`是否确认删除编号为"${delIds}"的数据项？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.common.deleteConfirm', { id: delIds }), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => delReceipt(delIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
 }
 
@@ -869,7 +879,7 @@ async function onReceivingChange(data) {
     await Promise.all(detailList.value.map((r) => ensurePackSpecLoaded(r.materialPackSpecId)));
   } catch (e) {
     console.error("加载收货单明细失败：", e);
-    ElMessage.error("加载收货单明细失败，请检查后端服务是否已重新编译！");
+    ElMessage.error(t('wms.receipt.loadReceivingDetailFailed'));
   }
 }
 
@@ -914,9 +924,9 @@ function unitOptions(row) {
       if (p.uom && !opts.some((o) => o.value === p.uom)) {
         let label = p.uom;
         if (p.isBase === 1) {
-          label += "（基本单位）";
+          label += `（${t('wms.receiving.baseUnit')}）`;
         } else if (!p.parentId) {
-          label += "（顶层）";
+          label += `（${t('wms.receiving.topLevel')}）`;
         } else {
           const factor = convFactor(p, set);
           const baseUom = set.find((n) => n.isBase === 1)?.uom || p.uom;
@@ -994,11 +1004,11 @@ async function onMaterialMultiSelect(materials) {
   }
 
   if (added === 0) {
-    ElMessage.info("所选物料已在明细中");
+    ElMessage.info(t('wms.receipt.alreadyInDetail'));
     return;
   }
   onDetailRowClick(detailList.value[detailList.value.length - 1]);
-  ElMessage.success(`已添加 ${added} 条明细`);
+  ElMessage.success(t('wms.receiving.addedDetails', { count: added }));
 }
 
 /** 删除明细行 */
@@ -1013,7 +1023,7 @@ function removeDetailRow(index) {
 
 /** 打印标签 */
 function handlePrintLabel(row) {
-  ElMessage.info(`TODO：打印标签功能待实现，入库单号：${row.receiptNo}`);
+  ElMessage.info(t('wms.receipt.printLabelTodo', { no: row.receiptNo }));
 }
 
 getList();

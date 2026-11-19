@@ -4,9 +4,9 @@
       <!-- 左侧物料分类树 -->
       <div class="split-left-panel">
         <div class="split-left__header">
-          <div class="split-left__title">物料分类</div>
+          <div class="split-left__title">{{ t('wms.material.category') }}</div>
           <div class="split-left__search">
-            <el-input v-model="categoryName" placeholder="搜索分类" clearable prefix-icon="Search" />
+            <el-input v-model="categoryName" :placeholder="t('wms.material.ph.searchCategory')" clearable prefix-icon="Search" />
           </div>
         </div>
         <div class="split-left__body">
@@ -36,18 +36,18 @@
         <template v-if="selectedCategory">
           <div class="split-right__header">
             <span class="split-right__title">{{ selectedCategory.label }}</span>
-            <span class="split-right__sub">（检验项配置）</span>
+            <span class="split-right__sub">（{{ t('wms.iqcItem.configSub') }}）</span>
           </div>
 
           <el-row :gutter="10" class="mb8">
             <el-col :span="2">
-              <el-button class="detail-add-btn" type="primary" plain icon="Plus" @click="handleAddRow">新增行</el-button>
+              <el-button class="detail-add-btn" type="primary" plain icon="Plus" @click="handleAddRow">{{ t('wms.iqcItem.addRow') }}</el-button>
             </el-col>
             <el-col :span="1.5">
-              <el-button type="danger" plain icon="Delete" :disabled="selectedRows.length === 0" @click="handleDeleteRows">删除选中</el-button>
+              <el-button type="danger" plain icon="Delete" :disabled="selectedRows.length === 0" @click="handleDeleteRows">{{ t('wms.partner.deleteSelected') }}</el-button>
             </el-col>
             <el-col :span="1.5">
-              <el-button type="success" icon="Check" @click="handleBatchSave">保存</el-button>
+              <el-button type="success" icon="Check" @click="handleBatchSave">{{ t('common.save') }}</el-button>
             </el-col>
           </el-row>
 
@@ -59,7 +59,7 @@
           >
             <el-table-column type="selection" width="55" align="center" />
 
-            <el-table-column label="序号" align="center" width="80">
+            <el-table-column :label="t('wms.common.index')" align="center" width="80">
               <template #default="scope">
                 <el-input-number controls-position="right"
                   v-model="scope.row.sortNo"
@@ -70,89 +70,89 @@
               </template>
             </el-table-column>
 
-            <el-table-column label="检验项编码" align="center" min-width="140">
+            <el-table-column :label="t('wms.iqcItem.itemCode')" align="center" min-width="140">
               <template #default="scope">
-                <el-input v-model="scope.row.itemCode" placeholder="编码" maxlength="50" />
+                <el-input v-model="scope.row.itemCode" :placeholder="t('wms.common.code')" maxlength="50" />
               </template>
             </el-table-column>
 
-            <el-table-column label="检验项名称" align="center" min-width="160">
+            <el-table-column :label="t('wms.iqcItem.itemName')" align="center" min-width="160">
               <template #default="scope">
-                <el-input v-model="scope.row.itemName" placeholder="名称" maxlength="100" />
+                <el-input v-model="scope.row.itemName" :placeholder="t('wms.common.name')" maxlength="100" />
               </template>
             </el-table-column>
 
-            <el-table-column label="检验类型" align="center" width="120">
+            <el-table-column :label="t('wms.iqcItem.itemType')" align="center" width="120">
               <template #default="scope">
-                <el-select v-model="scope.row.itemType" placeholder="请选择" style="width: 100%">
-                  <el-option label="计量" value="quantitative" />
-                  <el-option label="定性" value="qualitative" />
-                  <el-option label="目视" value="visual" />
+                <el-select v-model="scope.row.itemType" :placeholder="t('wms.common.pleaseSelect')" style="width: 100%">
+                  <el-option :label="t('wms.iqcItem.quantitative')" value="quantitative" />
+                  <el-option :label="t('wms.iqcItem.qualitative')" value="qualitative" />
+                  <el-option :label="t('wms.iqcItem.visual')" value="visual" />
                 </el-select>
               </template>
             </el-table-column>
 
-            <el-table-column label="规格/标准值" align="center" min-width="140">
+            <el-table-column :label="t('wms.iqcItem.specValue')" align="center" min-width="140">
               <template #default="scope">
-                <el-input v-model="scope.row.specValue" placeholder="如 10±0.1" maxlength="200" />
+                <el-input v-model="scope.row.specValue" :placeholder="t('wms.iqcItem.ph.specExample')" maxlength="200" />
               </template>
             </el-table-column>
 
-            <el-table-column label="上限公差" align="center" width="110">
+            <el-table-column :label="t('wms.iqcItem.tolUpper')" align="center" width="110">
               <template #default="scope">
                 <el-input-number controls-position="right" v-model="scope.row.tolUpper" :controls="false" style="width: 100%" />
               </template>
             </el-table-column>
 
-            <el-table-column label="下限公差" align="center" width="110">
+            <el-table-column :label="t('wms.iqcItem.tolLower')" align="center" width="110">
               <template #default="scope">
                 <el-input-number controls-position="right" v-model="scope.row.tolLower" :controls="false" style="width: 100%" />
               </template>
             </el-table-column>
 
-            <el-table-column label="单位" align="center" width="100">
+            <el-table-column :label="t('wms.receiving.unit')" align="center" width="100">
               <template #default="scope">
-                <el-select v-model="scope.row.unit" placeholder="单位" clearable filterable style="width: 100%">
+                <el-select v-model="scope.row.unit" :placeholder="t('wms.receiving.unit')" clearable filterable style="width: 100%">
                   <el-option v-for="dict in wms_sys_unit_type" :key="dict.value" :label="dict.label" :value="dict.value" />
                 </el-select>
               </template>
             </el-table-column>
 
-            <el-table-column label="检测方法/工具" align="center" min-width="160">
+            <el-table-column :label="t('wms.iqcItem.testMethod')" align="center" min-width="160">
               <template #default="scope">
-                <el-input v-model="scope.row.testMethod" placeholder="如 卡尺测量 / 游标卡尺" maxlength="200" />
+                <el-input v-model="scope.row.testMethod" :placeholder="t('wms.iqcItem.ph.methodExample')" maxlength="200" />
               </template>
             </el-table-column>
 
-            <el-table-column label="关键项" align="center" width="75">
+            <el-table-column :label="t('wms.iqcItem.isCritical')" align="center" width="75">
               <template #default="scope">
                 <el-switch v-model="scope.row.isCritical" active-value="1" inactive-value="0" />
               </template>
             </el-table-column>
 
-            <el-table-column label="状态" align="center" width="75">
+            <el-table-column :label="t('common.status')" align="center" width="75">
               <template #default="scope">
                 <el-switch v-model="scope.row.status" active-value="0" inactive-value="1" />
               </template>
             </el-table-column>
 
-            <el-table-column label="备注" align="center" min-width="140">
+            <el-table-column :label="t('common.remark')" align="center" min-width="140">
               <template #default="scope">
-                <el-input v-model="scope.row.remark" placeholder="备注" maxlength="500" />
+                <el-input v-model="scope.row.remark" :placeholder="t('common.remark')" maxlength="500" />
               </template>
             </el-table-column>
 
-            <el-table-column label="操作" align="center" width="60" fixed="right">
+            <el-table-column :label="t('common.actions')" align="center" width="60" fixed="right">
               <template #default="scope">
                 <el-button link type="danger" icon="Delete" @click="handleDeleteRow(scope.$index)" />
               </template>
             </el-table-column>
           </el-table>
 
-          <el-empty v-if="!loading && tableData.length === 0" description="暂无检验项，请点击新增行添加" :image-size="80" />
+          <el-empty v-if="!loading && tableData.length === 0" :description="t('wms.iqcItem.empty')" :image-size="80" />
         </template>
 
-        <el-empty v-else description="请在左侧选择物料分类" :image-size="100" />
+        <el-empty v-else :description="t('wms.iqcItem.selectCategoryFirst')" :image-size="100" />
       </div>
     </div>
   </div>
@@ -161,9 +161,11 @@
 <script setup name="WmsIqcItem">
 import { ref, computed, watch, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import { getDict, handleTree } from "@/utils";
 import { listIqcItem, batchSaveIqcItem } from "@/api/wms/iqcItem";
 
+const { t } = useI18n();
 const { wms_material_category, wms_sys_unit_type } = getDict("wms_material_category", "wms_sys_unit_type");
 
 // ========== 左侧分类树 ==========
@@ -239,11 +241,11 @@ function handleDeleteRow(index) {
 }
 
 function handleDeleteRows() {
-  ElMessageBox.confirm("确认删除选中的检验项吗？", "提示", { type: "warning" })
+  ElMessageBox.confirm(t('wms.iqcItem.deleteRowsConfirm'), t('wms.common.tip'), { type: "warning" })
     .then(() => {
       tableData.value = tableData.value.filter((r) => !selectedRows.value.includes(r));
       selectedRows.value = [];
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
 }
 
@@ -256,11 +258,11 @@ function handleBatchSave() {
   for (let i = 0; i < tableData.value.length; i++) {
     const row = tableData.value[i];
     if (!row.itemCode) {
-      ElMessage.warning(`第 ${i + 1} 行检验项编码不能为空`);
+      ElMessage.warning(t('wms.iqcItem.rowCodeRequired', { no: i + 1 }));
       return;
     }
     if (!row.itemName) {
-      ElMessage.warning(`第 ${i + 1} 行检验项名称不能为空`);
+      ElMessage.warning(t('wms.iqcItem.rowNameRequired', { no: i + 1 }));
       return;
     }
   }
@@ -287,7 +289,7 @@ function handleBatchSave() {
   loading.value = true;
   batchSaveIqcItem(categoryId, data)
     .then(() => {
-      ElMessage.success("保存成功");
+      ElMessage.success(t('wms.common.savedSuccess'));
       loadTableData(categoryId);
     })
     .finally(() => {

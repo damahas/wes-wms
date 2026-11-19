@@ -34,13 +34,13 @@
             />
           </template>
         </el-table-column>
-        <el-table-column :label="typeLabel + '编码'" align="center" prop="partnerCode" :show-overflow-tooltip="true" />
-        <el-table-column :label="typeLabel + '名称'" align="center" prop="partnerName" :show-overflow-tooltip="true" />
-        <el-table-column label="省份" align="center" prop="province" :show-overflow-tooltip="true" />
-        <el-table-column label="状态" align="center" prop="status">
+        <el-table-column :label="t('wms.partner.codeOf', { type: typeLabel })" align="center" prop="partnerCode" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.partner.nameOf', { type: typeLabel })" align="center" prop="partnerName" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.partner.province')" align="center" prop="province" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('common.status')" align="center" prop="status">
           <template #default="scope">
             <el-tag :type="scope.row.status === '0' ? 'success' : 'info'" size="small">
-              {{ scope.row.status === '0' ? '启用' : '停用' }}
+              {{ scope.row.status === '0' ? t('common.enable') : t('common.disable') }}
             </el-tag>
           </template>
         </el-table-column>
@@ -56,8 +56,8 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+          <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -67,9 +67,12 @@
 <script setup>
 import { ref, reactive, computed, watch } from "vue";
 import { ElMessage } from "element-plus";
+import { useI18n } from "vue-i18n";
 import { Search } from "@element-plus/icons-vue";
 import { listPartner, getPartner } from "@/api/wms/partner";
 import QueryForm from "@/components/QueryForm/index.vue";
+
+const { t } = useI18n();
 
 const props = defineProps({
   modelValue: { type: [String, Number], default: undefined },
@@ -98,17 +101,17 @@ const queryParams = reactive({
 });
 
 const typeLabel = computed(() => {
-  if (props.partnerType === "supplier") return "供应商";
-  if (props.partnerType === "customer") return "客户";
-  return "往来单位";
+  if (props.partnerType === "supplier") return t('wms.partner.supplier');
+  if (props.partnerType === "customer") return t('wms.partner.customer');
+  return t('wms.partner.partner');
 });
 
-const placeholderText = computed(() => props.placeholder || "请选择" + typeLabel.value);
-const dialogTitle = computed(() => "选择" + typeLabel.value);
+const placeholderText = computed(() => props.placeholder || t('wms.partner.selectOf', { type: typeLabel.value }));
+const dialogTitle = computed(() => t('wms.partner.selectTitleOf', { type: typeLabel.value }));
 
 const queryConfig = computed(() => [
-  { label: typeLabel.value + "编码", prop: "partnerCode", type: "input", placeholder: `请输入${typeLabel.value}编码` },
-  { label: typeLabel.value + "名称", prop: "partnerName", type: "input", placeholder: `请输入${typeLabel.value}名称` },
+  { label: t('wms.partner.codeOf', { type: typeLabel.value }), prop: "partnerCode", type: "input", placeholder: t('wms.partner.ph.inputCodeOf', { type: typeLabel.value }) },
+  { label: t('wms.partner.nameOf', { type: typeLabel.value }), prop: "partnerName", type: "input", placeholder: t('wms.partner.ph.inputNameOf', { type: typeLabel.value }) },
 ]);
 
 // 根据 modelValue 加载默认显示
@@ -225,7 +228,7 @@ function handleRowClick(row) {
 
 function submitForm() {
   if (!dialogItem.value) {
-    ElMessage.warning("请至少选择一个" + typeLabel.value);
+    ElMessage.warning(t('wms.partner.selectAtLeastOneOf', { type: typeLabel.value }));
     return;
   }
   dialogVisible.value = false;

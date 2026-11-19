@@ -69,6 +69,14 @@ namespace Wes.Service
                 .ExecuteCommand() > 0;
         }
 
+        public bool DeleteByKey(string i18nKey)
+        {
+            return Context.Updateable<SysI18nEntity>()
+                .SetColumns(p => p.IsDel == 1)
+                .Where(p => p.I18nKey == i18nKey)
+                .ExecuteCommand() > 0;
+        }
+
         public string GetTranslation(string key, string lang)
         {
             var item = GetFirst(p => p.I18nKey == key && p.Lang == lang && p.IsDel == 0);

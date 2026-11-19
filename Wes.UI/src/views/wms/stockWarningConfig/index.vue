@@ -12,74 +12,73 @@
       <!-- 操作按钮 -->
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
-          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:stockWarningConfig:add']">新增</el-button>
+          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:stockWarningConfig:add']">{{ t('common.add') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:stockWarningConfig:edit']">修改</el-button>
+          <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:stockWarningConfig:edit']">{{ t('common.edit') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['wms:stockWarningConfig:remove']">删除</el-button>
+          <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['wms:stockWarningConfig:remove']">{{ t('common.delete') }}</el-button>
         </el-col>
         <right-toolbar
           v-model:showSearch="showSearch"
           @queryTable="getList"
-          hint="一条配置就是一次考核：范围按 仓库 → 库区 → 库位 逐级收窄（只选仓库=全仓，选到库区=按库区，选到库位=按库位），物料不选=范围内全部物料一起考核。
-定时任务每天按配置自动检查库存，也可在「库存预警」页面手动立即执行；触发后给处理人发站内信，点击站内信可跳到预警页面处理。"
+          :hint="t('wms.stockWarningConfig.hint')"
         />
       </el-row>
 
       <!-- 列表 -->
       <el-table v-loading="loading" :data="configList" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="仓库" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.stockWarningConfig.warehouse')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.warehouse?.warehouseName || "-" }}</template>
         </el-table-column>
-        <el-table-column label="库区" align="center" :show-overflow-tooltip="true">
-          <template #default="scope">{{ scope.row.zone?.zoneName || "全仓" }}</template>
+        <el-table-column :label="t('wms.stockWarningConfig.zone')" align="center" :show-overflow-tooltip="true">
+          <template #default="scope">{{ scope.row.zone?.zoneName || t('wms.stockWarningConfig.wholeWarehouse') }}</template>
         </el-table-column>
-        <el-table-column label="库位" align="center" width="110" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.stockWarningConfig.location')" align="center" width="110" :show-overflow-tooltip="true">
           <template #default="scope">
-            {{ scope.row.location?.locationCode || (scope.row.zoneId ? "整个库区" : "整个仓库") }}
+            {{ scope.row.location?.locationCode || (scope.row.zoneId ? t('wms.stockWarningConfig.wholeZone') : t('wms.stockWarningConfig.wholeWarehouseScope')) }}
           </template>
         </el-table-column>
-        <el-table-column label="物料" align="center" min-width="150" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.stockWarningConfig.material')" align="center" min-width="150" :show-overflow-tooltip="true">
           <template #default="scope">
             <template v-if="scope.row.material">
               {{ scope.row.material.materialCode }} - {{ scope.row.material.materialName }}
             </template>
-            <span v-else class="text-muted">全部物料</span>
+            <span v-else class="text-muted">{{ t('wms.stockWarningConfig.allMaterials') }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="预警类型" align="center" width="120">
+        <el-table-column :label="t('wms.stockWarningConfig.warningType')" align="center" width="120">
           <template #default="scope">
             <el-tag size="small" :type="scope.row.warningType === 'min_stock' ? 'danger' : 'warning'">
               {{ warningTypeMap[scope.row.warningType] || "-" }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="阈值" align="center" prop="thresholdValue" width="90" />
-        <el-table-column label="级别" align="center" width="80">
+        <el-table-column :label="t('wms.stockWarningConfig.thresholdValue')" align="center" prop="thresholdValue" width="90" />
+        <el-table-column :label="t('wms.stockWarningConfig.warningLevel')" align="center" width="80">
           <template #default="scope">
             <el-tag size="small" :type="levelTag(scope.row.warningLevel)">
               {{ levelMap[scope.row.warningLevel] || "-" }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="处理人" align="center" min-width="130" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.stockWarningConfig.notifyUsers')" align="center" min-width="130" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.notifyUserNames || "-" }}</template>
         </el-table-column>
-        <el-table-column label="启用" align="center" width="80">
+        <el-table-column :label="t('wms.stockWarningConfig.enabled')" align="center" width="80">
           <template #default="scope">
             <el-tag size="small" :type="scope.row.enabled === 1 ? 'success' : 'info'">
-              {{ scope.row.enabled === 1 ? "启用" : "停用" }}
+              {{ scope.row.enabled === 1 ? t('common.enable') : t('common.disable') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
-        <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+        <el-table-column :label="t('common.remark')" align="center" prop="remark" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('common.actions')" align="center" width="150" class-name="small-padding fixed-width">
           <template #default="scope">
-            <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:stockWarningConfig:edit']">修改</el-button>
-            <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:stockWarningConfig:remove']">删除</el-button>
+            <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:stockWarningConfig:edit']">{{ t('common.edit') }}</el-button>
+            <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:stockWarningConfig:remove']">{{ t('common.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -97,64 +96,64 @@
         <el-form ref="configRef" :model="form" :rules="rules" label-width="88px" class="nowrap-labels">
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="仓库" prop="warehouseId">
-                <WarehouseSelect v-model="form.warehouseId" placeholder="请选择仓库" @change="onWarehouseChange" />
+              <el-form-item :label="t('wms.stockWarningConfig.warehouse')" prop="warehouseId">
+                <WarehouseSelect v-model="form.warehouseId" :placeholder="t('wms.stockWarningConfig.rules.warehouseRequired')" @change="onWarehouseChange" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="物料" prop="materialId">
+              <el-form-item :label="t('wms.stockWarningConfig.material')" prop="materialId">
                 <MaterialSelect
                   v-model="form.materialId"
                   :label="form.materialCode && form.materialName ? form.materialCode + ' - ' + form.materialName : ''"
-                  placeholder="不选 = 范围内全部物料"
+                  :placeholder="t('wms.stockWarningConfig.materialPlaceholder')"
                   @change="onMaterialChange"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="预警范围">
+              <el-form-item :label="t('wms.stockWarningConfig.rangeLabel')">
                 <LocationCascader
                   v-model="form.locCascader"
                   :warehouse-id="form.warehouseId"
                   :any-level="true"
                   :disabled="!form.warehouseId"
-                  :placeholder="form.warehouseId ? '可只选库区，也可选到库位；不选 = 整个仓库' : '请先选择仓库'"
+                  :placeholder="form.warehouseId ? t('wms.stockWarningConfig.rangePlaceholder') : t('wms.stockWarningConfig.rangePlaceholderNeedWarehouse')"
                   @update:model-value="onLocCascader"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="预警类型" prop="warningType">
-                <el-select v-model="form.warningType" placeholder="请选择预警类型" style="width:100%">
-                  <el-option label="低于下限（缺货）" value="min_stock" />
-                  <el-option label="高于上限（积压）" value="max_stock" />
+              <el-form-item :label="t('wms.stockWarningConfig.warningType')" prop="warningType">
+                <el-select v-model="form.warningType" :placeholder="t('wms.stockWarningConfig.rules.typeRequired')" style="width:100%">
+                  <el-option :label="t('wms.stockWarningConfig.typeMinOption')" value="min_stock" />
+                  <el-option :label="t('wms.stockWarningConfig.typeMaxOption')" value="max_stock" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="阈值" prop="thresholdValue">
+              <el-form-item :label="t('wms.stockWarningConfig.thresholdValue')" prop="thresholdValue">
                 <el-input-number v-model="form.thresholdValue" :min="0" :precision="3" :controls="false"
-                  placeholder="触发预警的数量界限" style="width:100%" />
+                  :placeholder="t('wms.stockWarningConfig.thresholdPlaceholder')" style="width:100%" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="预警级别" prop="warningLevel">
-                <el-select v-model="form.warningLevel" placeholder="请选择预警级别" style="width:100%">
-                  <el-option label="一般" value="normal" />
-                  <el-option label="紧急" value="urgent" />
-                  <el-option label="危机" value="critical" />
+              <el-form-item :label="t('wms.stockWarningConfig.warningLevel')" prop="warningLevel">
+                <el-select v-model="form.warningLevel" :placeholder="t('wms.stockWarningConfig.rules.levelRequired')" style="width:100%">
+                  <el-option :label="t('wms.stockWarningConfig.levelNormal')" value="normal" />
+                  <el-option :label="t('wms.stockWarningConfig.levelUrgent')" value="urgent" />
+                  <el-option :label="t('wms.stockWarningConfig.levelCritical')" value="critical" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="是否启用">
+              <el-form-item :label="t('wms.stockWarningConfig.enabled')">
                 <el-switch v-model="form.enabled" :active-value="1" :inactive-value="0" />
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="处理人" prop="notifyUserIds">
+              <el-form-item :label="t('wms.stockWarningConfig.notifyUsers')" prop="notifyUserIds">
                 <div class="user-picker">
-                  <el-button icon="Plus" @click="openUserSelect">选择人员</el-button>
+                  <el-button icon="Plus" @click="openUserSelect">{{ t('wms.stockWarningConfig.selectUsers') }}</el-button>
                   <el-tag
                     v-for="u in form.notifyUsers"
                     :key="u.userId"
@@ -167,20 +166,20 @@
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="备注">
-                <el-input v-model="form.remark" placeholder="选填" maxlength="255" />
+              <el-form-item :label="t('common.remark')">
+                <el-input v-model="form.remark" maxlength="255" />
               </el-form-item>
             </el-col>
           </el-row>
 
           <div class="form-tip text-muted">
-            预警触发后，系统会给这里选中的处理人每人发一条站内信，点击站内信直接跳到「库存预警」页面处理。
+            {{ t('wms.stockWarningConfig.formTip') }}
           </div>
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button type="primary" @click="submitForm">确 定</el-button>
-            <el-button @click="cancel">取 消</el-button>
+            <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+            <el-button @click="cancel">{{ t('common.cancel') }}</el-button>
           </div>
         </template>
       </el-dialog>
@@ -193,6 +192,7 @@
 <script setup name="WmsStockWarningConfig">
 import { ref, reactive, toRefs, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listStockWarningConfig,
   getStockWarningConfig,
@@ -207,6 +207,7 @@ import MaterialSelect from "@/views/wms/material/input.vue";
 import LocationCascader from "@/views/wms/location/cascader.vue";
 import SelectUser from "@/views/system/user/select.vue";
 
+const { t } = useI18n();
 const configRef = ref(null);
 const userSelectRef = ref(null);
 const configList = ref([]);
@@ -220,8 +221,12 @@ const title = ref("");
 
 const showSearch = ref(true);
 
-const warningTypeMap = { min_stock: "低于下限", max_stock: "高于上限" };
-const levelMap = { normal: "一般", urgent: "紧急", critical: "危机" };
+const warningTypeMap = computed(() => ({ min_stock: t("wms.stockWarningConfig.typeMinStock"), max_stock: t("wms.stockWarningConfig.typeMaxStock") }));
+const levelMap = computed(() => ({
+  normal: t("wms.stockWarningConfig.levelNormal"),
+  urgent: t("wms.stockWarningConfig.levelUrgent"),
+  critical: t("wms.stockWarningConfig.levelCritical"),
+}));
 const levelTag = (l) => (l === "critical" ? "danger" : l === "urgent" ? "warning" : "info");
 
 const data = reactive({
@@ -234,25 +239,25 @@ const data = reactive({
     enabled: undefined,
   },
   rules: {
-    warehouseId: [{ required: true, message: "请选择仓库", trigger: "change" }],
-    warningType: [{ required: true, message: "请选择预警类型", trigger: "change" }],
-    thresholdValue: [{ required: true, message: "请输入阈值", trigger: "blur" }],
-    warningLevel: [{ required: true, message: "请选择预警级别", trigger: "change" }],
+    warehouseId: [{ required: true, message: () => t('wms.stockWarningConfig.rules.warehouseRequired'), trigger: "change" }],
+    warningType: [{ required: true, message: () => t('wms.stockWarningConfig.rules.typeRequired'), trigger: "change" }],
+    thresholdValue: [{ required: true, message: () => t('wms.stockWarningConfig.rules.thresholdRequired'), trigger: "blur" }],
+    warningLevel: [{ required: true, message: () => t('wms.stockWarningConfig.rules.levelRequired'), trigger: "change" }],
   },
 });
 
 const { form, queryParams, rules } = toRefs(data);
 
 const queryConfig = computed(() => [
-  { label: "备注", prop: "keywords", type: "input", placeholder: "请输入备注关键字" },
+  { label: t('common.remark'), prop: "keywords", type: "input", placeholder: t('wms.stockWarningConfig.keywordsPlaceholder') },
   {
-    label: "启用状态",
+    label: t('wms.stockWarningConfig.enabledStatus'),
     prop: "enabled",
     type: "select",
-    placeholder: "请选择启用状态",
+    placeholder: t('wms.stockWarningConfig.enabledStatus'),
     options: [
-      { label: "启用", value: 1 },
-      { label: "停用", value: 0 },
+      { label: t('common.enable'), value: 1 },
+      { label: t('common.disable'), value: 0 },
     ],
   },
 ]);
@@ -314,7 +319,7 @@ function reset() {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加预警配置";
+  title.value = t("wms.stockWarningConfig.addTitle");
 }
 
 function handleUpdate(row) {
@@ -341,12 +346,12 @@ function fillForm(d) {
     warningLevel: d.warningLevel || "normal",
     notifyUserIds: d.notifyUserIds || "",
     notifyUserNames: d.notifyUserNames || "",
-    notifyUsers: idList.map((id, i) => ({ userId: id, userName: nameList[i] || `用户${id}` })),
+    notifyUsers: idList.map((id, i) => ({ userId: id, userName: nameList[i] || t("wms.stockWarningConfig.userFallback", { id }) })),
     enabled: d.enabled ?? 1,
     remark: d.remark,
   };
   open.value = true;
-  title.value = "修改预警配置";
+  title.value = t("wms.stockWarningConfig.editTitle");
 }
 
 /** 仓库变更：清空范围 */
@@ -398,11 +403,11 @@ function submitForm() {
   configRef.value.validate((valid) => {
     if (!valid) return;
     if (!(form.value.thresholdValue > 0)) {
-      ElMessage.warning("阈值必须大于 0");
+      ElMessage.warning(t("wms.stockWarningConfig.thresholdPositive"));
       return;
     }
     if (!form.value.notifyUsers || form.value.notifyUsers.length === 0) {
-      ElMessage.warning("请至少选择一名处理人");
+      ElMessage.warning(t("wms.stockWarningConfig.notifyRequired"));
       return;
     }
 
@@ -423,11 +428,11 @@ function submitForm() {
     const req = form.value.configId ? updateStockWarningConfig(payload) : addStockWarningConfig(payload);
     req.then((res) => {
       if (res.code === 200) {
-        ElMessage.success("保存成功");
+        ElMessage.success(t("wms.stockWarningConfig.savedSuccess"));
         open.value = false;
         getList();
       } else {
-        ElMessage.error(res.msg || "保存失败");
+        ElMessage.error(res.msg || t("wms.stockWarningConfig.saveFailed"));
       }
     });
   });
@@ -441,14 +446,14 @@ function cancel() {
 function handleDelete(row) {
   const delIds = row?.configId ? [row.configId] : ids.value;
   if (!delIds || delIds.length === 0) return;
-  ElMessageBox.confirm(`确认删除选中的 ${delIds.length} 条预警配置吗？`, "提示", { type: "warning" })
+  ElMessageBox.confirm(t("wms.stockWarningConfig.deleteConfirm", { count: delIds.length }), t("wms.common.tip"), { type: "warning" })
     .then(() => delStockWarningConfig(delIds.join(",")))
     .then((res) => {
       if (res.code === 200) {
-        ElMessage.success("删除成功");
+        ElMessage.success(t("wms.stockWarningConfig.deleteSuccess"));
         getList();
       } else {
-        ElMessage.error(res.msg || "删除失败");
+        ElMessage.error(res.msg || t("wms.stockWarningConfig.deleteFailed"));
       }
     })
     .catch(() => {});

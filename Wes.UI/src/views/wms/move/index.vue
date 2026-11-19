@@ -12,14 +12,14 @@
       <!-- 操作按钮 -->
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
-          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:move:add']">新增</el-button>
+          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:move:add']">{{ t('common.add') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button v-if="canEdit(selectedRows[0] || {})" type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:move:edit']">修改</el-button>
-          <el-button v-else type="info" plain icon="View" :disabled="single" @click="handleView(selectedRows[0])">明细</el-button>
+          <el-button v-if="canEdit(selectedRows[0] || {})" type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:move:edit']">{{ t('common.edit') }}</el-button>
+          <el-button v-else type="info" plain icon="View" :disabled="single" @click="handleView(selectedRows[0])">{{ t('wms.receipt.details') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="danger" plain icon="Delete" :disabled="multiple || selectedRows.some((r) => !canEdit(r))" @click="handleDelete" v-hasPermi="['wms:move:remove']">删除</el-button>
+          <el-button type="danger" plain icon="Delete" :disabled="multiple || selectedRows.some((r) => !canEdit(r))" @click="handleDelete" v-hasPermi="['wms:move:remove']">{{ t('common.delete') }}</el-button>
         </el-col>
         <right-toolbar
           v-model:showSearch="showSearch"
@@ -30,32 +30,32 @@
       <!-- 列表 -->
       <el-table v-loading="loading" :data="moveList" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="移库单号" align="center" prop="moveNo" :show-overflow-tooltip="true" />
-        <el-table-column label="移库类型" align="center" width="110" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.move.moveNo')" align="center" prop="moveNo" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.move.moveType')" align="center" width="110" :show-overflow-tooltip="true">
           <template #default="scope">
-            {{ moveTypeMap[scope.row.moveType] || "-" }}
+            {{ moveTypeLabel(scope.row.moveType) }}
           </template>
         </el-table-column>
-        <el-table-column label="仓库" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.warehouse')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.warehouse?.warehouseName || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="总数量" align="center" prop="totalQuantity" width="90" />
-        <el-table-column label="状态" align="center" width="100">
+        <el-table-column :label="t('wms.receipt.totalQuantity')" align="center" prop="totalQuantity" width="90" />
+        <el-table-column :label="t('common.status')" align="center" width="100">
           <template #default="scope">
             <el-tag :type="moveStatusTag(scope.row.moveStatus)">
-              {{ moveStatusMap[scope.row.moveStatus] || "-" }}
+              {{ moveStatusLabel(scope.row.moveStatus) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" align="center" prop="createTime" min-width="170" />
-        <el-table-column label="操作" align="center" width="220" class-name="small-padding fixed-width">
+        <el-table-column :label="t('common.createTime')" align="center" prop="createTime" min-width="170" />
+        <el-table-column :label="t('common.actions')" align="center" width="220" class-name="small-padding fixed-width">
           <template #default="scope">
-            <el-button v-if="canEdit(scope.row)" link type="success" icon="Promotion" @click="handleExecute(scope.row)" v-hasPermi="['wms:move:edit']">执行</el-button>
-            <el-button v-if="canEdit(scope.row)" link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:move:edit']">修改</el-button>
-            <el-button v-else link type="info" icon="View" @click="handleView(scope.row)">明细</el-button>
-            <el-button v-if="canEdit(scope.row)" link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:move:remove']">删除</el-button>
+            <el-button v-if="canEdit(scope.row)" link type="success" icon="Promotion" @click="handleExecute(scope.row)" v-hasPermi="['wms:move:edit']">{{ t('wms.move.execute') }}</el-button>
+            <el-button v-if="canEdit(scope.row)" link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:move:edit']">{{ t('common.edit') }}</el-button>
+            <el-button v-else link type="info" icon="View" @click="handleView(scope.row)">{{ t('wms.receipt.details') }}</el-button>
+            <el-button v-if="canEdit(scope.row)" link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:move:remove']">{{ t('common.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -73,34 +73,38 @@
         <el-form ref="moveRef" :model="form" :rules="rules" label-width="88px" class="nowrap-labels" :disabled="viewMode">
           <el-row :gutter="16">
             <el-col :span="8">
-              <el-form-item label="移库单号">
-                <el-input v-model="form.moveNo" placeholder="保存后自动生成" readonly />
+              <el-form-item :label="t('wms.move.moveNo')">
+                <el-input v-model="form.moveNo" :placeholder="t('wms.receipt.receiptNoAuto')" readonly />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="移库类型" prop="moveType">
-                <el-select v-model="form.moveType" placeholder="请选择移库类型" style="width:100%">
-                  <el-option v-for="(label, value) in moveTypeMap" :key="value" :label="label" :value="value" />
+              <el-form-item :label="t('wms.move.moveType')" prop="moveType">
+                <el-select v-model="form.moveType" :placeholder="t('wms.move.ph.selectType')" style="width:100%">
+                  <el-option :label="t('wms.move.typeLocationAdjust')" value="location_adjust" />
+                  <el-option :label="t('wms.move.typeZoneAdjust')" value="zone_adjust" />
+                  <el-option :label="t('wms.move.typeReplenish')" value="replenish" />
+                  <el-option :label="t('wms.move.typeCheckAdjust')" value="check_adjust" />
+                  <el-option :label="t('wms.issueOrder.typeOther')" value="other" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="仓库" prop="warehouseId">
-                <WarehouseSelect v-model="form.warehouseId" placeholder="请选择仓库" :disabled="viewMode" @change="onWarehouseChange" />
+              <el-form-item :label="t('wms.common.warehouse')" prop="warehouseId">
+                <WarehouseSelect v-model="form.warehouseId" :placeholder="t('wms.warehouse.ph.selectWarehouse')" :disabled="viewMode" @change="onWarehouseChange" />
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="移库原因" prop="moveReason">
+              <el-form-item :label="t('wms.move.moveReason')" prop="moveReason">
                 <el-input v-model="form.moveReason" type="textarea" :autosize="{ minRows: 1, maxRows: 3 }"
-                  placeholder="请说明移库原因（选填）" maxlength="255" />
+                  :placeholder="t('wms.move.ph.inputReason')" maxlength="255" />
               </el-form-item>
             </el-col>
           </el-row>
 
           <!-- 移库明细：库存行一律从弹窗多选进来，行内不可再换，要改就删行重挑 -->
           <div class="detail-head">
-            <span class="detail-title">移库明细</span>
-            <el-button v-if="!viewMode" class="detail-add-btn" type="primary" plain icon="Plus" @click="openStockDialog">添加明细</el-button>
+            <span class="detail-title">{{ t('wms.move.detailTitle') }}</span>
+            <el-button v-if="!viewMode" class="detail-add-btn" type="primary" plain icon="Plus" @click="openStockDialog">{{ t('wms.receiving.addDetail') }}</el-button>
             <SelectStock
               ref="stockSelectRef"
               :is-single="false"
@@ -110,31 +114,31 @@
             />
           </div>
 
-          <el-table :data="details" border size="small" empty-text="请点击「添加明细」从本仓的库存中挑选">
-            <el-table-column label="库存（物料 / 批次 / 移出库位）" min-width="300">
+          <el-table :data="details" border size="small" :empty-text="t('wms.move.emptyDetail')">
+            <el-table-column :label="t('wms.move.stockCol')" min-width="300">
               <template #default="scope">
                 <span>{{ scope.row.stockLabel }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="移入库位" width="200">
+            <el-table-column :label="t('wms.move.toLocation')" width="200">
               <template #default="scope">
                 <LocationCascader
                   v-model="scope.row.toLocCascader"
                   :warehouse-id="form.warehouseId"
                   :disabled="!form.warehouseId || viewMode"
-                  :placeholder="form.warehouseId ? '库区/库位' : '请先选仓库'"
+                  :placeholder="form.warehouseId ? t('wms.move.ph.zoneOrLocation') : t('wms.move.ph.selectWarehouseFirst')"
                   @update:model-value="(val) => onToLocation(val, scope.$index)"
                 />
               </template>
             </el-table-column>
-            <el-table-column label="数量" width="110">
+            <el-table-column :label="t('wms.receipt.quantity')" width="110">
               <template #default="scope">
-                <span title="一条库存一个条码，数量跟随库存行，改了就跟标签对不上">
+                <span :title="t('wms.move.quantityTip')">
                   {{ scope.row.moveQuantity }}
                 </span>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="70" align="center">
+            <el-table-column :label="t('common.actions')" width="70" align="center">
               <template #default="scope">
                 <el-button v-if="!viewMode" link type="danger" icon="Delete" @click="removeDetail(scope.$index)" />
               </template>
@@ -142,13 +146,13 @@
           </el-table>
 
           <div class="detail-tip text-muted">
-            直接挑本仓的库存行（默认只显示可用的：扣掉冻结与锁定），移出库位与数量都由库存带出、不可改（一条库存一个条码，拆开会跟标签对不上）；移入库位必须在同一仓库且不能相同，跨仓请用调拨单。
+            {{ t('wms.move.detailTip') }}
           </div>
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button v-if="!viewMode" type="primary" @click="submitForm">确 定</el-button>
-            <el-button @click="cancel">{{ viewMode ? "关 闭" : "取 消" }}</el-button>
+            <el-button v-if="!viewMode" type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+            <el-button @click="cancel">{{ viewMode ? t('common.close') : t('common.cancel') }}</el-button>
           </div>
         </template>
       </el-dialog>
@@ -159,6 +163,7 @@
 <script setup name="WmsMove">
 import { ref, reactive, toRefs, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listMove,
   getMove,
@@ -173,6 +178,7 @@ import WarehouseSelect from "@/views/wms/warehouse/input.vue";
 import SelectStock from "@/views/wms/stock/select.vue";
 import LocationCascader from "@/views/wms/location/cascader.vue";
 
+const { t } = useI18n();
 const moveRef = ref(null);
 const moveList = ref([]);
 const open = ref(false);
@@ -192,16 +198,22 @@ const stockSelectRef = ref(null);
 const showSearch = ref(true);
 
 // 移库类型：库位调整 / 库区调整 / 补货移库 / 盘点调整 / 其他
-const moveTypeMap = {
-  location_adjust: "库位调整",
-  zone_adjust: "库区调整",
-  replenish: "补货移库",
-  check_adjust: "盘点调整",
-  other: "其他",
-};
+function moveTypeLabel(v) {
+  const map = {
+    location_adjust: t('wms.move.typeLocationAdjust'),
+    zone_adjust: t('wms.move.typeZoneAdjust'),
+    replenish: t('wms.move.typeReplenish'),
+    check_adjust: t('wms.move.typeCheckAdjust'),
+    other: t('wms.issueOrder.typeOther'),
+  };
+  return map[v] || "-";
+}
 
 // 移库状态：待移库 → 已完成
-const moveStatusMap = { pending: "待移库", completed: "已完成" };
+function moveStatusLabel(s) {
+  const map = { pending: t('wms.move.statusPending'), completed: t('wms.issueOrder.statusIssued') };
+  return map[s] || "-";
+}
 const moveStatusTag = (s) => (s === "completed" ? "success" : "info");
 
 /** 已执行（已完成）的移库单不能再修改或删除 */
@@ -220,8 +232,8 @@ const data = reactive({
     moveStatus: undefined,
   },
   rules: {
-    moveType: [{ required: true, message: "请选择移库类型", trigger: "change" }],
-    warehouseId: [{ required: true, message: "请选择仓库", trigger: "change" }],
+    moveType: [{ required: true, message: () => t('wms.move.rules.typeRequired'), trigger: "change" }],
+    warehouseId: [{ required: true, message: () => t('wms.receipt.rules.warehouseRequired'), trigger: "change" }],
   },
 });
 
@@ -229,19 +241,19 @@ const { form, queryParams, rules } = toRefs(data);
 
 const queryConfig = computed(() => [
   {
-    label: "关键字",
+    label: t('wms.common.keywords'),
     prop: "keywords",
     type: "input",
-    placeholder: "请输入移库单号",
+    placeholder: t('wms.move.ph.inputMoveNo'),
   },
   {
-    label: "状态",
+    label: t('common.status'),
     prop: "moveStatus",
     type: "select",
-    placeholder: "请选择状态",
+    placeholder: t('wms.warehouse.ph.selectStatus'),
     options: [
-      { label: "待移库", value: "pending" },
-      { label: "已完成", value: "completed" },
+      { label: t('wms.move.statusPending'), value: "pending" },
+      { label: t('wms.issueOrder.statusIssued'), value: "completed" },
     ],
   },
 ]);
@@ -307,7 +319,7 @@ function reset() {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加移库单";
+  title.value = t('wms.move.addTitle');
 }
 
 /** 修改 */
@@ -341,7 +353,7 @@ function fillForm(data) {
     detailId: d.detailId || 0,
     // 明细没存库存行 id，编辑时用文把当前这行显示出来（真值仍在下面几个字段里）
     stockId: undefined,
-    stockLabel: [d.materialCode, d.materialName, d.batchNo ? "批次" + d.batchNo : "无批次", d.fromLocationCode]
+    stockLabel: [d.materialCode, d.materialName, d.batchNo ? `${t('wms.receiving.batchNo')}${d.batchNo}` : t('wms.move.noBatch'), d.fromLocationCode]
       .filter(Boolean).join(" / "),
     materialId: d.materialId,
     materialCode: d.materialCode || d.material?.materialCode || "",
@@ -355,7 +367,7 @@ function fillForm(data) {
     moveQuantity: d.moveQuantity,
   }));
   open.value = true;
-  title.value = viewMode.value ? "移库单明细" : "修改移库单";
+  title.value = viewMode.value ? t('wms.move.viewTitle') : t('wms.move.editTitle');
 }
 
 /**
@@ -365,7 +377,7 @@ function fillForm(data) {
  */
 function openStockDialog() {
   if (!form.value.warehouseId) {
-    ElMessage.warning("请先选择仓库，再挑选要搬的库存");
+    ElMessage.warning(t('wms.move.selectWarehouseFirst'));
     return;
   }
   stockSelectRef.value?.open();
@@ -384,7 +396,7 @@ function onStockSelected(items) {
     details.value.push({
       detailId: 0,
       stockId: stock.stockId,
-      stockLabel: `${stock.materialCode || ""} ${stock.materialName || ""} / ${stock.batchNo || "无批次"} / ${stock.locationCode || ""}`,
+      stockLabel: `${stock.materialCode || ""} ${stock.materialName || ""} / ${stock.batchNo || t('wms.move.noBatch')} / ${stock.locationCode || ""}`,
       materialId: stock.materialId,
       materialCode: stock.materialCode || "",
       materialName: stock.materialName || "",
@@ -398,7 +410,7 @@ function onStockSelected(items) {
       moveQuantity: Math.floor(available) > 0 ? Math.floor(available) : undefined,
     });
   }
-  if (skipped > 0) ElMessage.info(`有 ${skipped} 行库存已在明细中，已跳过`);
+  if (skipped > 0) ElMessage.info(t('wms.move.skippedRows', { count: skipped }));
 }
 
 function removeDetail(index) {
@@ -421,7 +433,7 @@ function onToLocation(val, index) {
 function onWarehouseChange() {
   if (details.value.length === 0) return;
   details.value = [];
-  ElMessage.warning("仓库已变更，明细已清空，请重新挑选库存");
+  ElMessage.warning(t('wms.move.warehouseChanged'));
 }
 
 /** 提交 */
@@ -429,29 +441,29 @@ function submitForm() {
   moveRef.value.validate((valid) => {
     if (!valid) return;
     if (!details.value.length) {
-      ElMessage.warning("请至少添加一条移库明细");
+      ElMessage.warning(t('wms.move.selectAtLeastOneDetail'));
       return;
     }
     for (let i = 0; i < details.value.length; i++) {
       const d = details.value[i];
       if (!d.materialId) {
-        ElMessage.warning(`第 ${i + 1} 行请选择物料`);
+        ElMessage.warning(t('wms.receipt.rowMaterialRequired', { no: i + 1 }));
         return;
       }
       if (!d.fromLocationId) {
-        ElMessage.warning(`第 ${i + 1} 行请选择移出库位`);
+        ElMessage.warning(t('wms.move.rowFromLocationRequired', { no: i + 1 }));
         return;
       }
       if (!d.toLocationId) {
-        ElMessage.warning(`第 ${i + 1} 行请选择移入库位`);
+        ElMessage.warning(t('wms.move.rowToLocationRequired', { no: i + 1 }));
         return;
       }
       if (d.fromLocationId === d.toLocationId) {
-        ElMessage.warning(`第 ${i + 1} 行移出库位与移入库位不能相同`);
+        ElMessage.warning(t('wms.move.rowSameLocation', { no: i + 1 }));
         return;
       }
       if (!(d.moveQuantity > 0)) {
-        ElMessage.warning(`第 ${i + 1} 行移库数量必须大于 0`);
+        ElMessage.warning(t('wms.move.rowQtyRequired', { no: i + 1 }));
         return;
       }
     }
@@ -474,7 +486,7 @@ function submitForm() {
 
     const api = form.value.moveId ? updateMove : addMove;
     api(payload).then(() => {
-      ElMessage.success("保存成功");
+      ElMessage.success(t('wms.common.savedSuccess'));
       open.value = false;
       getList();
     });
@@ -490,13 +502,13 @@ function cancel() {
 /** 执行移库 */
 function handleExecute(row) {
   ElMessageBox.confirm(
-    `执行移库单「${row.moveNo}」将立即从移出库位扣减、向移入库位增加，并写入库存流水，执行后不可修改和删除。是否继续？`,
-    "执行确认",
-    { confirmButtonText: "确定执行", cancelButtonText: "取消", type: "warning" }
+    t('wms.move.executeConfirmMsg', { no: row.moveNo }),
+    t('wms.move.executeConfirmTitle'),
+    { confirmButtonText: t('wms.move.executeConfirmBtn'), cancelButtonText: t('common.cancel'), type: "warning" }
   )
     .then(() => executeMove(row.moveId))
     .then(() => {
-      ElMessage.success("执行成功，库存已更新");
+      ElMessage.success(t('wms.move.executeSuccess'));
       getList();
     });
 }
@@ -504,15 +516,15 @@ function handleExecute(row) {
 /** 删除 */
 function handleDelete(row) {
   const delIds = row.moveId || ids.value.join(",");
-  ElMessageBox.confirm(`是否确认删除移库单编号为"${delIds}"的数据项？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.move.deleteConfirm', { id: delIds }), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => delMove(delIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
 }
 

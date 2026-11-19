@@ -409,6 +409,7 @@ export default {
     i18nEnName: 'English(en-US)',
     rules: { menuNameRequired: '菜单名称不能为空', orderNumRequired: '菜单顺序不能为空', pathRequired: '路由地址不能为空' },
     confirm: { delete: '是否确认删除名称为"{name}"的数据项?' },
+    i18nSaveFailed: '菜单已保存，但部分语言翻译保存失败，请在国际化词条中补录',
   },
   deptManage: {
     addTitle: '添加部门',

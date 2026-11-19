@@ -14,9 +14,12 @@
 
 <script setup>
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { listWarehouse } from "@/api/wms/warehouse";
 import { listZone } from "@/api/wms/zone";
 import { listLocation } from "@/api/wms/location";
+
+const { t } = useI18n();
 
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
@@ -41,7 +44,7 @@ const fixedWarehouse = computed(() => !!props.warehouseId);
 const warehouseKey = computed(() => props.warehouseId ?? "none");
 
 const finalPlaceholder = computed(
-  () => props.placeholder || (fixedWarehouse.value ? "请选择库区/库位" : "请选择仓库/库区/库位")
+  () => props.placeholder || (fixedWarehouse.value ? t('wms.location.ph.selectZoneOrLocation') : t('wms.location.ph.selectWhZoneOrLocation'))
 );
 
 const cascaderProps = computed(() => ({

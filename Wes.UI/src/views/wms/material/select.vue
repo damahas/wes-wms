@@ -3,7 +3,7 @@
     <el-autocomplete
       v-model="searchText"
       :fetch-suggestions="multiple ? fetchNoSuggestions : fetchSuggestions"
-      :placeholder="multiple ? '点击选择物料（可多选）' : placeholder"
+      :placeholder="multiple ? t('wms.material.ph.clickMulti') : (placeholder || t('wms.material.ph.selectMaterial'))"
       value-key="materialName"
       :trigger-on-focus="false"
       :debounce="300"
@@ -16,7 +16,7 @@
         <el-button :icon="Search" @click="openDialog" />
       </template>
     </el-autocomplete>
-    <el-dialog title="选择物料" v-model="dialogVisible" width="998px" append-to-body @open="onDialogOpen">
+    <el-dialog :title="t('wms.material.selectTitle')" v-model="dialogVisible" width="998px" append-to-body @open="onDialogOpen">
       <query-form
         :config="queryConfig"
         v-model="queryParams"
@@ -34,23 +34,23 @@
           </template>
         </el-table-column>
         <el-table-column v-if="multiple" type="selection" width="55" align="center" />
-        <el-table-column label="物料编码" align="center" prop="materialCode" :show-overflow-tooltip="true" />
-        <el-table-column label="物料名称" align="center" prop="materialName" :show-overflow-tooltip="true" />
-        <el-table-column label="物料类型" align="center" prop="materialType">
+        <el-table-column :label="t('wms.material.materialCode')" align="center" prop="materialCode" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.material.materialName')" align="center" prop="materialName" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.material.materialType')" align="center" prop="materialType">
           <template #default="scope">
             <dict-tag :options="wms_material_type" :value="scope.row.materialType" />
           </template>
         </el-table-column>
-        <el-table-column label="规格" align="center" prop="spec" :show-overflow-tooltip="true" />
-        <el-table-column label="基本单位" align="center" prop="unit">
+        <el-table-column :label="t('wms.material.spec')" align="center" prop="spec" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.material.basicUnit')" align="center" prop="unit">
           <template #default="scope">
             <span>{{ unitLabel(scope.row.unit) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="状态" align="center" prop="status">
+        <el-table-column :label="t('common.status')" align="center" prop="status">
           <template #default="scope">
             <el-tag :type="scope.row.status === '0' ? 'success' : 'info'" size="small">
-              {{ scope.row.status === '0' ? '启用' : '停用' }}
+              {{ scope.row.status === '0' ? t('common.enable') : t('common.disable') }}
             </el-tag>
           </template>
         </el-table-column>
@@ -66,8 +66,8 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+          <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -77,17 +77,20 @@
 <script setup>
 import { ref, reactive, computed, watch } from "vue";
 import { ElMessage } from "element-plus";
+import { useI18n } from "vue-i18n";
 import { Search } from "@element-plus/icons-vue";
 import { listMaterial, getMaterial } from "@/api/wms/material";
 import { getDict } from "@/utils";
 import DictTag from "@/components/DictTag/index.vue";
 import QueryForm from "@/components/QueryForm/index.vue";
 
+const { t } = useI18n();
+
 const { wms_material_type, wms_sys_unit_type } = getDict("wms_material_type", "wms_sys_unit_type");
 
 const props = defineProps({
   modelValue: { type: [String, Number], default: undefined },
-  placeholder: { type: String, default: "请选择物料" },
+  placeholder: { type: String, default: "" },
   label: { type: String, default: "" },
   width: { type: String, default: "100%" },
   multiple: { type: Boolean, default: false },
@@ -113,8 +116,8 @@ const queryParams = reactive({
 });
 
 const queryConfig = computed(() => [
-  { label: "物料编码", prop: "materialCode", type: "input", placeholder: "请输入物料编码" },
-  { label: "物料名称", prop: "materialName", type: "input", placeholder: "请输入物料名称" },
+  { label: t('wms.material.materialCode'), prop: "materialCode", type: "input", placeholder: t('wms.material.ph.inputCode') },
+  { label: t('wms.material.materialName'), prop: "materialName", type: "input", placeholder: t('wms.material.ph.inputName') },
 ]);
 
 function unitLabel(val) {
@@ -251,7 +254,7 @@ function onSelectionChange(selection) {
 function submitForm() {
   if (props.multiple) {
     if (dialogItems.value.length === 0) {
-      ElMessage.warning("请至少选择一个物料");
+      ElMessage.warning(t('wms.material.selectAtLeastOne'));
       return;
     }
     dialogVisible.value = false;
@@ -260,7 +263,7 @@ function submitForm() {
     dialogItems.value = [];
   } else {
     if (!dialogItem.value) {
-      ElMessage.warning("请至少选择一个物料");
+      ElMessage.warning(t('wms.material.selectAtLeastOne'));
       return;
     }
     dialogVisible.value = false;

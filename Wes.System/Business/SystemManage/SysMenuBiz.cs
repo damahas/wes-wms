@@ -39,13 +39,14 @@ namespace Wes.Business
             return new ResultData<List<SysMenuEntity>>(_sysMenuService.GetList(param));
         }
 
-        public ReturnData Save(SysMenuEntity menu)
+        public ResultData<SysMenuEntity> Save(SysMenuEntity menu)
         {
             if (_sysMenuService.Save(menu))
             {
-                return new ReturnData();
+                // InsertReturnSnowflakeId 已将雪花主键回填到实体（序列化时经 LongToStringConverter 转为字符串）
+                return new ResultData<SysMenuEntity>(menu);
             }
-            return new ReturnData(500, "保存失败！");
+            return new ResultData<SysMenuEntity>(500, "保存失败！");
         }
 
         public ReturnData Delete(string ids)
@@ -57,6 +58,11 @@ namespace Wes.Business
             }
             if (_sysMenuService.Delete(dicIds))
             {
+                // 同步清理菜单多语言词条，避免残留
+                foreach (var menuId in dicIds)
+                {
+                    _sysI18nBiz.DeleteByKey($"sys.menu.{menuId}");
+                }
                 return new ReturnData();
             }
             return new ReturnData(500, "删除失败！");
@@ -164,7 +170,7 @@ namespace Wes.Business
                  {
                      Id = p.MenuId,
                      ParentId = p.ParentId,
-                     Label = p.MenuName,
+                     Label = GetMenuTitle(p),
                      children = new List<RoleTreeDetailInfo>()
                  };
              }).ToList();
@@ -218,7 +224,7 @@ namespace Wes.Business
                 {
                     Id = p.MenuId,
                     ParentId = p.ParentId,
-                    Label = p.MenuName,
+                    Label = GetMenuTitle(p),
                     children = new List<RoleTreeDetailInfo>()
                 };
             }).ToList();

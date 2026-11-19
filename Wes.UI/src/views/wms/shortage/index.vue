@@ -6,11 +6,11 @@
       <el-row :gutter="10" class="mb8">
         <el-button-group>
           <el-button :type="showGapOnly ? 'primary' : 'default'" plain @click="toggleGapOnly">
-            {{ showGapOnly ? "显示全部缺料" : "只看真实缺口" }}
+            {{ showGapOnly ? t('wms.shortage.showAll') : t('wms.shortage.showGapOnly') }}
           </el-button>
         </el-button-group>
         <span class="text-muted ml8">
-          真实缺口 = 欠料 − 可用 − 已预留；可用指扣除冻结与锁定后的库存
+          {{ t('wms.shortage.gapFormula') }}
         </span>
       </el-row>
 
@@ -19,94 +19,94 @@
         <el-col :span="4">
           <div class="stat-card">
             <div class="stat-value">{{ summary.issueCount || 0 }}</div>
-            <div class="stat-label">在等料的领料单</div>
+            <div class="stat-label">{{ t('wms.shortage.waitingIssues') }}</div>
           </div>
         </el-col>
         <el-col :span="4">
           <div class="stat-card">
             <div class="stat-value">{{ summary.workOrderCount || 0 }}</div>
-            <div class="stat-label">涉及生产工单</div>
+            <div class="stat-label">{{ t('wms.shortage.workOrders') }}</div>
           </div>
         </el-col>
         <el-col :span="4">
           <div class="stat-card">
             <div class="stat-value">{{ summary.shortageQuantity || 0 }}</div>
-            <div class="stat-label">欠料总数</div>
+            <div class="stat-label">{{ t('wms.shortage.totalShortage') }}</div>
           </div>
         </el-col>
         <el-col :span="4">
           <div class="stat-card danger">
             <div class="stat-value">{{ summary.gapQuantity || 0 }}</div>
-            <div class="stat-label">真实缺口</div>
+            <div class="stat-label">{{ t('wms.shortage.realGap') }}</div>
           </div>
         </el-col>
         <el-col :span="4">
           <div class="stat-card warning">
             <div class="stat-value">{{ summary.overdueCount || 0 }}</div>
-            <div class="stat-label">已超期</div>
+            <div class="stat-label">{{ t('wms.shortage.overdue') }}</div>
           </div>
         </el-col>
       </el-row>
 
       <el-table v-loading="loading" :data="shortageList" border>
-        <el-table-column label="生产工单号" align="center" prop="workOrderNo" width="130" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.issueOrder.workOrderNo')" align="center" prop="workOrderNo" width="130" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.workOrderNo || "-" }}</template>
         </el-table-column>
-        <el-table-column label="领料单号" align="center" prop="issueNo" width="140" :show-overflow-tooltip="true" />
-        <el-table-column label="领用部门" align="center" prop="deptName" width="110" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.shortage.issueNo')" align="center" prop="issueNo" width="140" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.issueOrder.dept')" align="center" prop="deptName" width="110" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.deptName || "-" }}</template>
         </el-table-column>
-        <el-table-column label="物料" align="center" min-width="170" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.material.title')" align="center" min-width="170" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.materialCode }}
             <span v-if="scope.row.materialName"> - {{ scope.row.materialName }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="需求" align="center" prop="requireQuantity" width="70" />
-        <el-table-column label="已发" align="center" prop="issuedQuantity" width="70" />
-        <el-table-column label="欠料" align="center" width="80">
+        <el-table-column :label="t('wms.issueOrder.totalRequire')" align="center" prop="requireQuantity" width="70" />
+        <el-table-column :label="t('wms.issueOrder.issued')" align="center" prop="issuedQuantity" width="70" />
+        <el-table-column :label="t('wms.issueOrder.shortage')" align="center" width="80">
           <template #default="scope">
             <span :class="{ 'text-danger': scope.row.shortageQuantity > 0 }">{{ scope.row.shortageQuantity }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="可用库存" align="center" prop="availableQuantity" width="90">
+        <el-table-column :label="t('wms.shortage.availableStock')" align="center" prop="availableQuantity" width="90">
           <template #default="scope">
             <span :class="{ 'text-success': scope.row.availableQuantity > 0 }">{{ scope.row.availableQuantity }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="已预留" align="center" prop="lockedQuantity" width="80">
+        <el-table-column :label="t('wms.shortage.lockedQty')" align="center" prop="lockedQuantity" width="80">
           <template #default="scope">
             <span :class="{ 'text-success': scope.row.lockedQuantity > 0 }">{{ scope.row.lockedQuantity }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="待检" align="center" prop="inspectingQuantity" width="70">
+        <el-table-column :label="t('wms.shortage.inspecting')" align="center" prop="inspectingQuantity" width="70">
           <template #default="scope">
             {{ scope.row.inspectingQuantity || 0 }}
           </template>
         </el-table-column>
-        <el-table-column label="真实缺口" align="center" width="100">
+        <el-table-column :label="t('wms.shortage.realGap')" align="center" width="100">
           <template #default="scope">
             <el-tag :type="scope.row.gapQuantity > 0 ? 'danger' : 'success'" size="small">
               {{ scope.row.gapQuantity }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="需求日期" align="center" width="110">
+        <el-table-column :label="t('wms.issueOrder.requireDate')" align="center" width="110">
           <template #default="scope">{{ (scope.row.requireDate || "").slice(0, 10) || "-" }}</template>
         </el-table-column>
-        <el-table-column label="等待" align="center" width="90">
+        <el-table-column :label="t('wms.shortage.waiting')" align="center" width="90">
           <template #default="scope">
             <span v-if="scope.row.daysToRequire === null || scope.row.daysToRequire === undefined">-</span>
             <span v-else-if="scope.row.daysToRequire < 0" class="text-danger">
-              超期 {{ Math.abs(scope.row.daysToRequire) }} 天
+              {{ t('wms.shortage.overdueDays', { days: Math.abs(scope.row.daysToRequire) }) }}
             </span>
-            <span v-else>{{ scope.row.daysToRequire }} 天</span>
+            <span v-else>{{ t('wms.shortage.daysLeft', { days: scope.row.daysToRequire }) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="120" class-name="small-padding fixed-width">
+        <el-table-column :label="t('common.actions')" align="center" width="120" class-name="small-padding fixed-width">
           <template #default="scope">
             <el-button link type="success" :disabled="scope.row.availableQuantity <= 0" @click="handleIssue(scope.row)">
-              去发料
+              {{ t('wms.shortage.goIssue') }}
             </el-button>
           </template>
         </el-table-column>
@@ -120,10 +120,12 @@
 <script setup name="WmsShortage">
 import { ref, reactive, toRefs, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import { listShortage, summaryShortage } from "@/api/wms/shortage";
 import { issueIssueOrder } from "@/api/wms/issueOrder";
 import QueryForm from "@/components/QueryForm/index.vue";
 
+const { t } = useI18n();
 const shortageList = ref([]);
 const loading = ref(false);
 const total = ref(0);
@@ -146,8 +148,8 @@ const data = reactive({
 const { queryParams } = toRefs(data);
 
 const queryConfig = computed(() => [
-  { label: "关键字", prop: "keywords", type: "input", placeholder: "物料编码/名称" },
-  { label: "生产工单号", prop: "workOrderNo", type: "input", placeholder: "请输入工单号" },
+  { label: t('wms.common.keywords'), prop: "keywords", type: "input", placeholder: t('wms.shortage.ph.keywords') },
+  { label: t('wms.issueOrder.workOrderNo'), prop: "workOrderNo", type: "input", placeholder: t('wms.shortage.ph.inputWorkOrderNo') },
 ]);
 
 /** 查询列表 */
@@ -201,13 +203,13 @@ function toggleGapOnly() {
 /** 直接对该领料单发料 */
 function handleIssue(row) {
   ElMessageBox.confirm(
-    `对领料单「${row.issueNo}」发料：按先过期先出挑批次，库存有多少发多少。是否继续？`,
-    "发料确认",
-    { confirmButtonText: "确定发料", cancelButtonText: "取消", type: "warning" }
+    t('wms.shortage.issueConfirmMsg', { no: row.issueNo }),
+    t('wms.issueOrder.issueConfirmTitle'),
+    { confirmButtonText: t('wms.issueOrder.issueConfirmBtn'), cancelButtonText: t('common.cancel'), type: "warning" }
   )
     .then(() => issueIssueOrder(row.issueId))
     .then((res) => {
-      ElMessage.success(res.msg || "发料成功");
+      ElMessage.success(res.msg || t('wms.issueOrder.issueSuccess'));
       getList();
     });
 }

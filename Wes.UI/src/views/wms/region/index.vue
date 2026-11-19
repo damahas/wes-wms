@@ -17,15 +17,15 @@
       </el-row>
 
       <el-table v-loading="loading" :data="regionList" :default-expand-all="false">
-        <el-table-column label="编码" align="center" prop="code" width="120" />
-        <el-table-column label="名称" align="center" prop="name" :show-overflow-tooltip="true" />
-        <el-table-column label="父级编码" align="center" prop="parentCode" width="120" />
-        <el-table-column label="层级" align="center" width="100">
+        <el-table-column :label="t('wms.common.code')" align="center" prop="code" width="120" />
+        <el-table-column :label="t('wms.common.name')" align="center" prop="name" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.region.parentCode')" align="center" prop="parentCode" width="120" />
+        <el-table-column :label="t('wms.region.level')" align="center" width="100">
           <template #default="scope">
             <el-tag :type="levelType(scope.row.code)">{{ levelText(scope.row.code) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="更新时间" align="center" prop="updateDate" min-width="170">
+        <el-table-column :label="t('common.lastUpdateTime')" align="center" prop="updateDate" min-width="170">
           <template #default="scope">
             <span>{{ formatTime(scope.row.updateDate) }}</span>
           </template>
@@ -45,9 +45,12 @@
 
 <script setup name="WmsRegion">
 import { ref, reactive, toRefs, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import QueryForm from "@/components/QueryForm/index.vue";
 import RightToolbar from "@/components/RightToolbar/index.vue";
 import { listRegion } from "@/api/wms/region";
+
+const { t } = useI18n();
 
 const regionList = ref([]);
 const loading = ref(true);
@@ -56,16 +59,16 @@ const total = ref(0);
 
 const queryConfig = computed(() => [
   {
-    label: "编码",
+    label: t('wms.common.code'),
     prop: "code",
     type: "input",
-    placeholder: "请输入行政区划编码",
+    placeholder: t('wms.region.ph.inputCode'),
   },
   {
-    label: "名称",
+    label: t('wms.common.name'),
     prop: "name",
     type: "input",
-    placeholder: "请输入省/市/区名称",
+    placeholder: t('wms.region.ph.inputName'),
   },
 ]);
 
@@ -83,9 +86,9 @@ const { queryParams } = toRefs(data);
 /** 层级标识：2位=省，4位=市，6位=区 */
 function levelText(code) {
   if (!code) return "-";
-  if (code.length === 2) return "省";
-  if (code.length === 4) return "市";
-  if (code.length === 6) return "区/县";
+  if (code.length === 2) return t('wms.region.province');
+  if (code.length === 4) return t('wms.region.city');
+  if (code.length === 6) return t('wms.region.district');
   return "-";
 }
 function levelType(code) {

@@ -17,10 +17,10 @@
         <div class="stock-option">
           <span class="stock-option__name">
             {{ item.materialCode }} {{ item.materialName }}
-            / {{ item.batchNo || "无批次" }}
+            / {{ item.batchNo || t("wms.move.noBatch") }}
             / {{ item.locationCode }}
           </span>
-          <span class="stock-option__qty">可用 {{ available(item) }}</span>
+          <span class="stock-option__qty">{{ t("wms.stock.availableShort") }} {{ available(item) }}</span>
         </div>
       </template>
       <template #append>
@@ -43,12 +43,14 @@
 <script setup>
 import { ref, watch } from "vue";
 import { Search } from "@element-plus/icons-vue";
+import { useI18n } from "vue-i18n";
 import { listStock, getStock } from "@/api/wms/stock";
 import SelectStock from "./select.vue";
 
+const { t } = useI18n();
 const props = defineProps({
   modelValue: { type: [String, Number], default: undefined },
-  placeholder: { type: String, default: "请选择库存" },
+  placeholder: { type: String, default: "" },
   label: { type: String, default: "" },
   width: { type: String, default: "100%" },
   disabled: { type: Boolean, default: false },
@@ -71,7 +73,7 @@ function available(row) {
 
 function stockText(item) {
   if (!item) return "";
-  return `${item.materialCode || ""} ${item.materialName || ""} / ${item.batchNo || "无批次"} / ${item.locationCode || ""}`;
+  return `${item.materialCode || ""} ${item.materialName || ""} / ${item.batchNo || t("wms.move.noBatch")} / ${item.locationCode || ""}`;
 }
 
 watch(

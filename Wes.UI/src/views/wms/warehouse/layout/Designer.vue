@@ -2,9 +2,9 @@
   <el-drawer v-model="visible" size="86%" destroy-on-close @opened="init">
     <template #header>
       <div class="ld-header">
-        <span>{{ warehouse.warehouseName || "仓库" }} - 平面布局</span>
+        <span>{{ warehouse.warehouseName || t('wms.common.warehouse') }} - {{ t('wms.layoutDesigner.layoutTitle') }}</span>
         <el-tag v-if="layoutId" :type="status === '1' ? 'success' : 'info'" size="small">
-          {{ status === "1" ? "已发布" : "草稿" }}
+          {{ status === "1" ? t('wms.layoutDesigner.published') : t('wms.layoutDesigner.draft') }}
         </el-tag>
       </div>
     </template>
@@ -13,38 +13,38 @@
       <!-- 工具栏 -->
       <div class="ld-toolbar">
         <el-radio-group v-model="mode" size="small">
-          <el-radio-button value="edit">编辑</el-radio-button>
-          <el-radio-button value="preview">预览</el-radio-button>
+          <el-radio-button value="edit">{{ t('wms.layoutDesigner.edit') }}</el-radio-button>
+          <el-radio-button value="preview">{{ t('wms.layoutDesigner.preview') }}</el-radio-button>
         </el-radio-group>
 
         <template v-if="mode === 'edit'">
           <el-divider direction="vertical" />
           <el-radio-group v-model="tool" size="small">
-            <el-radio-button value="select">选择</el-radio-button>
-            <el-radio-button value="unit">储位</el-radio-button>
-            <el-radio-button value="label">标注</el-radio-button>
-            <el-radio-button value="region">分区</el-radio-button>
+            <el-radio-button value="select">{{ t('wms.layoutDesigner.toolSelect') }}</el-radio-button>
+            <el-radio-button value="unit">{{ t('wms.layoutDesigner.toolUnit') }}</el-radio-button>
+            <el-radio-button value="label">{{ t('wms.layoutDesigner.toolLabel') }}</el-radio-button>
+            <el-radio-button value="region">{{ t('wms.layoutDesigner.toolRegion') }}</el-radio-button>
           </el-radio-group>
           <el-divider direction="vertical" />
-          <span class="ld-grid-label">行</span>
+          <span class="ld-grid-label">{{ t('wms.layoutDesigner.row') }}</span>
           <el-input-number v-model="grid.rows" size="small" :min="5" :max="100" controls-position="right" style="width: 90px" />
-          <span class="ld-grid-label">列</span>
+          <span class="ld-grid-label">{{ t('wms.layoutDesigner.col') }}</span>
           <el-input-number v-model="grid.cols" size="small" :min="5" :max="100" controls-position="right" style="width: 90px" />
         </template>
 
         <div class="ld-toolbar-right">
           <span v-if="mode === 'edit' && childTarget" class="ld-child-hint">
-            正在为「{{ childTarget.name }}」添加子块（储位/标注），Esc 取消
+            {{ t('wms.layoutDesigner.childHint', { name: childTarget.name }) }}
           </span>
           <span v-else-if="mode === 'edit' && appendModeId" class="ld-child-hint">
-            正在为「{{ appendBlockName }}」追加拼接段（L/U 形），Esc 取消
+            {{ t('wms.layoutDesigner.appendHint', { name: appendBlockName }) }}
           </span>
           <span v-else-if="mode === 'edit' && tool !== 'select'" class="ld-hint">
-            块内起笔拖拽=拼接，空白起笔=新增；从块外补画可右键块「追加拼接段」
+            {{ t('wms.layoutDesigner.drawHint') }}
           </span>
           <template v-if="mode === 'edit'">
-            <el-button type="primary" size="small" icon="Check" @click="handleSave">保 存</el-button>
-            <el-button size="small" icon="Promotion" :disabled="!layoutId" @click="handlePublish">发 布</el-button>
+            <el-button type="primary" size="small" icon="Check" @click="handleSave">{{ t('wms.layoutDesigner.saveBtn') }}</el-button>
+            <el-button size="small" icon="Promotion" :disabled="!layoutId" @click="handlePublish">{{ t('wms.layoutDesigner.publishBtn') }}</el-button>
           </template>
         </div>
       </div>
@@ -133,9 +133,9 @@
             :style="{ left: hover.x + 14 + 'px', top: hover.y + 14 + 'px' }"
           >
             <div class="ld-tip-name">{{ hover.block?.name }}</div>
-            <div class="ld-tip-row">层级：{{ derivedLabel(hover.block) }}</div>
-            <div v-if="hover.block?.refCode" class="ld-tip-row">绑定：{{ hover.block.refCode }} {{ hover.block.refName }}</div>
-            <div v-if="hover.block?.children?.length" class="ld-tip-row">子块：{{ hover.block.children.length }} 个</div>
+            <div class="ld-tip-row">{{ t('wms.layoutDesigner.level') }}：{{ derivedLabel(hover.block) }}</div>
+            <div v-if="hover.block?.refCode" class="ld-tip-row">{{ t('wms.layoutDesigner.bound') }}：{{ hover.block.refCode }} {{ hover.block.refName }}</div>
+            <div v-if="hover.block?.children?.length" class="ld-tip-row">{{ t('wms.layoutDesigner.childrenCount', { n: hover.block.children.length }) }}</div>
           </div>
 
           <!-- 右键菜单 -->
@@ -145,16 +145,16 @@
             :style="{ left: menu.x + 'px', top: menu.y + 'px' }"
           >
             <div class="ld-menu-title">{{ menu.block?.name }}</div>
-            <div class="ld-menu-item" @click="renameBlock">重命名</div>
-            <div v-if="menu.block?.type !== 'label'" class="ld-menu-item" @click="appendSegment">追加拼接段（L/U 形）</div>
-            <div v-if="menu.block?.type === 'region'" class="ld-menu-item" @click="addChild">添加储位</div>
+            <div class="ld-menu-item" @click="renameBlock">{{ t('wms.layoutDesigner.rename') }}</div>
+            <div v-if="menu.block?.type !== 'label'" class="ld-menu-item" @click="appendSegment">{{ t('wms.layoutDesigner.appendSegment') }}</div>
+            <div v-if="menu.block?.type === 'region'" class="ld-menu-item" @click="addChild">{{ t('wms.layoutDesigner.addChild') }}</div>
             <div
               v-if="menu.block?.type === 'region'"
               class="ld-menu-item"
               :class="{ disabled: !menu.block?.children?.length }"
               @click="mergeChildren"
-            >清空子块</div>
-            <div class="ld-menu-item danger" @click="removeBlock">删除</div>
+            >{{ t('wms.layoutDesigner.clearChildren') }}</div>
+            <div class="ld-menu-item danger" @click="removeBlock">{{ t('common.delete') }}</div>
           </div>
         </div>
 
@@ -162,26 +162,26 @@
         <div v-if="mode === 'edit'" class="ld-props">
           <template v-if="selected">
             <div class="ld-props-title">
-              属性
+              {{ t('wms.layoutDesigner.properties') }}
               <el-tag size="small" :type="selected.type === 'region' ? 'primary' : selected.type === 'label' ? 'warning' : 'success'">
                 {{ derivedLabel(selected) }}
               </el-tag>
             </div>
             <el-form label-width="60px" size="small" @submit.prevent>
-              <el-form-item label="名称">
+              <el-form-item :label="t('wms.common.name')">
                 <el-input v-model="selected.name" maxlength="50" />
               </el-form-item>
-              <el-form-item v-if="selected.type !== 'label'" label="绑定">
-                <el-select v-model="selected.refType" placeholder="不绑定" clearable style="width: 100%" @change="onRefTypeChange">
-                  <el-option label="库区" value="zone" />
-                  <el-option label="库位" value="location" />
+              <el-form-item v-if="selected.type !== 'label'" :label="t('wms.layoutDesigner.bound')">
+                <el-select v-model="selected.refType" :placeholder="t('wms.layoutDesigner.noBinding')" clearable style="width: 100%" @change="onRefTypeChange">
+                  <el-option :label="t('wms.common.zone')" value="zone" />
+                  <el-option :label="t('wms.common.location')" value="location" />
                 </el-select>
               </el-form-item>
-              <el-form-item v-if="selected.type !== 'label' && selected.refType" label="实体">
+              <el-form-item v-if="selected.type !== 'label' && selected.refType" :label="t('wms.layoutDesigner.entity')">
                 <el-select
                   :model-value="selected.refId ? String(selected.refId) : ''"
                   filterable
-                  placeholder="请选择"
+                  :placeholder="t('wms.common.pleaseSelect')"
                   style="width: 100%"
                   @change="onRefChange"
                 >
@@ -193,30 +193,30 @@
                   />
                 </el-select>
               </el-form-item>
-              <el-form-item label="颜色">
+              <el-form-item :label="t('wms.layoutDesigner.color')">
                 <el-color-picker v-model="selected.color" />
-                <span v-if="selected.type === 'region'" class="ld-color-tip">分区内空白处填充浅色</span>
+                <span v-if="selected.type === 'region'" class="ld-color-tip">{{ t('wms.layoutDesigner.colorTip') }}</span>
               </el-form-item>
-              <el-form-item v-if="selected.children?.length" label="子块">
-                <span>{{ selected.children.length }} 个</span>
+              <el-form-item v-if="selected.children?.length" :label="t('wms.layoutDesigner.children')">
+                <span>{{ selected.children.length }}</span>
               </el-form-item>
-              <el-form-item v-if="selected.rects.length > 1" label="形状">
-                <span>{{ selected.rects.length }} 个矩形拼接</span>
+              <el-form-item v-if="selected.rects.length > 1" :label="t('wms.layoutDesigner.shape')">
+                <span>{{ t('wms.layoutDesigner.rectJoin', { n: selected.rects.length }) }}</span>
               </el-form-item>
             </el-form>
-            <el-button type="danger" size="small" plain icon="Delete" @click="removeSelected">删除该块</el-button>
+            <el-button type="danger" size="small" plain icon="Delete" @click="removeSelected">{{ t('wms.layoutDesigner.removeBlockBtn') }}</el-button>
           </template>
-          <el-empty v-else description="点击画布中的块查看属性" :image-size="80" />
+          <el-empty v-else :description="t('wms.layoutDesigner.emptyTip')" :image-size="80" />
         </div>
       </div>
 
       <!-- 图例 -->
       <div class="ld-legend">
-        <span class="ld-legend-item"><i class="dot" style="background: rgba(64, 158, 255, .3)" />分区（容器）</span>
-        <span class="ld-legend-item"><i class="dot" style="background: rgba(103, 194, 58, .55)" />储位</span>
-        <span class="ld-legend-item"><i class="dot" style="background: rgba(230, 162, 60, .55)" />标注</span>
+        <span class="ld-legend-item"><i class="dot" style="background: rgba(64, 158, 255, .3)" />{{ t('wms.layoutDesigner.legendRegion') }}</span>
+        <span class="ld-legend-item"><i class="dot" style="background: rgba(103, 194, 58, .55)" />{{ t('wms.layoutDesigner.legendUnit') }}</span>
+        <span class="ld-legend-item"><i class="dot" style="background: rgba(230, 162, 60, .55)" />{{ t('wms.layoutDesigner.legendLabel') }}</span>
         <span class="ld-legend-stat">
-          共 {{ countBlocks().total }} 块：分区 {{ countBlocks().regions }} / 储位 {{ countBlocks().units }} / 标注 {{ countBlocks().labels }}
+          {{ t('wms.layoutDesigner.legendStat', { total: countBlocks().total, r: countBlocks().regions, u: countBlocks().units, l: countBlocks().labels }) }}
         </span>
       </div>
     </div>
@@ -224,36 +224,36 @@
     <!-- 储位库存明细（预览模式点击储位） -->
     <el-dialog
       v-model="stockDlg.show"
-      :title="stockDlg.block ? `${stockDlg.block.name}${stockDlg.block.refCode ? '（' + stockDlg.block.refCode + '）' : ''} 库存明细` : '库存明细'"
+      :title="stockDlg.block ? `${stockDlg.block.name}${stockDlg.block.refCode ? '（' + stockDlg.block.refCode + '）' : ''} ${t('wms.layoutDesigner.stockDetail')}` : t('wms.layoutDesigner.stockDetail')"
       width="880px"
       append-to-body
     >
       <el-table v-loading="stockDlg.loading" :data="stockDlg.rows" max-height="420">
-        <el-table-column label="物料编码" prop="materialCode" width="120" align="center" show-overflow-tooltip />
-        <el-table-column label="物料名称" prop="materialName" min-width="150" align="center" show-overflow-tooltip />
-        <el-table-column label="批次" prop="batchNo" width="110" align="center">
+        <el-table-column :label="t('wms.stock.materialCode')" prop="materialCode" width="120" align="center" show-overflow-tooltip />
+        <el-table-column :label="t('wms.stock.materialName')" prop="materialName" min-width="150" align="center" show-overflow-tooltip />
+        <el-table-column :label="t('wms.stock.batchShort')" prop="batchNo" width="110" align="center">
           <template #default="s">{{ s.row.batchNo || "-" }}</template>
         </el-table-column>
-        <el-table-column label="库存" prop="stockQuantity" width="80" align="center" />
-        <el-table-column label="冻结" prop="freezeQuantity" width="80" align="center">
+        <el-table-column :label="t('wms.stock.stockShort')" prop="stockQuantity" width="80" align="center" />
+        <el-table-column :label="t('wms.stock.freezeShort')" prop="freezeQuantity" width="80" align="center">
           <template #default="s">
             <span :style="{ color: (s.row.freezeQuantity ?? 0) > 0 ? 'var(--el-color-danger)' : '' }">{{ s.row.freezeQuantity ?? 0 }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="锁定" prop="lockQuantity" width="80" align="center">
+        <el-table-column :label="t('wms.stock.lockShort')" prop="lockQuantity" width="80" align="center">
           <template #default="s">
             <span :style="{ color: (s.row.lockQuantity ?? 0) > 0 ? 'var(--el-color-warning)' : '' }">{{ s.row.lockQuantity ?? 0 }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="可用" width="90" align="center">
+        <el-table-column :label="t('wms.stock.availableShort')" width="90" align="center">
           <template #default="s">
             <span style="color: var(--el-color-success)">{{ (s.row.stockQuantity ?? 0) - (s.row.freezeQuantity ?? 0) - (s.row.lockQuantity ?? 0) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="有效期至" width="110" align="center">
+        <el-table-column :label="t('wms.common.expireDate')" width="110" align="center">
           <template #default="s">{{ s.row.expireDate ? String(s.row.expireDate).slice(0, 10) : "-" }}</template>
         </el-table-column>
-        <template #empty>该库位暂无库存</template>
+        <template #empty>{{ t('wms.layoutDesigner.noStock') }}</template>
       </el-table>
     </el-dialog>
   </el-drawer>
@@ -262,6 +262,7 @@
 <script setup name="WmsLayoutDesigner">
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import { getWarehouseLayout, saveWarehouseLayout, publishWarehouseLayout } from "@/api/wms/warehouseLayout";
 import { listZone } from "@/api/wms/zone";
 import { listLocation } from "@/api/wms/location";
@@ -272,6 +273,7 @@ const props = defineProps({
   warehouse: { type: Object, default: () => ({}) }
 });
 const emit = defineEmits(["update:modelValue"]);
+const { t } = useI18n();
 
 const CELL = 26;
 const PAD = 20;
@@ -499,7 +501,7 @@ function nextId() {
 
 function createBlock(type, rect) {
   const counts = countBlocks();
-  const nameMap = { unit: "储位", region: "分区", label: "标注" };
+  const nameMap = { unit: t("wms.layoutDesigner.nameUnit"), region: t("wms.layoutDesigner.nameRegion"), label: t("wms.layoutDesigner.nameLabel") };
   const statKey = type === "unit" ? "units" : type === "region" ? "regions" : "labels";
   return {
     id: nextId(),
@@ -542,7 +544,7 @@ function onMouseDown(evt) {
     const parent = childTarget.value;
     const rect = { r1: r, r2: r, c1: c, c2: c };
     if (parent && !rectInside(unionBbox(parent), rect)) {
-      ElMessage.warning("子块必须落在父块范围内");
+      ElMessage.warning(t("wms.layoutDesigner.childOutOfParent"));
       return;
     }
     if (overlapAny([rect], conflictRects(null))) {
@@ -609,7 +611,7 @@ function finishDraw() {
     // 追加矩形到已有块（拼接 L/U 形）
     const parent = findParent(blocks.value, target.id);
     if (parent && !rectInside(unionBbox(parent), rect)) {
-      ElMessage.warning("超出所在分区范围，已取消");
+      ElMessage.warning(t("wms.layoutDesigner.outOfRegion"));
       return;
     }
     if (rectFullyCovered(rect, rectCellSet(target.rects))) {
@@ -618,7 +620,7 @@ function finishDraw() {
       return;
     }
     if (target.type !== "region" && overlapAny([rect], conflictRects(target.id))) {
-      ElMessage.warning("与相邻块重叠，已取消");
+      ElMessage.warning(t("wms.layoutDesigner.overlapAdjacent"));
       return;
     }
     // 规范化矩形：消除与自身的重叠，保证填充不叠加
@@ -629,12 +631,12 @@ function finishDraw() {
   const parent = childTarget.value;
   const parentBbox = parent ? unionBbox(parent) : null;
   if (parent && !rectInside(parentBbox, rect)) {
-    ElMessage.warning("子块必须落在父块范围内");
+    ElMessage.warning(t("wms.layoutDesigner.childOutOfParent"));
     return;
   }
   // 分区是标注层，允许与其他块重叠；储位/标注之间不允许
   if (tool.value !== "region" && overlapAny([rect], conflictRects(null))) {
-    ElMessage.warning("与已有块重叠，请重新绘制");
+    ElMessage.warning(t("wms.layoutDesigner.overlapExisting"));
     return;
   }
   const list = parent ? parent.children : blocks.value;
@@ -673,7 +675,7 @@ function finishMove() {
     c2: x.c2 + ndx
   }));
   if (block.type !== "region" && overlapAny(moved, conflictRects(blockId))) {
-    ElMessage.warning("目标位置与其他块重叠，已回退");
+    ElMessage.warning(t("wms.layoutDesigner.moveOverlapRevert"));
     return;
   }
   block.rects = moved;
@@ -757,9 +759,9 @@ function boundaryPath(block) {
 /** 业务语义（属性面板 badge / 预览提示）：分区 = 库区，储位 = 库位，标注 = 文字说明 */
 function derivedLabel(block) {
   if (!block) return "";
-  if (block.type === "region") return "库区";
-  if (block.type === "label") return "标注";
-  return "库位";
+  if (block.type === "region") return t("wms.common.zone");
+  if (block.type === "label") return t("wms.layoutDesigner.nameLabel");
+  return t("wms.common.location");
 }
 
 function countBlocks() {
@@ -803,10 +805,10 @@ function onContextMenu(evt, block) {
 function renameBlock() {
   const block = menu.block;
   menu.show = false;
-  ElMessageBox.prompt("请输入名称", "重命名", {
+  ElMessageBox.prompt(t("wms.layoutDesigner.inputName"), t("wms.layoutDesigner.renameTitle"), {
     inputValue: block.name,
-    confirmButtonText: "确定",
-    cancelButtonText: "取消"
+    confirmButtonText: t("common.confirm"),
+    cancelButtonText: t("common.cancel")
   })
     .then(({ value }) => {
       block.name = value || block.name;
@@ -821,21 +823,21 @@ function appendSegment() {
     tool.value = menu.block.type === "region" ? "region" : "unit";
   }
   menu.show = false;
-  ElMessage.info(`从任意位置拖拽即可为「${menu.block.name}」追加拼接段，Esc 取消`);
+  ElMessage.info(t("wms.layoutDesigner.appendSegmentMsg", { name: menu.block.name }));
 }
 
 function addChild() {
   childTargetId.value = menu.block.id;
   tool.value = "unit";
   menu.show = false;
-  ElMessage.info("在分区内拖拽绘制储位，也可切换为标注工具，Esc 取消");
+  ElMessage.info(t("wms.layoutDesigner.addChildMsg"));
 }
 
 function mergeChildren() {
   const block = menu.block;
   menu.show = false;
   if (!block.children || !block.children.length) return;
-  ElMessageBox.confirm(`清空后「${block.name}」的 ${block.children.length} 个子块将被删除，是否继续？`, "提示", {
+  ElMessageBox.confirm(t("wms.layoutDesigner.clearChildrenMsg", { name: block.name, n: block.children.length }), t("wms.common.tip"), {
     type: "warning"
   })
     .then(() => {
@@ -847,7 +849,7 @@ function mergeChildren() {
 function removeBlock() {
   const block = menu.block;
   menu.show = false;
-  ElMessageBox.confirm(`确定删除「${block.name}」及其子块吗？`, "提示", { type: "warning" })
+  ElMessageBox.confirm(t("wms.layoutDesigner.removeBlockMsg", { name: block.name }), t("wms.common.tip"), { type: "warning" })
     .then(() => {
       removeById(blocks.value, block.id);
       if (selectedId.value === block.id) selectedId.value = null;
@@ -859,7 +861,7 @@ function removeBlock() {
 function removeSelected() {
   if (!selected.value) return;
   const block = selected.value;
-  ElMessageBox.confirm(`确定删除「${block.name}」及其子块吗？`, "提示", { type: "warning" })
+  ElMessageBox.confirm(t("wms.layoutDesigner.removeBlockMsg", { name: block.name }), t("wms.common.tip"), { type: "warning" })
     .then(() => {
       removeById(blocks.value, block.id);
       selectedId.value = null;
@@ -905,7 +907,7 @@ function onPreviewClick(evt) {
   // 储位/分区均可点击；绑定库位按库位查，绑定库区按库区查其下所有库位的库存
   if (!hit || (hit.type !== "unit" && hit.type !== "region")) return;
   if (!hit.refId || (hit.refType !== "location" && hit.refType !== "zone")) {
-    ElMessage.info(`「${hit.name}」未绑定库位/库区，暂无库存明细`);
+    ElMessage.info(t("wms.layoutDesigner.noBindingMsg", { name: hit.name }));
     return;
   }
   stockDlg.block = hit;
@@ -996,7 +998,7 @@ async function handleSave() {
 async function handlePublish() {
   await publishWarehouseLayout(layoutId.value);
   status.value = "1";
-  ElMessage.success("发布成功");
+  ElMessage.success(t("wms.layoutDesigner.publishSuccess"));
 }
 
 function onKeydown(e) {

@@ -12,63 +12,62 @@
       <el-row :gutter="10" class="mb8">
         <right-toolbar
           v-model:showSearch="showSearch"
-          hint="库存流水为系统审计记录，由入库、出库、移库、库存调整等业务自动生成。
-不能手工新增、修改或删除。"
+          :hint="t('wms.stockRecord.hint')"
           @queryTable="getList"
         ></right-toolbar>
       </el-row>
 
       <el-table v-loading="loading" :data="stockRecordList">
-        <el-table-column label="流水号" align="center" prop="recordNo" width="170" :show-overflow-tooltip="true" />
-        <el-table-column label="业务类型" align="center" width="100">
+        <el-table-column :label="t('wms.stockRecord.recordNo')" align="center" prop="recordNo" width="170" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.stockRecord.bizType')" align="center" width="100">
           <template #default="scope">
             <el-tag size="small" :type="bizTagType(scope.row.bizType)">{{ bizTypeMap[scope.row.bizType] || scope.row.bizType || "-" }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="方向" align="center" width="80">
+        <el-table-column :label="t('wms.stockRecord.direction')" align="center" width="80">
           <template #default="scope">
             <span :class="scope.row.direction === 'out' ? 'dir-out' : 'dir-in'">
-              {{ scope.row.direction === "out" ? "出" : "入" }}
+              {{ scope.row.direction === "out" ? t("wms.stockRecord.out") : t("wms.stockRecord.in") }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="来源单号" align="center" prop="sourceNo" width="170" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.stockRecord.sourceNo')" align="center" prop="sourceNo" width="170" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.sourceNo || "-" }}</template>
         </el-table-column>
-        <el-table-column label="物料编码" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.stock.materialCode')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.material?.materialCode || "-" }}</template>
         </el-table-column>
-        <el-table-column label="物料名称" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.stock.materialName')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.material?.materialName || "-" }}</template>
         </el-table-column>
-        <el-table-column label="批次号" align="center" prop="batchNo" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.batchNo')" align="center" prop="batchNo" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.batchNo || "-" }}</template>
         </el-table-column>
-        <el-table-column label="仓库" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.warehouse')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.warehouse?.warehouseName || "-" }}</template>
         </el-table-column>
-        <el-table-column label="库区" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.zone')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.zone?.zoneName || "-" }}</template>
         </el-table-column>
-        <el-table-column label="库位" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.location')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.location?.locationCode || scope.row.location?.locationName || "-" }}</template>
         </el-table-column>
-        <el-table-column label="变动前" align="center" prop="beforeQuantity" width="90" />
-        <el-table-column label="变动数量" align="center" prop="changeQuantity" width="100">
+        <el-table-column :label="t('wms.stockRecord.before')" align="center" prop="beforeQuantity" width="90" />
+        <el-table-column :label="t('wms.stockRecord.changeQuantity')" align="center" prop="changeQuantity" width="100">
           <template #default="scope">
             <span :class="scope.row.direction === 'out' ? 'dir-out' : 'dir-in'">
               {{ scope.row.direction === "out" ? "-" : "+" }}{{ scope.row.changeQuantity ?? 0 }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="变动后" align="center" prop="afterQuantity" width="90" />
-        <el-table-column label="操作人" align="center" prop="operatorName" width="110">
+        <el-table-column :label="t('wms.stockRecord.after')" align="center" prop="afterQuantity" width="90" />
+        <el-table-column :label="t('wms.stockRecord.operator')" align="center" prop="operatorName" width="110">
           <template #default="scope">{{ scope.row.operatorName || scope.row.createBy || "-" }}</template>
         </el-table-column>
-        <el-table-column label="操作时间" align="center" prop="operateTime" width="170">
+        <el-table-column :label="t('wms.stockRecord.operateTime')" align="center" prop="operateTime" width="170">
           <template #default="scope">{{ scope.row.operateTime || scope.row.createTime || "-" }}</template>
         </el-table-column>
-        <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('common.remark')" align="center" prop="remark" :show-overflow-tooltip="true" />
       </el-table>
 
       <pagination
@@ -84,10 +83,12 @@
 
 <script setup name="WmsStockRecord">
 import { ref, reactive, toRefs, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { listStockRecord } from "@/api/wms/stockRecord";
 import QueryForm from "@/components/QueryForm/index.vue";
 import RightToolbar from "@/components/RightToolbar/index.vue";
 
+const { t } = useI18n();
 const stockRecordList = ref([]);
 const loading = ref(true);
 const total = ref(0);
@@ -104,17 +105,17 @@ const data = reactive({
 const { queryParams } = toRefs(data);
 
 /** 业务类型字典 */
-const bizTypeMap = {
-  receipt: "入库",
-  delivery: "出库",
-  move: "移库",
-  check: "盘点",
-  adjust: "调整",
-  freeze: "冻结",
-  thaw: "解冻",
-  lock: "锁定",
-  unlock: "解锁",
-};
+const bizTypeMap = computed(() => ({
+  receipt: t("wms.stockRecord.bizReceipt"),
+  delivery: t("wms.stockRecord.bizDelivery"),
+  move: t("wms.stockRecord.bizMove"),
+  check: t("wms.stockRecord.bizCheck"),
+  adjust: t("wms.stockRecord.bizAdjust"),
+  freeze: t("wms.stockRecord.bizFreeze"),
+  thaw: t("wms.stockRecord.bizThaw"),
+  lock: t("wms.stockRecord.bizLock"),
+  unlock: t("wms.stockRecord.bizUnlock"),
+}));
 
 function bizTagType(bizType) {
   if (bizType === "receipt") return "success";
@@ -125,10 +126,10 @@ function bizTagType(bizType) {
 
 const queryConfig = computed(() => [
   {
-    label: "关键字",
+    label: t("wms.common.keywords"),
     prop: "keywords",
     type: "input",
-    placeholder: "流水号 / 批次号 / 来源单号",
+    placeholder: t("wms.stockRecord.ph.keywords"),
   },
 ]);
 

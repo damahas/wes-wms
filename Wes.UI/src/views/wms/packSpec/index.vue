@@ -12,7 +12,7 @@
     <!-- 操作按钮 -->
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:packSpec:add']">新增包装规格</el-button>
+        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:packSpec:add']">{{ t('wms.packSpec.addBtn') }}</el-button>
       </el-col>
         <right-toolbar
           v-model:showSearch="showSearch"
@@ -23,28 +23,28 @@
     <!-- 列表：仅展示顶层包装规格 -->
     <el-table v-loading="loading" :data="packSpecList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="包装规格名称" align="center" prop="levelName" :show-overflow-tooltip="true" />
-      <el-table-column label="计量单位" align="center" prop="uom" :show-overflow-tooltip="true" />
-      <el-table-column label="层级数" align="center" prop="levelCount">
+      <el-table-column :label="t('wms.packSpec.levelName')" align="center" prop="levelName" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('wms.packSpec.uom')" align="center" prop="uom" :show-overflow-tooltip="true" />
+      <el-table-column :label="t('wms.packSpec.levelCount')" align="center" prop="levelCount">
         <template #default="scope">{{ scope.row.levelCount ?? '—' }}</template>
       </el-table-column>
-      <el-table-column label="连续量" align="center" prop="isContinuous">
+      <el-table-column :label="t('wms.packSpec.isContinuous')" align="center" prop="isContinuous">
         <template #default="scope">
           <el-tag :type="scope.row.isContinuous === 1 ? 'warning' : 'info'" size="small">
-            {{ scope.row.isContinuous === 1 ? '连续' : '离散' }}
+            {{ scope.row.isContinuous === 1 ? t('wms.packSpec.continuous') : t('wms.packSpec.discrete') }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="基本单位" align="center" prop="isBase">
+      <el-table-column :label="t('wms.material.basicUnit')" align="center" prop="isBase">
         <template #default="scope">
-          <el-tag v-if="scope.row.isBase === 1" type="success" size="small">基本</el-tag>
+          <el-tag v-if="scope.row.isBase === 1" type="success" size="small">{{ t('wms.packSpec.base') }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createTime" min-width="170" />
-      <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
+      <el-table-column :label="t('common.createTime')" align="center" prop="createTime" min-width="170" />
+      <el-table-column :label="t('common.actions')" align="center" width="200" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:packSpec:edit']">管理层级</el-button>
-          <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:packSpec:remove']">删除</el-button>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:packSpec:edit']">{{ t('wms.packSpec.manageLevels') }}</el-button>
+          <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:packSpec:remove']">{{ t('common.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -65,7 +65,7 @@
         <el-col :span="11">
           <div class="tree-panel">
             <div class="tree-panel__header">
-              <span>层级结构（{{ dialogMode === 'create' ? '先建顶层' : '点击节点直接编辑' }}）</span>
+              <span>{{ t('wms.packSpec.treeHeader') }}（{{ dialogMode === 'create' ? t('wms.packSpec.treeCreateHint') : t('wms.packSpec.treeEditHint') }}）</span>
             </div>
             <div class="tree-panel__body">
               <el-tree
@@ -84,17 +84,17 @@
                     <span class="level-node__name">{{ data.levelName }}</span>
                     <span class="level-node__meta">
                       {{ data.uom ? data.uom : '' }}
-                      <template v-if="data.qtyPerParent != null && data.qtyPerParent !== ''"> · {{ data.qtyPerParent }}/上层</template>
-                      <template v-if="data.isBase === 1"> · 基本</template>
+                      <template v-if="data.qtyPerParent != null && data.qtyPerParent !== ''"> · {{ data.qtyPerParent }}/{{ t('wms.packSpec.upper') }}</template>
+                      <template v-if="data.isBase === 1"> · {{ t('wms.packSpec.base') }}</template>
                     </span>
                   </span>
                 </template>
               </el-tree>
-              <el-empty v-else description="暂无层级，请在右侧填写并保存顶层" :image-size="80" />
+              <el-empty v-else :description="t('wms.packSpec.treeEmpty')" :image-size="80" />
             </div>
             <div class="tree-panel__footer" v-if="selectedNode && dialogMode === 'edit'">
-              <el-button type="primary" link icon="Plus" @click="addChild(selectedNode)">添加子级</el-button>
-              <el-button type="danger" link icon="Delete" @click="deleteNode(selectedNode)">删除本层</el-button>
+              <el-button type="primary" link icon="Plus" @click="addChild(selectedNode)">{{ t('wms.packSpec.addChild') }}</el-button>
+              <el-button type="danger" link icon="Delete" @click="deleteNode(selectedNode)">{{ t('wms.packSpec.deleteLevel') }}</el-button>
             </div>
           </div>
         </el-col>
@@ -106,21 +106,21 @@
               v-if="dialogMode === 'create'"
               type="info"
               :closable="false"
-              title="第一步：先保存顶层节点，之后即可在左侧添加子级"
+              :title="t('wms.packSpec.firstStepAlert')"
               class="mb12"
             />
-            <el-form-item label="上级层级">
-              <el-input :model-value="nodeForm.parentName || '顶层（无上级）'" readonly placeholder="顶层" />
+            <el-form-item :label="t('wms.packSpec.parentLevel')">
+              <el-input :model-value="nodeForm.parentName || t('wms.packSpec.topNoParent')" readonly :placeholder="t('wms.packSpec.top')" />
             </el-form-item>
             <el-row :gutter="16">
               <el-col :span="12">
-                <el-form-item label="层级名称" prop="levelName">
-                  <el-input v-model="nodeForm.levelName" placeholder="如 托盘 / 箱 / 盒 / 卷 / 米" maxlength="50" />
+                <el-form-item :label="t('wms.packSpec.levelName')" prop="levelName">
+                  <el-input v-model="nodeForm.levelName" :placeholder="t('wms.packSpec.ph.levelNameExample')" maxlength="50" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="计量单位" prop="uom">
-                  <el-select v-model="nodeForm.uom" placeholder="请选择" clearable filterable style="width: 100%">
+                <el-form-item :label="t('wms.packSpec.uom')" prop="uom">
+                  <el-select v-model="nodeForm.uom" :placeholder="t('wms.common.pleaseSelect')" clearable filterable style="width: 100%">
                     <el-option v-for="dict in wms_sys_unit_type" :key="dict.value" :label="dict.label" :value="dict.value" />
                   </el-select>
                 </el-form-item>
@@ -128,50 +128,50 @@
             </el-row>
             <el-row :gutter="16">
               <el-col :span="12">
-                <el-form-item label="上层含本层数量" prop="qtyPerParent">
+                <el-form-item :label="t('wms.packSpec.qtyPerParent')" prop="qtyPerParent">
                   <el-input-number controls-position="right" v-model="nodeForm.qtyPerParent" :min="0" :precision="3" :controls="false" style="width: 100%" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="层级排序" prop="sortOrder">
+                <el-form-item :label="t('wms.packSpec.sortOrder')" prop="sortOrder">
                   <el-input-number controls-position="right" v-model="nodeForm.sortOrder" :min="0" :precision="0" :controls="false" style="width: 100%" />
                 </el-form-item>
               </el-col>
             </el-row>
             <el-row :gutter="16">
               <el-col :span="12">
-                <el-form-item label="是否连续量" prop="isContinuous" class="compact-switch">
+                <el-form-item :label="t('wms.packSpec.isContinuous')" prop="isContinuous" class="compact-switch">
                   <el-switch
                     v-model="nodeForm.isContinuous"
                     :active-value="1"
                     :inactive-value="0"
                     inline-prompt
                     :width="58"
-                    active-text="连续"
-                    inactive-text="离散"
+                    :active-text="t('wms.packSpec.continuous')"
+                    :inactive-text="t('wms.packSpec.discrete')"
                   />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="是否基本单位" prop="isBase" class="compact-switch">
+                <el-form-item :label="t('wms.packSpec.isBaseLabel')" prop="isBase" class="compact-switch">
                   <el-switch
                     v-model="nodeForm.isBase"
                     :active-value="1"
                     :inactive-value="0"
                     inline-prompt
                     :width="64"
-                    active-text="基本"
-                    inactive-text="非基本"
+                    :active-text="t('wms.packSpec.base')"
+                    :inactive-text="t('wms.packSpec.notBase')"
                   />
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-form-item label="生效日期" prop="effectiveDate">
-              <el-date-picker v-model="nodeForm.effectiveDate" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="支持包装规格变更" style="width: 100%" />
+            <el-form-item :label="t('wms.packSpec.effectiveDate')" prop="effectiveDate">
+              <el-date-picker v-model="nodeForm.effectiveDate" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" :placeholder="t('wms.packSpec.ph.effectiveHint')" style="width: 100%" />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="saveNode">保存节点</el-button>
-              <el-button v-if="dialogMode === 'edit' && nodeForm.specId" @click="resetNodeForm">重置</el-button>
+              <el-button type="primary" @click="saveNode">{{ t('wms.packSpec.saveNode') }}</el-button>
+              <el-button v-if="dialogMode === 'edit' && nodeForm.specId" @click="resetNodeForm">{{ t('common.reset') }}</el-button>
             </el-form-item>
           </el-form>
         </el-col>
@@ -183,6 +183,7 @@
 <script setup name="WmsPackSpec">
 import { ref, reactive, toRefs, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listPackSpec,
   addPackSpec,
@@ -194,6 +195,7 @@ import { getDict, handleTree } from "@/utils";
 import QueryForm from "@/components/QueryForm/index.vue";
 import RightToolbar from "@/components/RightToolbar/index.vue";
 
+const { t } = useI18n();
 const { wms_sys_unit_type } = getDict("wms_sys_unit_type");
 
 const packSpecList = ref([]);
@@ -228,10 +230,10 @@ const { queryParams } = toRefs(data);
 
 const queryConfig = computed(() => [
   {
-    label: "关键字",
+    label: t('wms.common.keywords'),
     prop: "keywords",
     type: "input",
-    placeholder: "包装规格名称",
+    placeholder: t('wms.packSpec.ph.keywords'),
   },
 ]);
 
@@ -274,7 +276,7 @@ function loadTree(rootId) {
       ...n,
       specId: String(n.specId),
       parentId: n.parentId != null ? String(n.parentId) : null,
-      label: `${n.levelName}${n.isBase === 1 ? "（基本）" : ""}`,
+      label: `${n.levelName}${n.isBase === 1 ? `（${t('wms.packSpec.base')}）` : ""}`,
     }));
     treeData.value = handleTree(rows, "specId", "parentId");
   });
@@ -287,7 +289,7 @@ function handleAdd() {
   treeData.value = [];
   selectedNode.value = null;
   open.value = true;
-  title.value = "新增包装规格";
+  title.value = t('wms.packSpec.addTitle');
 }
 
 /** 管理层级：加载整棵树 */
@@ -295,7 +297,7 @@ function handleUpdate(row) {
   resetNodeForm();
   dialogMode.value = "edit";
   open.value = true;
-  title.value = "管理包装规格层级";
+  title.value = t('wms.packSpec.manageTitle');
   loadTree(row.specId);
 }
 
@@ -315,7 +317,7 @@ const nodeForm = reactive({
 });
 const nodeRef = ref(null);
 const nodeRules = {
-  levelName: [{ required: true, message: "层级名称不能为空", trigger: "blur" }],
+  levelName: [{ required: true, message: () => t('wms.packSpec.rules.levelNameRequired'), trigger: "blur" }],
 };
 
 function resetNodeForm() {
@@ -367,7 +369,7 @@ function editNode(node) {
   nodeForm.specId = node.specId;
   nodeForm.rootId = currentRootId.value;
   nodeForm.parentId = node.parentId;
-  nodeForm.parentName = node.parentId ? findNodeName(treeData.value, node.parentId) : "顶层（无上级）";
+  nodeForm.parentName = node.parentId ? findNodeName(treeData.value, node.parentId) : t('wms.packSpec.topNoParent');
   nodeForm.levelName = node.levelName;
   nodeForm.uom = node.uom;
   nodeForm.qtyPerParent = node.qtyPerParent;
@@ -396,7 +398,7 @@ function saveNode() {
     if (!nodeForm.specId) {
       // 新增：保存后若当前是顶层，自动进入树管理
       addPackSpec(payload).then((res) => {
-        ElMessage.success("保存成功");
+        ElMessage.success(t('wms.common.savedSuccess'));
         const newId = res.data?.specId;
         if (newId) {
           dialogMode.value = "edit";
@@ -407,7 +409,7 @@ function saveNode() {
       });
     } else {
       updatePackSpec(payload).then(() => {
-        ElMessage.success("保存成功");
+        ElMessage.success(t('wms.common.savedSuccess'));
         loadTree(currentRootId.value);
         getList();
       });
@@ -417,13 +419,13 @@ function saveNode() {
 
 /** 删除本层 */
 function deleteNode(node) {
-  ElMessageBox.confirm(`是否确认删除层级"${node.levelName}"？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.packSpec.deleteNodeConfirm', { name: node.levelName }), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   }).then(() => {
     delPackSpec(node.specId).then(() => {
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
       if (!node.parentId) {
         // 删的是顶层：关闭弹窗
         open.value = false;
@@ -437,15 +439,15 @@ function deleteNode(node) {
 
 function handleDelete(row) {
   const delIds = row.specId || ids.value.join(",");
-  ElMessageBox.confirm(`是否确认删除包装规格"${row.levelName}"及其全部子层级？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.packSpec.deleteTreeConfirm', { name: row.levelName }), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => delPackSpec(delIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
 }
 

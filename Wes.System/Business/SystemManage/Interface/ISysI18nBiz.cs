@@ -23,5 +23,8 @@ namespace Wes.Business
 
         /// <summary>获取单条翻译文本</summary>
         public string GetTranslation(string key, string lang);
+
+        /// <summary>按翻译键删除全部语言条目并清除对应缓存</summary>
+        public void DeleteByKey(string i18nKey);
     }
 }

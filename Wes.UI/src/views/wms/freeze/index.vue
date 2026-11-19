@@ -12,14 +12,14 @@
       <!-- 操作按钮 -->
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
-          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:freeze:add']">新增</el-button>
+          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:freeze:add']">{{ t('common.add') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button v-if="canEdit(selectedRows[0] || {})" type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:freeze:edit']">修改</el-button>
-          <el-button v-else type="info" plain icon="View" :disabled="single" @click="handleView(selectedRows[0])">明细</el-button>
+          <el-button v-if="canEdit(selectedRows[0] || {})" type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:freeze:edit']">{{ t('common.edit') }}</el-button>
+          <el-button v-else type="info" plain icon="View" :disabled="single" @click="handleView(selectedRows[0])">{{ t('wms.receipt.details') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="danger" plain icon="Delete" :disabled="multiple || selectedRows.some((r) => !canEdit(r))" @click="handleDelete" v-hasPermi="['wms:freeze:remove']">删除</el-button>
+          <el-button type="danger" plain icon="Delete" :disabled="multiple || selectedRows.some((r) => !canEdit(r))" @click="handleDelete" v-hasPermi="['wms:freeze:remove']">{{ t('common.delete') }}</el-button>
         </el-col>
         <right-toolbar
           v-model:showSearch="showSearch"
@@ -30,53 +30,53 @@
       <!-- 列表 -->
       <el-table v-loading="loading" :data="freezeList" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="冻结单号" align="center" prop="freezeNo" :show-overflow-tooltip="true" />
-        <el-table-column label="冻结类型" align="center" width="100">
+        <el-table-column :label="t('wms.freeze.freezeNo')" align="center" prop="freezeNo" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.freeze.freezeType')" align="center" width="100">
           <template #default="scope">
-            {{ freezeTypeMap[scope.row.freezeType] || "-" }}
+            {{ freezeTypeLabel(scope.row.freezeType) }}
           </template>
         </el-table-column>
-        <el-table-column label="仓库" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.warehouse')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.warehouse?.warehouseName || scope.row.warehouseName || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="库区" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.zone')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.zone?.zoneName || scope.row.zoneCode || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="库位" align="center" width="120" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.location')" align="center" width="120" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.location?.locationCode || scope.row.locationCode || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="物料" align="center" min-width="170" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.material.title')" align="center" min-width="170" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ materialLabel(scope.row) }}
           </template>
         </el-table-column>
-        <el-table-column label="批次号" align="center" prop="batchNo" width="110" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.receiving.batchNo')" align="center" prop="batchNo" width="110" :show-overflow-tooltip="true">
           <template #default="scope">
             {{ scope.row.batchNo || "-" }}
           </template>
         </el-table-column>
-        <el-table-column label="冻结数量" align="center" prop="freezeQuantity" width="90" />
-        <el-table-column label="状态" align="center" width="100">
+        <el-table-column :label="t('wms.freeze.freezeQuantity')" align="center" prop="freezeQuantity" width="90" />
+        <el-table-column :label="t('common.status')" align="center" width="100">
           <template #default="scope">
             <el-tag :type="freezeStatusTag(scope.row.freezeStatus)">
-              {{ freezeStatusMap[scope.row.freezeStatus] || "-" }}
+              {{ freezeStatusLabel(scope.row.freezeStatus) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" align="center" prop="createTime" min-width="170" />
-        <el-table-column label="操作" align="center" width="220" class-name="small-padding fixed-width">
+        <el-table-column :label="t('common.createTime')" align="center" prop="createTime" min-width="170" />
+        <el-table-column :label="t('common.actions')" align="center" width="220" class-name="small-padding fixed-width">
           <template #default="scope">
-            <el-button v-if="canEdit(scope.row)" link type="success" icon="Promotion" @click="handleExecute(scope.row)" v-hasPermi="['wms:freeze:edit']">冻结</el-button>
-            <el-button v-if="scope.row.freezeStatus === 'frozen'" link type="warning" icon="Sunny" @click="handleThaw(scope.row)" v-hasPermi="['wms:freeze:edit']">解冻</el-button>
-            <el-button v-if="canEdit(scope.row)" link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:freeze:edit']">修改</el-button>
-            <el-button v-else link type="info" icon="View" @click="handleView(scope.row)">明细</el-button>
-            <el-button v-if="canEdit(scope.row)" link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:freeze:remove']">删除</el-button>
+            <el-button v-if="canEdit(scope.row)" link type="success" icon="Promotion" @click="handleExecute(scope.row)" v-hasPermi="['wms:freeze:edit']">{{ t('wms.freeze.freeze') }}</el-button>
+            <el-button v-if="scope.row.freezeStatus === 'frozen'" link type="warning" icon="Sunny" @click="handleThaw(scope.row)" v-hasPermi="['wms:freeze:edit']">{{ t('wms.freeze.thaw') }}</el-button>
+            <el-button v-if="canEdit(scope.row)" link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:freeze:edit']">{{ t('common.edit') }}</el-button>
+            <el-button v-else link type="info" icon="View" @click="handleView(scope.row)">{{ t('wms.receipt.details') }}</el-button>
+            <el-button v-if="canEdit(scope.row)" link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:freeze:remove']">{{ t('common.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -94,40 +94,43 @@
         <el-form ref="freezeRef" :model="form" :rules="rules" label-width="88px" class="nowrap-labels" :disabled="viewMode">
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="冻结单号">
-                <el-input v-model="form.freezeNo" placeholder="保存后自动生成" readonly />
+              <el-form-item :label="t('wms.freeze.freezeNo')">
+                <el-input v-model="form.freezeNo" :placeholder="t('wms.receipt.receiptNoAuto')" readonly />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="冻结类型" prop="freezeType">
-                <el-select v-model="form.freezeType" placeholder="请选择冻结类型" style="width:100%">
-                  <el-option v-for="(label, value) in freezeTypeMap" :key="value" :label="label" :value="value" />
+              <el-form-item :label="t('wms.freeze.freezeType')" prop="freezeType">
+                <el-select v-model="form.freezeType" :placeholder="t('wms.freeze.ph.selectType')" style="width:100%">
+                  <el-option :label="t('wms.freeze.typeQuality')" value="quality" />
+                  <el-option :label="t('wms.freeze.typeLegal')" value="legal" />
+                  <el-option :label="t('wms.freeze.typeReserve')" value="reserve" />
+                  <el-option :label="t('wms.issueOrder.typeOther')" value="other" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="仓库" prop="warehouseId">
-                <WarehouseSelect v-model="form.warehouseId" placeholder="请选择仓库" :disabled="viewMode" @change="onWarehouseChange" />
+              <el-form-item :label="t('wms.common.warehouse')" prop="warehouseId">
+                <WarehouseSelect v-model="form.warehouseId" :placeholder="t('wms.warehouse.ph.selectWarehouse')" :disabled="viewMode" @change="onWarehouseChange" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="库位" prop="locationId">
+              <el-form-item :label="t('wms.common.location')" prop="locationId">
                 <LocationCascader
                   v-model="form.locCascader"
                   :warehouse-id="form.warehouseId"
                   :disabled="!form.warehouseId || viewMode"
-                  :placeholder="form.warehouseId ? '请选择库区/库位' : '请先选择仓库'"
+                  :placeholder="form.warehouseId ? t('wms.location.ph.selectZoneOrLocation') : t('wms.move.ph.selectWarehouseFirst')"
                   @update:model-value="onLocation"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="库存行" prop="stockId">
+              <el-form-item :label="t('wms.adjust.stockRow')" prop="stockId">
                 <el-select
                   v-if="!viewMode"
                   v-model="form.stockId"
                   :loading="stockLoading"
-                  :placeholder="form.locationId ? '选择要冻结的库存行（同物料同批次可能多条码）' : '先选库位'"
+                  :placeholder="form.locationId ? t('wms.freeze.ph.pickStockRow') : t('wms.adjust.ph.selectLocationFirst')"
                   :disabled="!form.locationId"
                   style="width:100%"
                   @change="onStockPick"
@@ -143,38 +146,38 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="物料">
+              <el-form-item :label="t('wms.material.title')">
                 <span>{{ form.materialCode }} - {{ form.materialName || "-" }}</span>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="批次号">
-                <span>{{ form.batchNo || "无" }}</span>
+              <el-form-item :label="t('wms.receiving.batchNo')">
+                <span>{{ form.batchNo || t('wms.move.noBatch') }}</span>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="冻结数量" prop="freezeQuantity">
+              <el-form-item :label="t('wms.freeze.freezeQuantity')" prop="freezeQuantity">
                 <el-input-number v-model="form.freezeQuantity" :min="0" :controls="false"
-                  :placeholder="form.stockAvailable != null ? `可冻结 ${form.stockAvailable}` : '冻结数量'"
+                  :placeholder="form.stockAvailable != null ? t('wms.freeze.ph.freezable', { qty: form.stockAvailable }) : t('wms.freeze.freezeQuantity')"
                   style="width:100%" />
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="冻结原因" prop="freezeReason">
+              <el-form-item :label="t('wms.freeze.freezeReason')" prop="freezeReason">
                 <el-input v-model="form.freezeReason" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }"
-                  placeholder="请说明冻结原因" maxlength="255" />
+                  :placeholder="t('wms.freeze.ph.inputReason')" maxlength="255" />
               </el-form-item>
             </el-col>
           </el-row>
 
           <div class="form-tip text-muted">
-            精确到库存行：同物料同批次多条码时必须指定冻哪一行。执行冻结后该行可用库存减少、冻结数量增加，库存总量不变；解冻后可用库存自动回补。
+            {{ t('wms.freeze.formTip') }}
           </div>
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button v-if="!viewMode" type="primary" @click="submitForm">确 定</el-button>
-            <el-button @click="cancel">{{ viewMode ? "关 闭" : "取 消" }}</el-button>
+            <el-button v-if="!viewMode" type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+            <el-button @click="cancel">{{ viewMode ? t('common.close') : t('common.cancel') }}</el-button>
           </div>
         </template>
       </el-dialog>
@@ -185,6 +188,7 @@
 <script setup name="WmsFreeze">
 import { ref, reactive, toRefs, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listFreeze,
   getFreeze,
@@ -200,6 +204,7 @@ import RightToolbar from "@/components/RightToolbar/index.vue";
 import WarehouseSelect from "@/views/wms/warehouse/input.vue";
 import LocationCascader from "@/views/wms/location/cascader.vue";
 
+const { t } = useI18n();
 const freezeRef = ref(null);
 const freezeList = ref([]);
 const stockOptions = ref([]);
@@ -219,15 +224,21 @@ const selectedRows = ref([]);
 const showSearch = ref(true);
 
 // 冻结类型
-const freezeTypeMap = {
-  quality: "质量隔离",
-  legal: "司法查封",
-  reserve: "预留锁定",
-  other: "其他",
-};
+function freezeTypeLabel(v) {
+  const map = {
+    quality: t('wms.freeze.typeQuality'),
+    legal: t('wms.freeze.typeLegal'),
+    reserve: t('wms.freeze.typeReserve'),
+    other: t('wms.issueOrder.typeOther'),
+  };
+  return map[v] || "-";
+}
 
 // 冻结状态：待冻结 → 已冻结 → 已解冻
-const freezeStatusMap = { pending: "待冻结", frozen: "已冻结", thawed: "已解冻" };
+function freezeStatusLabel(s) {
+  const map = { pending: t('wms.freeze.statusPending'), frozen: t('wms.freeze.statusFrozen'), thawed: t('wms.freeze.statusThawed') };
+  return map[s] || "-";
+}
 const freezeStatusTag = (s) => (s === "frozen" ? "warning" : s === "thawed" ? "success" : "info");
 
 /** 只有待冻结的单据可以修改/删除/执行；已冻结后只能解冻或查看 */
@@ -244,11 +255,11 @@ const data = reactive({
     freezeStatus: undefined,
   },
   rules: {
-    warehouseId: [{ required: true, message: "请选择仓库", trigger: "change" }],
-    materialId: [{ required: true, message: "请选择物料", trigger: "change" }],
-    locationId: [{ required: true, message: "请选择库位", trigger: "change" }],
-    freezeQuantity: [{ required: true, message: "请输入冻结数量", trigger: "blur" }],
-    freezeType: [{ required: true, message: "请选择冻结类型", trigger: "change" }],
+    warehouseId: [{ required: true, message: () => t('wms.receipt.rules.warehouseRequired'), trigger: "change" }],
+    materialId: [{ required: true, message: () => t('wms.issueOrder.selectMaterialRequired'), trigger: "change" }],
+    locationId: [{ required: true, message: () => t('wms.freeze.ph.selectLocation'), trigger: "change" }],
+    freezeQuantity: [{ required: true, message: () => t('wms.freeze.ph.inputFreezeQty'), trigger: "blur" }],
+    freezeType: [{ required: true, message: () => t('wms.freeze.ph.selectType'), trigger: "change" }],
   },
 });
 
@@ -256,20 +267,20 @@ const { form, queryParams, rules } = toRefs(data);
 
 const queryConfig = computed(() => [
   {
-    label: "关键字",
+    label: t('wms.common.keywords'),
     prop: "keywords",
     type: "input",
-    placeholder: "请输入冻结单号",
+    placeholder: t('wms.freeze.ph.inputFreezeNo'),
   },
   {
-    label: "状态",
+    label: t('common.status'),
     prop: "freezeStatus",
     type: "select",
-    placeholder: "请选择状态",
+    placeholder: t('wms.warehouse.ph.selectStatus'),
     options: [
-      { label: "待冻结", value: "pending" },
-      { label: "已冻结", value: "frozen" },
-      { label: "已解冻", value: "thawed" },
+      { label: t('wms.freeze.statusPending'), value: "pending" },
+      { label: t('wms.freeze.statusFrozen'), value: "frozen" },
+      { label: t('wms.freeze.statusThawed'), value: "thawed" },
     ],
   },
 ]);
@@ -359,7 +370,7 @@ function reset() {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加库存冻结";
+  title.value = t('wms.freeze.addTitle');
 }
 
 /** 修改 */
@@ -416,7 +427,7 @@ function fillForm(data) {
           form.value.stockLabel = matched.labelShort;
           form.value.stockAvailable = matched.available;
         } else if (data.stockId) {
-          form.value.stockLabel = "该库存行已不存在";
+          form.value.stockLabel = t('wms.freeze.stockRowGone');
         }
       })
       .finally(() => {
@@ -424,7 +435,7 @@ function fillForm(data) {
       });
   }
   open.value = true;
-  title.value = viewMode.value ? "冻结单明细" : "修改库存冻结";
+  title.value = viewMode.value ? t('wms.freeze.viewTitle') : t('wms.freeze.editTitle');
 }
 
 /** 库位选择：切换库位后拉取该库位的库存行 */
@@ -448,8 +459,8 @@ function makeStockOptions(rows) {
     const available = (Number(s.stockQuantity) || 0) - (Number(s.freezeQuantity) || 0) - (Number(s.lockQuantity) || 0);
     return {
       value: String(s.stockId),
-      label: `${s.materialCode || s.material?.materialCode} / 批次${s.batchNo || "无"}${s.barcode ? " / " + s.barcode : ""} / 可用 ${available}`,
-      labelShort: `${s.materialCode || s.material?.materialCode} / 批次${s.batchNo || "无"}${s.barcode ? " / " + s.barcode : ""} / 库存 ${s.stockQuantity}`,
+      label: `${s.materialCode || s.material?.materialCode} / ${t('wms.receiving.batchNo')}${s.batchNo || t('wms.move.noBatch')}${s.barcode ? " / " + s.barcode : ""} / ${t('wms.stock.available')} ${available}`,
+      labelShort: `${s.materialCode || s.material?.materialCode} / ${t('wms.receiving.batchNo')}${s.batchNo || t('wms.move.noBatch')}${s.barcode ? " / " + s.barcode : ""} / ${t('wms.stock.stock')} ${s.stockQuantity}`,
       available,
       stockId: s.stockId,
       materialId: s.materialId,
@@ -505,19 +516,19 @@ function submitForm() {
   freezeRef.value.validate((valid) => {
     if (!valid) return;
     if (!form.value.locationId) {
-      ElMessage.warning("请选择库位");
+      ElMessage.warning(t('wms.freeze.ph.selectLocation'));
       return;
     }
     if (!form.value.stockId) {
-      ElMessage.warning("请选择库存行（同物料同批次可能有多条码，必须精确到行）");
+      ElMessage.warning(t('wms.freeze.pickStockRow'));
       return;
     }
     if (!(form.value.freezeQuantity > 0)) {
-      ElMessage.warning("冻结数量必须大于 0");
+      ElMessage.warning(t('wms.freeze.qtyRequired'));
       return;
     }
     if (form.value.stockAvailable != null && form.value.freezeQuantity > form.value.stockAvailable) {
-      ElMessage.warning(`冻结数量超过该库存行可用量（可用 ${form.value.stockAvailable}）`);
+      ElMessage.warning(t('wms.freeze.qtyExceedWarn', { qty: form.value.stockAvailable }));
       return;
     }
 
@@ -547,7 +558,7 @@ function submitForm() {
 
     const api = form.value.freezeId ? updateFreeze : addFreeze;
     api(payload).then(() => {
-      ElMessage.success("保存成功");
+      ElMessage.success(t('wms.common.savedSuccess'));
       open.value = false;
       getList();
     });
@@ -563,28 +574,28 @@ function cancel() {
 /** 执行冻结 */
 function handleExecute(row) {
   ElMessageBox.confirm(
-    `执行冻结单「${row.freezeNo}」将占用该库位的可用库存（库存总量不变），执行后不可修改。是否继续？`,
-    "冻结确认",
-    { confirmButtonText: "确定冻结", cancelButtonText: "取消", type: "warning" }
+    t('wms.freeze.executeConfirmMsg', { no: row.freezeNo }),
+    t('wms.freeze.executeConfirmTitle'),
+    { confirmButtonText: t('wms.freeze.executeConfirmBtn'), cancelButtonText: t('common.cancel'), type: "warning" }
   )
     .then(() => executeFreeze(row.freezeId))
     .then(() => {
-      ElMessage.success("冻结成功，可用库存已扣减");
+      ElMessage.success(t('wms.freeze.executeSuccess'));
       getList();
     });
 }
 
 /** 解冻 */
 function handleThaw(row) {
-  ElMessageBox.prompt("请输入解冻原因", "解冻确认", {
-    confirmButtonText: "确定解冻",
-    cancelButtonText: "取消",
-    inputPlaceholder: "解冻原因（选填）",
+  ElMessageBox.prompt(t('wms.freeze.thawReasonPrompt'), t('wms.freeze.thawConfirmTitle'), {
+    confirmButtonText: t('wms.freeze.thawConfirmBtn'),
+    cancelButtonText: t('common.cancel'),
+    inputPlaceholder: t('wms.freeze.ph.thawReasonOptional'),
     inputType: "textarea",
   })
     .then(({ value }) => thawFreeze(row.freezeId, value))
     .then(() => {
-      ElMessage.success("已解冻，可用库存已回补");
+      ElMessage.success(t('wms.freeze.thawSuccess'));
       getList();
     });
 }
@@ -592,15 +603,15 @@ function handleThaw(row) {
 /** 删除 */
 function handleDelete(row) {
   const delIds = row.freezeId || ids.value.join(",");
-  ElMessageBox.confirm(`是否确认删除冻结单编号为"${delIds}"的数据项？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.freeze.deleteConfirm', { id: delIds }), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => delFreeze(delIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
 }
 

@@ -12,18 +12,17 @@
       <!-- 操作按钮 -->
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
-          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:adjust:add']">新增</el-button>
+          <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['wms:adjust:add']">{{ t('common.add') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:adjust:edit']">修改</el-button>
+          <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['wms:adjust:edit']">{{ t('common.edit') }}</el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['wms:adjust:remove']">删除</el-button>
+          <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['wms:adjust:remove']">{{ t('common.delete') }}</el-button>
         </el-col>
         <right-toolbar
           v-model:showSearch="showSearch"
-          hint="库存只能通过调整单修改：调整单保存后点「执行」，才会更新实时库存并写入库存流水。
-执行后单据不可修改、不可删除。"
+          :hint="t('wms.adjust.hint')"
           @queryTable="getList"
         ></right-toolbar>
       </el-row>
@@ -31,45 +30,45 @@
       <!-- 列表 -->
       <el-table v-loading="loading" :data="adjustList" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" :selectable="(row) => row.adjustStatus !== 'completed'" />
-        <el-table-column label="调整单号" align="center" prop="adjustNo" width="180" :show-overflow-tooltip="true" />
-        <el-table-column label="调整类型" align="center" width="110">
+        <el-table-column :label="t('wms.adjust.adjustNo')" align="center" prop="adjustNo" width="180" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('wms.adjust.adjustType')" align="center" width="110">
           <template #default="scope">
-            {{ adjustTypeMap[scope.row.adjustType] || scope.row.adjustType || "-" }}
+            {{ adjustTypeLabel(scope.row.adjustType) }}
           </template>
         </el-table-column>
-        <el-table-column label="仓库" align="center" :show-overflow-tooltip="true">
+        <el-table-column :label="t('wms.common.warehouse')" align="center" :show-overflow-tooltip="true">
           <template #default="scope">{{ scope.row.warehouse?.warehouseName || "-" }}</template>
         </el-table-column>
-        <el-table-column label="调整总数量" align="center" prop="totalQuantity" width="110">
+        <el-table-column :label="t('wms.adjust.totalQuantity')" align="center" prop="totalQuantity" width="110">
           <template #default="scope">{{ scope.row.totalQuantity ?? "-" }}</template>
         </el-table-column>
-        <el-table-column label="状态" align="center" width="100">
+        <el-table-column :label="t('common.status')" align="center" width="100">
           <template #default="scope">
             <el-tag :type="scope.row.adjustStatus === 'completed' ? 'success' : 'warning'" size="small">
-              {{ scope.row.adjustStatus === "completed" ? "已执行" : "待执行" }}
+              {{ scope.row.adjustStatus === "completed" ? t('wms.adjust.executed') : t('wms.adjust.pendingExecute') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="调整原因" align="center" prop="adjustReason" :show-overflow-tooltip="true" />
-        <el-table-column label="创建时间" align="center" prop="createTime" width="170" />
-        <el-table-column label="操作" align="center" width="190" class-name="small-padding fixed-width">
+        <el-table-column :label="t('wms.adjust.adjustReason')" align="center" prop="adjustReason" :show-overflow-tooltip="true" />
+        <el-table-column :label="t('common.createTime')" align="center" prop="createTime" width="170" />
+        <el-table-column :label="t('common.actions')" align="center" width="190" class-name="small-padding fixed-width">
           <template #default="scope">
             <el-button
               v-if="scope.row.adjustStatus !== 'completed'"
               link type="primary" icon="Check" @click="handleExecute(scope.row)"
               v-hasPermi="['wms:adjust:edit']"
-            >执行</el-button>
+            >{{ t('wms.move.execute') }}</el-button>
             <el-button
               v-if="scope.row.adjustStatus !== 'completed'"
               link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
               v-hasPermi="['wms:adjust:edit']"
-            >修改</el-button>
+            >{{ t('common.edit') }}</el-button>
             <el-button
               v-if="scope.row.adjustStatus !== 'completed'"
               link type="danger" icon="Delete" @click="handleDelete(scope.row)"
               v-hasPermi="['wms:adjust:remove']"
-            >删除</el-button>
-            <span v-if="scope.row.adjustStatus === 'completed'" class="text-muted">已执行</span>
+            >{{ t('common.delete') }}</el-button>
+            <span v-if="scope.row.adjustStatus === 'completed'" class="text-muted">{{ t('wms.adjust.executed') }}</span>
           </template>
         </el-table-column>
       </el-table>
@@ -87,59 +86,64 @@
         <el-form ref="adjustRef" :model="form" :rules="rules" label-width="90px" class="nowrap-labels">
           <el-row :gutter="16">
             <el-col :span="8">
-              <el-form-item label="调整单号">
-                <el-input v-model="form.adjustNo" placeholder="保存后自动生成" readonly />
+              <el-form-item :label="t('wms.adjust.adjustNo')">
+                <el-input v-model="form.adjustNo" :placeholder="t('wms.receipt.receiptNoAuto')" readonly />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="调整类型" prop="adjustType">
-                <el-select v-model="form.adjustType" placeholder="请选择调整类型" style="width:100%">
-                  <el-option v-for="(label, value) in adjustTypeMap" :key="value" :label="label" :value="value" />
+              <el-form-item :label="t('wms.adjust.adjustType')" prop="adjustType">
+                <el-select v-model="form.adjustType" :placeholder="t('wms.adjust.ph.selectType')" style="width:100%">
+                  <el-option :label="t('wms.adjust.typeCheckProfit')" value="check_profit" />
+                  <el-option :label="t('wms.adjust.typeCheckLoss')" value="check_loss" />
+                  <el-option :label="t('wms.adjust.typeDamage')" value="damage" />
+                  <el-option :label="t('wms.adjust.typeOverflow')" value="overflow" />
+                  <el-option :label="t('wms.adjust.typeValidity')" value="validity" />
+                  <el-option :label="t('wms.issueOrder.typeOther')" value="other" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="仓库" prop="warehouseId">
-                <WarehouseSelect v-model="form.warehouseId" placeholder="请选择仓库" @change="onWarehouseChange" />
+              <el-form-item :label="t('wms.common.warehouse')" prop="warehouseId">
+                <WarehouseSelect v-model="form.warehouseId" :placeholder="t('wms.warehouse.ph.selectWarehouse')" @change="onWarehouseChange" />
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="调整原因" prop="adjustReason">
+              <el-form-item :label="t('wms.adjust.adjustReason')" prop="adjustReason">
                 <el-input v-model="form.adjustReason" type="textarea" :autosize="{ minRows: 1, maxRows: 3 }"
-                  placeholder="请说明调整原因（如盘亏、报损等）" maxlength="255" />
+                  :placeholder="t('wms.adjust.ph.reasonExample')" maxlength="255" />
               </el-form-item>
             </el-col>
           </el-row>
 
           <!-- 调整明细 -->
           <div class="detail-head">
-            <span class="detail-title">调整明细</span>
-            <el-button class="detail-add-btn" type="primary" plain icon="Plus" @click="addDetail">添加明细</el-button>
+            <span class="detail-title">{{ t('wms.adjust.detailTitle') }}</span>
+            <el-button class="detail-add-btn" type="primary" plain icon="Plus" @click="addDetail">{{ t('wms.receiving.addDetail') }}</el-button>
           </div>
 
-          <el-table :data="details" border size="small" empty-text="请添加调整明细">
-            <el-table-column label="库位" width="200">
+          <el-table :data="details" border size="small" :empty-text="t('wms.adjust.emptyDetail')">
+            <el-table-column :label="t('wms.common.location')" width="200">
               <template #default="scope">
                 <LocationCascader
                   v-model="scope.row.locCascader"
                   :warehouse-id="form.warehouseId"
                   :disabled="!form.warehouseId"
-                  :placeholder="form.warehouseId ? '库区/库位' : '请先选仓库'"
+                  :placeholder="form.warehouseId ? t('wms.move.ph.zoneOrLocation') : t('wms.move.ph.selectWarehouseFirst')"
                   @update:model-value="(val) => onDetailLocation(val, scope.$index)"
                 />
               </template>
             </el-table-column>
-            <el-table-column label="库存行" min-width="230">
+            <el-table-column :label="t('wms.adjust.stockRow')" min-width="230">
               <template #default="scope">
                 <el-select
                   v-model="scope.row.stockPick"
                   :loading="scope.row._loadingStock"
-                  :placeholder="scope.row.locationId ? '选择要调整的库存行' : '先选库位'"
+                  :placeholder="scope.row.locationId ? t('wms.adjust.ph.pickStockRow') : t('wms.adjust.ph.selectLocationFirst')"
                   :disabled="!scope.row.locationId"
                   style="width:100%"
                   @change="(v) => onStockPick(v, scope.$index)"
                 >
-                  <el-option label="＋ 新增库存（盘盈）" value="new" />
+                  <el-option :label="t('wms.adjust.newStockOption')" value="new" />
                   <el-option
                     v-for="opt in scope.row._stockOptions || []"
                     :key="opt.value"
@@ -149,41 +153,41 @@
                 </el-select>
               </template>
             </el-table-column>
-            <el-table-column label="物料" min-width="180">
+            <el-table-column :label="t('wms.material.title')" min-width="180">
               <template #default="scope">
                 <MaterialSelect
                   v-if="scope.row._isNew"
                   v-model="scope.row.materialId"
                   :label="scope.row.materialCode && scope.row.materialName ? scope.row.materialCode + ' - ' + scope.row.materialName : ''"
-                  placeholder="请选择物料"
+                  :placeholder="t('wms.material.ph.selectMaterial')"
                   @change="onMaterialChange($event, scope.$index)"
                 />
                 <span v-else class="text-muted">{{ scope.row.materialCode }} - {{ scope.row.materialName }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="批次号" width="120">
+            <el-table-column :label="t('wms.receiving.batchNo')" width="120">
               <template #default="scope">
-                <el-input v-if="scope.row._isNew" v-model="scope.row.batchNo" placeholder="批次号" maxlength="50" />
-                <span v-else class="text-muted">{{ scope.row.batchNo || "无" }}</span>
+                <el-input v-if="scope.row._isNew" v-model="scope.row.batchNo" :placeholder="t('wms.receiving.batchNo')" maxlength="50" />
+                <span v-else class="text-muted">{{ scope.row.batchNo || t('wms.move.noBatch') }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="调整前" width="80" align="center">
+            <el-table-column :label="t('wms.adjust.before')" width="80" align="center">
               <template #default="scope">
                 <span class="text-muted">{{ scope.row.stockId || scope.row.detailId ? (scope.row.beforeQuantity ?? 0) : "—" }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="调整数量" width="120">
+            <el-table-column :label="t('wms.adjust.adjustQuantity')" width="120">
               <template #default="scope">
                 <el-input-number v-model="scope.row.adjustQuantity" :controls="false"
-                  placeholder="正增负减" style="width:100%" />
+                  :placeholder="t('wms.adjust.ph.positiveNeg')" style="width:100%" />
               </template>
             </el-table-column>
-            <el-table-column label="调整后" width="80" align="center">
+            <el-table-column :label="t('wms.adjust.after')" width="80" align="center">
               <template #default="scope">
                 <span :class="previewClass(scope.row)">{{ previewAfter(scope.row) }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="70" align="center">
+            <el-table-column :label="t('common.actions')" width="70" align="center">
               <template #default="scope">
                 <el-button link type="danger" icon="Delete" @click="removeDetail(scope.$index)" />
               </template>
@@ -191,14 +195,13 @@
           </el-table>
 
           <div class="detail-tip text-muted">
-            选择已有库存行：调整数量可正可负（允许扣减到 0），精确到条码行；
-            选「新增库存」做盘盈：物料、批次手填，数量必须大于 0。调整前/后以执行时实际库存为准。
+            {{ t('wms.adjust.detailTip') }}
           </div>
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button type="primary" @click="submitForm">确 定</el-button>
-            <el-button @click="cancel">取 消</el-button>
+            <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+            <el-button @click="cancel">{{ t('common.cancel') }}</el-button>
           </div>
         </template>
       </el-dialog>
@@ -209,6 +212,7 @@
 <script setup name="WmsAdjust">
 import { ref, reactive, toRefs, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
 import {
   listAdjust,
   getAdjust,
@@ -224,6 +228,7 @@ import WarehouseSelect from "@/views/wms/warehouse/input.vue";
 import MaterialSelect from "@/views/wms/material/input.vue";
 import LocationCascader from "@/views/wms/location/cascader.vue";
 
+const { t } = useI18n();
 const adjustRef = ref(null);
 const adjustList = ref([]);
 const open = ref(false);
@@ -237,14 +242,17 @@ const title = ref("");
 const showSearch = ref(true);
 
 /** 调整类型字典 */
-const adjustTypeMap = {
-  check_profit: "盘盈",
-  check_loss: "盘亏",
-  damage: "报损",
-  overflow: "报溢",
-  validity: "有效期调整",
-  other: "其他",
-};
+function adjustTypeLabel(v) {
+  const map = {
+    check_profit: t('wms.adjust.typeCheckProfit'),
+    check_loss: t('wms.adjust.typeCheckLoss'),
+    damage: t('wms.adjust.typeDamage'),
+    overflow: t('wms.adjust.typeOverflow'),
+    validity: t('wms.adjust.typeValidity'),
+    other: t('wms.issueOrder.typeOther'),
+  };
+  return map[v] || v || "-";
+}
 
 const data = reactive({
   form: {},
@@ -255,8 +263,8 @@ const data = reactive({
     keywords: undefined,
   },
   rules: {
-    adjustType: [{ required: true, message: "请选择调整类型", trigger: "change" }],
-    warehouseId: [{ required: true, message: "请选择仓库", trigger: "change" }],
+    adjustType: [{ required: true, message: () => t('wms.adjust.ph.selectType'), trigger: "change" }],
+    warehouseId: [{ required: true, message: () => t('wms.receipt.rules.warehouseRequired'), trigger: "change" }],
   },
 });
 
@@ -264,10 +272,10 @@ const { form, details, queryParams, rules } = toRefs(data);
 
 const queryConfig = computed(() => [
   {
-    label: "关键字",
+    label: t('wms.common.keywords'),
     prop: "keywords",
     type: "input",
-    placeholder: "请输入调整单号",
+    placeholder: t('wms.adjust.ph.inputAdjustNo'),
   },
 ]);
 
@@ -327,7 +335,7 @@ function reset() {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "新增库存调整单";
+  title.value = t('wms.adjust.addTitle');
 }
 
 /** 修改 */
@@ -353,7 +361,7 @@ function handleUpdate(row) {
         .then((res2) => {
           d._stockOptions = (res2.rows || []).map((s) => ({
             value: String(s.stockId),
-            label: `${s.materialCode || s.material?.materialCode} / 批次${s.batchNo || "无"}${s.barcode ? " / " + s.barcode : ""} / 库存 ${s.stockQuantity}`,
+            label: `${s.materialCode || s.material?.materialCode} / ${t('wms.receiving.batchNo')}${s.batchNo || t('wms.move.noBatch')}${s.barcode ? " / " + s.barcode : ""} / ${t('wms.stock.stock')} ${s.stockQuantity}`,
             stockId: s.stockId,
             materialId: s.materialId,
             materialCode: s.materialCode || s.material?.materialCode,
@@ -381,7 +389,7 @@ function handleUpdate(row) {
         });
     });
     open.value = true;
-    title.value = "修改库存调整单";
+    title.value = t('wms.adjust.editTitle');
   });
 }
 
@@ -444,7 +452,7 @@ function loadStockOptions(row) {
     .then((res) => {
       row._stockOptions = (res.rows || []).map((s) => ({
         value: String(s.stockId),
-        label: `${s.materialCode || s.material?.materialCode} / 批次${s.batchNo || "无"}${s.barcode ? " / " + s.barcode : ""} / 库存 ${s.stockQuantity}`,
+        label: `${s.materialCode || s.material?.materialCode} / ${t('wms.receiving.batchNo')}${s.batchNo || t('wms.move.noBatch')}${s.barcode ? " / " + s.barcode : ""} / ${t('wms.stock.stock')} ${s.stockQuantity}`,
         stockId: s.stockId,
         materialId: s.materialId,
         materialCode: s.materialCode || s.material?.materialCode,
@@ -523,33 +531,33 @@ function submitForm() {
   adjustRef.value.validate((valid) => {
     if (!valid) return;
     if (!details.value.length) {
-      ElMessage.warning("请至少添加一条调整明细");
+      ElMessage.warning(t('wms.adjust.selectAtLeastOneDetail'));
       return;
     }
     for (let i = 0; i < details.value.length; i++) {
       const d = details.value[i];
       if (!d.locationId) {
-        ElMessage.warning(`第 ${i + 1} 行请选择库位`);
+        ElMessage.warning(t('wms.adjust.rowLocationRequired', { no: i + 1 }));
         return;
       }
       if (!d.stockId && !d._isNew) {
-        ElMessage.warning(`第 ${i + 1} 行请选择库存行（或选「新增库存」做盘盈）`);
+        ElMessage.warning(t('wms.adjust.rowStockRequired', { no: i + 1 }));
         return;
       }
       if (d._isNew && !d.materialId) {
-        ElMessage.warning(`第 ${i + 1} 行（新增库存）请选择物料`);
+        ElMessage.warning(t('wms.adjust.rowNewMaterialRequired', { no: i + 1 }));
         return;
       }
       if (!d.adjustQuantity) {
-        ElMessage.warning(`第 ${i + 1} 行调整数量不能为 0`);
+        ElMessage.warning(t('wms.adjust.rowQtyZero', { no: i + 1 }));
         return;
       }
       if (d._isNew && Number(d.adjustQuantity) <= 0) {
-        ElMessage.warning(`第 ${i + 1} 行（新增库存）调整数量必须大于 0`);
+        ElMessage.warning(t('wms.adjust.rowNewQtyRequired', { no: i + 1 }));
         return;
       }
       if (d.stockId && (d.beforeQuantity || 0) + Number(d.adjustQuantity) < 0) {
-        ElMessage.warning(`第 ${i + 1} 行调整后为负数（当前 ${d.beforeQuantity}），不能扣超库存`);
+        ElMessage.warning(t('wms.adjust.rowNegativeWarn', { no: i + 1, qty: d.beforeQuantity }));
         return;
       }
     }
@@ -572,7 +580,7 @@ function submitForm() {
 
     const api = form.value.adjustId ? updateAdjust : addAdjust;
     api(payload).then(() => {
-      ElMessage.success("保存成功");
+      ElMessage.success(t('wms.common.savedSuccess'));
       open.value = false;
       getList();
     });
@@ -588,13 +596,13 @@ function cancel() {
 /** 执行调整单 */
 function handleExecute(row) {
   ElMessageBox.confirm(
-    `执行调整单「${row.adjustNo}」将立即更新实时库存并写入库存流水，执行后不可修改和删除。是否继续？`,
-    "执行确认",
-    { confirmButtonText: "确定执行", cancelButtonText: "取消", type: "warning" }
+    t('wms.move.executeConfirmMsg', { no: row.adjustNo }),
+    t('wms.move.executeConfirmTitle'),
+    { confirmButtonText: t('wms.move.executeConfirmBtn'), cancelButtonText: t('common.cancel'), type: "warning" }
   )
     .then(() => executeAdjust(row.adjustId))
     .then(() => {
-      ElMessage.success("执行成功，库存已更新");
+      ElMessage.success(t('wms.move.executeSuccess'));
       getList();
     });
 }
@@ -602,15 +610,15 @@ function handleExecute(row) {
 /** 删除 */
 function handleDelete(row) {
   const delIds = row.adjustId || ids.value.join(",");
-  ElMessageBox.confirm(`是否确认删除编号为"${delIds}"的数据项？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('wms.common.deleteConfirm', { id: delIds }), t('wms.common.warning'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: "warning",
   })
     .then(() => delAdjust(delIds))
     .then(() => {
       getList();
-      ElMessage.success("删除成功");
+      ElMessage.success(t('wms.common.deleteSuccess'));
     });
 }
 
