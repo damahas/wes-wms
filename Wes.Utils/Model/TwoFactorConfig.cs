@@ -17,7 +17,7 @@ namespace Wes.Utils.Model
         public string Mode { get; set; } = "email";
 
         /// <summary>验证器 App 中显示的发行方名称</summary>
-        public string Issuer { get; set; } = "WesAdmin";
+        public string Issuer { get; set; } = "WesWMS";
 
         /// <summary>
         /// 归一化后的验证方式（配置值非法时按 email 处理）

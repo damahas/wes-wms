@@ -243,7 +243,7 @@ const configSchema = {
           { value: "totp", label: "验证器 App" },
         ],
       },
-      { label: "发行方名称（验证器显示）", key: "issuer", type: "input", defaultValue: "WesAdmin" },
+      { label: "发行方名称（验证器显示）", key: "issuer", type: "input", defaultValue: "WesWMS" },
     ],
   },
   "sys.subSystem": {

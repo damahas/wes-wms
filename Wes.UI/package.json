@@ -1,7 +1,7 @@
 {
-  "name": "wes-admin",
+  "name": "wes-wms",
   "version": "1.0.0",
-  "description": "Vue3 Admin System",
+  "description": "WMS Warehouse Management System",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

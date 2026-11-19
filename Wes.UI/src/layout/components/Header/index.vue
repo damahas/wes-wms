@@ -4,7 +4,7 @@
       <div class="header-logo">
         <img src="/images/logo.png" alt="WES" class="header-logo-img" />
       </div>
-      <span class="header-title">WES管理系统</span>
+      <span class="header-title">WMS仓库管理系统</span>
     </div>
     <TagsView class="header-tags" />
     <div class="header-right">
@@ -14,7 +14,7 @@
 
       <a
         class="header-icon-btn github-link"
-        href="https://github.com/damahas/wes-admin"
+        href="https://github.com/damahas/wes-wms"
         target="_blank"
         title="GitHub"
       >

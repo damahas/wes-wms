@@ -210,7 +210,7 @@ const TEMPLATES = {
         { value: "email", label: "config.field.twoFactorModeEmail" },
         { value: "totp", label: "config.field.twoFactorModeTotp" },
       ]},
-      { label: "config.field.issuer", key: "issuer", type: "input", defaultValue: "WesAdmin" },
+      { label: "config.field.issuer", key: "issuer", type: "input", defaultValue: "WesWMS" },
     ]},
   },
 };

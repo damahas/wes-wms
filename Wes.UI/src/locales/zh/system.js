@@ -100,7 +100,7 @@ export default {
     login: '登录',
     username: '用户名',
     password: '密码',
-    title: 'Admin 管理系统',
+    title: 'WMS 仓储管理系统',
     userName: '用户名',
     userNamePlaceholder: '请输入用户名',
     passwordPlaceholder: '请输入密码',

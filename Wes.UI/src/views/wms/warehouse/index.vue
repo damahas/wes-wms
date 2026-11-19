@@ -43,10 +43,11 @@
         </template>
       </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createTime" min-width="170" />
-      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="250" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['wms:warehouse:edit']">修改</el-button>
           <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['wms:warehouse:remove']">删除</el-button>
+          <el-button link type="primary" icon="Grid" @click="handleLayout(scope.row)">平面布局</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -108,6 +109,9 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 平面布局设计器 -->
+    <layout-designer v-model="layoutOpen" :warehouse="layoutWarehouse" />
     </div>
   </div>
 </template>
@@ -129,6 +133,7 @@ import DictTag from "@/components/DictTag/index.vue";
 import QueryForm from "@/components/QueryForm/index.vue";
 import RightToolbar from "@/components/RightToolbar/index.vue";
 import { getDict } from "@/utils";
+import LayoutDesigner from "@/views/wms/warehouse/layout/Designer.vue";
 
 const { warehouse_type } = getDict("wms_warehouse_type");
 
@@ -145,6 +150,8 @@ const regionOptions = ref([]);
 const regionArr = ref([]);
 
 const showSearch = ref(true);
+const layoutOpen = ref(false);
+const layoutWarehouse = ref({});
 
 const data = reactive({
   form: {},
@@ -294,6 +301,12 @@ function handleDelete(row) {
       getList();
       ElMessage.success("删除成功");
     });
+}
+
+/** 平面布局 */
+function handleLayout(row) {
+  layoutWarehouse.value = row;
+  layoutOpen.value = true;
 }
 
 /** 状态切换 */

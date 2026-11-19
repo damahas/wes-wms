@@ -1,13 +1,13 @@
-#!/bin/bash
+﻿#!/bin/bash
 set -e
 
 # ============================================
-# WesAdmin Docker 构建脚本
+# WesWMS Docker 构建脚本
 # 步骤: 前端构建 → 后端发布 → 打包镜像
 # ============================================
 
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
-IMAGE_NAME="${IMAGE_NAME:-wes-admin}"
+IMAGE_NAME="${IMAGE_NAME:-wes-wms}"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
 
 # 计时工具
@@ -18,7 +18,7 @@ format_duration() {
 }
 
 echo "========================================"
-echo "  WesAdmin Docker Build"
+echo "  WesWMS Docker Build"
 echo "  镜像: ${IMAGE_NAME}:${IMAGE_TAG}"
 echo "  项目: ${PROJECT_ROOT}"
 echo "  开始: $(date '+%Y-%m-%d %H:%M:%S')"
